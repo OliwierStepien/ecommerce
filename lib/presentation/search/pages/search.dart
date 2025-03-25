@@ -1,10 +1,11 @@
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
-import 'package:mealapp/domain/meal/usecases/get_products_by_title.dart';
+import 'package:mealapp/domain/meal/usecases/get_meal_by_title.dart';
 import 'package:mealapp/presentation/search/widgets/search_field.dart';
 import 'package:mealapp/service_locator.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +32,16 @@ class SearchPage extends StatelessWidget {
               if (state is MealsLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (state is MealsLoaded) {
+              if (state is MealsLoadingSuccess) {
                 return state.meals.isEmpty ? _notFound() : _meals(state.meals);
+              }
+              if (state is MealsLoadingFailure) {
+                return ErrorMessage(
+                  message: state.message,
+                  onRetry: () {
+                    context.read<MealsDisplayCubit>().displayMeals();
+                  },
+                );
               }
               return Container();
             },

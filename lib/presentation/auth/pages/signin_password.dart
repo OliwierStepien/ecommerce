@@ -11,14 +11,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class EnterPasswordPage extends StatelessWidget {
+class SignInPasswordPage extends StatelessWidget {
   final UserSigninReq userSigninReq;
-  EnterPasswordPage({
+  SignInPasswordPage({
     super.key,
     required this.userSigninReq,
   });
 
   final TextEditingController _passwordCon = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -46,20 +47,28 @@ class EnterPasswordPage extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(snackbar);
                 }
                 if (state is ButtonSuccessState) {
+                  final snackbar = SnackBar(
+                    content: Text(state.successMessage),
+                    behavior: SnackBarBehavior.floating,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
                   AppNavigator.pushAndRemove(context, const HomePage());
                 }
               },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _signinText(context),
-                  const SizedBox(height: 20),
-                  _passwordField(context),
-                  const SizedBox(height: 20),
-                  _continueButton(),
-                  const SizedBox(height: 20),
-                  _forgotPassword(context),
-                ],
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _signinText(context),
+                    const SizedBox(height: 20),
+                    _passwordField(context),
+                    const SizedBox(height: 20),
+                    _continueButton(),
+                    const SizedBox(height: 20),
+                    _forgotPassword(context),
+                  ],
+                ),
               ),
             ),
           ),
@@ -79,12 +88,19 @@ class EnterPasswordPage extends StatelessWidget {
   }
 
   Widget _passwordField(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: _passwordCon,
       decoration: const InputDecoration(
         hintText: 'Podaj hasło',
+        border: OutlineInputBorder(),
       ),
       obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Pole nie może być puste';
+        }
+        return null;
+      },
     );
   }
 
@@ -92,10 +108,12 @@ class EnterPasswordPage extends StatelessWidget {
     return Builder(builder: (context) {
       return BasicReactiveButton(
         onPressed: () {
-          userSigninReq.password = _passwordCon.text;
-          context
-              .read<ButtonStateCubit>()
-              .execute(usecase: SigninUsecase(), params: userSigninReq);
+          if (_formKey.currentState!.validate()) {
+            userSigninReq.password = _passwordCon.text;
+            context
+                .read<ButtonStateCubit>()
+                .execute(usecase: SigninUsecase(), params: userSigninReq);
+          }
         },
         title: 'Kontynuuj',
       );

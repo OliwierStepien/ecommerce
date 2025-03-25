@@ -1,3 +1,4 @@
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_state.dart';
 import 'package:mealapp/common/helper/navigator/app_navigator.dart';
@@ -15,25 +16,21 @@ class AllCategoriesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BasicAppbar(
-        hideBack: false,
-      ),
-      body: BlocProvider(
-        create: (context) => CategoriesDisplayCubit()..displayCategories(),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _listByCategories(),
-              const SizedBox(height: 10),
-              Expanded(child: _categories()), // 🔥 Rozwiązanie problemu!
-            ],
-          ),
+      appBar: const BasicAppbar(hideBack: false),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _listByCategories(),
+            const SizedBox(height: 10),
+            Expanded(child: _categories()),
+          ],
         ),
       ),
     );
   }
+}
 
   Widget _listByCategories() {
     return const Text(
@@ -48,10 +45,9 @@ class AllCategoriesPage extends StatelessWidget {
         if (state is CategoriesLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is CategoriesLoaded) {
+        if (state is CategoriesLoadingSuccess) {
           return ListView.separated(
-            shrinkWrap: true, // ⛔ Można usunąć, bo mamy Expanded
-            physics: const BouncingScrollPhysics(), // 🔥 Dodane dla lepszego UX
+            physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
@@ -99,8 +95,16 @@ class AllCategoriesPage extends StatelessWidget {
             itemCount: state.categories.length,
           );
         }
+        if (state is CategoriesLoadingFailure) {
+          return ErrorMessage(
+            message: state.message,
+            onRetry: () {
+              context.read<CategoriesDisplayCubit>().displayCategories();
+            },
+          );
+        }
         return Container();
       },
     );
   }
-}
+

@@ -5,7 +5,7 @@ import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/data/auth/models/user_creation_req.dart';
 import 'package:mealapp/domain/auth/usecases/signup.dart';
-import 'package:mealapp/presentation/auth/pages/signin.dart';
+import 'package:mealapp/presentation/auth/pages/signin_login.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,9 +14,9 @@ class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});
 
   final TextEditingController _firstNameCon = TextEditingController();
-  final TextEditingController _lastNameCon = TextEditingController();
   final TextEditingController _emailCon = TextEditingController();
   final TextEditingController _passwordCon = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +41,12 @@ class SignUpPage extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(snackbar);
                   }
                   if (state is ButtonSuccessState) {
-                    const snackbar = SnackBar(
-                      content: Text('Konto zostało pomyślnie utworzone!'),
+                    final snackbar = SnackBar(
+                      content: Text(state.successMessage),
                       behavior: SnackBarBehavior.floating,
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                    AppNavigator.pushReplacement(context, SignInPage());
+                    AppNavigator.pushReplacement(context, SignInLoginPage());
                   }
                 },
                 child: SingleChildScrollView(
@@ -54,23 +54,24 @@ class SignUpPage extends StatelessWidget {
                     horizontal: 16,
                     vertical: 40,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _signinText(context),
-                      const SizedBox(height: 20),
-                      _firstNameField(context),
-                      const SizedBox(height: 20),
-                      _lastNameField(context),
-                      const SizedBox(height: 20),
-                      _emailField(context),
-                      const SizedBox(height: 20),
-                      _passwordField(context),
-                      const SizedBox(height: 20),
-                      _finishButton(context),
-                      const SizedBox(height: 20),
-                      _createAccount(context),
-                    ],
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _signinText(context),
+                        const SizedBox(height: 20),
+                        _firstNameField(context),
+                        const SizedBox(height: 20),
+                        _emailField(context),
+                        const SizedBox(height: 20),
+                        _passwordField(context),
+                        const SizedBox(height: 20),
+                        _finishButton(context),
+                        const SizedBox(height: 20),
+                        _createAccount(context),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -92,58 +93,74 @@ class SignUpPage extends StatelessWidget {
   }
 
   Widget _firstNameField(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: _firstNameCon,
       decoration: const InputDecoration(
         hintText: 'Imię',
+        border: OutlineInputBorder(),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Pole nie może być puste';
+        }
+        return null;
+      },
     );
   }
 
-  Widget _lastNameField(BuildContext context) {
-    return TextField(
-      controller: _lastNameCon,
-      decoration: const InputDecoration(
-        hintText: 'Nazwisko',
-      ),
-    );
-  }
-
-  Widget _emailField(BuildContext context) {
-    return TextField(
-      controller: _emailCon,
-      decoration: const InputDecoration(
-        hintText: 'Email',
-      ),
-    );
-  }
+Widget _emailField(BuildContext context) {
+  return TextFormField(
+    controller: _emailCon,
+    decoration: const InputDecoration(
+      hintText: 'Email',
+      border: OutlineInputBorder(),
+    ),
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return 'Pole nie może być puste';
+      }
+      if (!value.contains('@')) {
+        return 'Wprowadź poprawny adres email';
+      }
+      return null;
+    },
+  );
+}
 
   Widget _passwordField(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: _passwordCon,
       decoration: const InputDecoration(
         hintText: 'Hasło',
+        border: OutlineInputBorder(),
       ),
       obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Pole nie może być puste';
+        }
+        return null;
+      },
     );
   }
 
   Widget _finishButton(BuildContext context) {
-    return BasicReactiveButton(
-      onPressed: () {
+  return BasicReactiveButton(
+    onPressed: () {
+      if (_formKey.currentState!.validate()) {
         context.read<ButtonStateCubit>().execute(
               usecase: SignupUsecase(),
               params: UserCreationReq(
                 firstName: _firstNameCon.text,
-                lastName: _lastNameCon.text,
                 email: _emailCon.text,
                 password: _passwordCon.text,
               ),
             );
-      },
-      title: 'Utwórz konto',
-    );
-  }
+      }
+    },
+    title: 'Utwórz konto',
+  );
+}
 
   Widget _createAccount(BuildContext context) {
     return RichText(
@@ -154,7 +171,7 @@ class SignUpPage extends StatelessWidget {
             text: 'Zaloguj się',
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                AppNavigator.pushReplacement(context, SignInPage());
+                AppNavigator.pushReplacement(context, SignInLoginPage());
               },
             style: const TextStyle(
               fontWeight: FontWeight.bold,

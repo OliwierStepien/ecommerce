@@ -1,7 +1,7 @@
 import 'package:mealapp/common/helper/navigator/app_navigator.dart';
 import 'package:mealapp/common/widgets/button/basic_app_button.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
-import 'package:mealapp/presentation/auth/pages/signin.dart';
+import 'package:mealapp/presentation/auth/pages/signin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -42,7 +42,7 @@ class PasswordResetEmailPage extends StatelessWidget {
   Widget _returnToLoginButton(BuildContext context) {
     return BasicAppButton(
       onPressed: (){
-        AppNavigator.pushReplacement(context, SignInPage());
+        AppNavigator.pushReplacement(context, SignInLoginPage());
       },
       width: 200,
       title: 'Wróć do strony logowania'

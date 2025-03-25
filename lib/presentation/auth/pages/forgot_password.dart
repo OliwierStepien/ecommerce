@@ -12,6 +12,7 @@ class ForgotPasswordPage extends StatelessWidget {
   ForgotPasswordPage({super.key});
 
   final TextEditingController _emailCon = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +43,18 @@ class ForgotPasswordPage extends StatelessWidget {
                   AppNavigator.push(context, const PasswordResetEmailPage());
                 }
               },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _signinText(context),
-                  const SizedBox(height: 20),
-                  _emailField(context),
-                  const SizedBox(height: 20),
-                  _continueButton(),
-                ],
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _signinText(context),
+                    const SizedBox(height: 20),
+                    _emailField(context),
+                    const SizedBox(height: 20),
+                    _continueButton(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -70,11 +74,21 @@ class ForgotPasswordPage extends StatelessWidget {
   }
 
   Widget _emailField(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: _emailCon,
       decoration: const InputDecoration(
         hintText: 'Podaj adres Email',
+        border: OutlineInputBorder(),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Pole nie może być puste';
+        }
+        if (!value.contains('@')) {
+          return 'Wprowadź poprawny adres email';
+        }
+        return null;
+      },
     );
   }
 
@@ -82,10 +96,12 @@ class ForgotPasswordPage extends StatelessWidget {
     return Builder(builder: (context) {
       return BasicReactiveButton(
         onPressed: () {
-          context.read<ButtonStateCubit>().execute(
-                usecase: SendPasswordResetEmailUseCase(),
-                params: _emailCon.text,
-              );
+          if (_formKey.currentState!.validate()) {
+            context.read<ButtonStateCubit>().execute(
+                  usecase: SendPasswordResetEmailUseCase(),
+                  params: _emailCon.text,
+                );
+          }
         },
         title: 'Kontynuuj',
       );

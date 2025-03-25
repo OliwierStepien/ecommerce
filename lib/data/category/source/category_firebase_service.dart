@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dartz/dartz.dart';
+import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
 
 abstract class CategoryFirebaseService {
-  Future<Either> getCategories();
+  Future<List<Map<String, dynamic>>> getCategories();
 }
 
 class CategoryFirebaseServiceImpl extends CategoryFirebaseService {
   @override
-  Future<Either> getCategories() async {
-    try {
-      final categories =
-          await FirebaseFirestore.instance.collection("Categories").get();
-      return Right(categories.docs.map((e) => e.data()).toList());
-    } catch (e) {
-      return const Left('Error Message');
-    }
+  Future<List<Map<String, dynamic>>> getCategories() async {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseFirestore.instance
+          .collection("Categories")
+          .get()
+          .timeout(const Duration(seconds: 15));
+      return returnedData.docs.map((e) => e.data()).toList();
+    });
   }
 }

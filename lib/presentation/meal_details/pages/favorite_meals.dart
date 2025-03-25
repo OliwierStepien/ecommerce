@@ -1,11 +1,11 @@
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 
 class FavoriteMealsPage extends StatelessWidget {
   const FavoriteMealsPage({super.key});
@@ -21,11 +21,16 @@ class FavoriteMealsPage extends StatelessWidget {
           if (state is MealsLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is MealsLoaded) {
+          if (state is MealsLoadingSuccess) {
             return _products(state.meals);
           }
-          if (state is LoadMealsFailure) {
-            return const Center(child: Text('Spróbuj ponownie'));
+          if (state is MealsLoadingFailure) {
+            return ErrorMessage(
+              message: state.message,
+              onRetry: () {
+                context.read<MealsDisplayCubit>().displayMeals();
+              },
+            );
           }
           return Container();
         },

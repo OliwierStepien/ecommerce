@@ -1,82 +1,95 @@
 import 'package:dartz/dartz.dart';
+import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
+import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/models/meal.dart';
-import 'package:mealapp/data/meal/source/product_firebase_service.dart';
+import 'package:mealapp/data/meal/source/meal_firebase_service.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
 class MealRepositoryImpl extends MealRepository {
   @override
-  Future<Either> getMeals() async {
-    final returnedData = await sl<MealFirebaseService>().getMeals();
-    return returnedData.fold((error) {
-      return Left(error);
-    }, (data) {
-      return Right(
-        List.from(data)
-            .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
-            .toList(),
-      );
+  Future<Either<Failure, List<MealEntity>>> getMeals() async {
+    return handleFirestoreFailure(() async {
+      final returnedData = await sl<MealFirebaseService>().getMeals();
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
     });
   }
 
   @override
-  Future<Either> getMealsByCategoryId(String categoryId) async {
-    final returnedData =
-        await sl<MealFirebaseService>().getMealsByCategoryId(categoryId);
-    return returnedData.fold((error) {
-      return Left(error);
-    }, (data) {
-      return Right(
-        List.from(data)
-            .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
-            .toList(),
-      );
+  Future<Either<Failure, List<MealEntity>>> getMealsByCategoryId(
+      String categoryId) async {
+    return handleFirestoreFailure(() async {
+      final returnedData =
+          await sl<MealFirebaseService>().getMealsByCategoryId(categoryId);
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
     });
   }
 
   @override
-  Future<Either> getMealsByTitle(String title) async {
-    final returnedData = await sl<MealFirebaseService>().getMealsByTitle(title);
-    return returnedData.fold((error) {
-      return Left(error);
-    }, (data) {
-      return Right(
-        List.from(data)
-            .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
-            .toList(),
-      );
+  Future<Either<Failure, List<MealEntity>>> getMealsByTitle(
+      String title) async {
+    return handleFirestoreFailure(() async {
+      final returnedData =
+          await sl<MealFirebaseService>().getMealsByTitle(title);
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
     });
   }
 
   @override
-  Future<Either> addOrRemoveFavoriteMeal(MealEntity meal) async {
-    final returnedData =
-        await sl<MealFirebaseService>().addOrRemoveFavoriteMeal(meal);
-    return returnedData.fold((error) {
-      return Left(error);
-    }, (data) {
-      return Right(data);
+  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(MealEntity meal) async {
+    return handleFirestoreFailure(() async {
+      return await sl<MealFirebaseService>().addOrRemoveFavoriteMeal(meal);
     });
   }
 
   @override
-  Future<bool> isFavorite(String mealId) async {
-    return await sl<MealFirebaseService>().isFavorite(mealId);
+  Future<Either<Failure, bool>> isFavorite(String mealId) async {
+    return handleFirestoreFailure(() async {
+      return await sl<MealFirebaseService>().isFavorite(mealId);
+    });
   }
 
   @override
-  Future<Either> getFavoritesMeals() async {
-    final returnedData = await sl<MealFirebaseService>().getFavoritesMeals();
-    return returnedData.fold((error) {
-      return Left(error);
-    }, (data) {
-      return Right(
-        List.from(data)
-            .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
-            .toList(),
-      );
+  Future<Either<Failure, List<MealEntity>>> getFavoritesMeals() async {
+    return handleFirestoreFailure(() async {
+      final returnedData = await sl<MealFirebaseService>().getFavoritesMeals();
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
+      MealEntity meal) async {
+    return handleFirestoreFailure(() async {
+      return await sl<MealFirebaseService>()
+          .addOrRemoveShoppingListIngredient(meal);
+    });
+  }
+
+  @override
+  Future<Either<Failure, bool>> isIngredientInShoppingList(MealEntity meal) async {
+    return handleFirestoreFailure(() async {
+      return await sl<MealFirebaseService>().isIngredientInShoppingList(meal);
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
+    return handleFirestoreFailure(() async {
+      final returnedData = await sl<MealFirebaseService>().getShoppingList();
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
     });
   }
 }

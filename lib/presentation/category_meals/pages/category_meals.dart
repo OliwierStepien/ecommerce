@@ -1,3 +1,4 @@
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
@@ -29,7 +30,7 @@ class CategoryMealsPage extends StatelessWidget {
               if (state is MealsLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (state is MealsLoaded) {
+              if (state is MealsLoadingSuccess) {
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -42,6 +43,14 @@ class CategoryMealsPage extends StatelessWidget {
                       _meals(state.meals)
                     ],
                   ),
+                );
+              }
+              if (state is MealsLoadingFailure) {
+                return ErrorMessage(
+                  message: state.message,
+                  onRetry: () {
+                    context.read<MealsDisplayCubit>().displayMeals();
+                  },
                 );
               }
               return Container();

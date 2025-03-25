@@ -1,6 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
+import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
 
 import '../../../core/usecase/usecase.dart';
 
@@ -10,15 +12,17 @@ class ButtonStateCubit extends Cubit<ButtonState> {
   Future<void> execute({dynamic params, required UseCase usecase}) async {
     emit(ButtonLoadingState());
 
-    try {
-      Either returnedData = await usecase.call(params: params);
-      returnedData.fold((error) {
-        emit(ButtonFailureState(errorMessage: error));
-      }, (data) {
-        emit(ButtonSuccessState());
-      });
-    } catch (e) {
-      emit(ButtonFailureState(errorMessage: e.toString()));
-    }
+  try {
+    Either returnedData = await usecase.call(params: params);
+    returnedData.fold((failure) {
+      final errorMessage = mapFailureToMessage(failure as Failure);
+      emit(ButtonFailureState(errorMessage: errorMessage));
+    }, (successMessage) {
+      emit(ButtonSuccessState(successMessage as String));
+    });
+  } catch (e) {
+    final errorMessage = mapFailureToMessage(GeneralFailure());
+    emit(ButtonFailureState(errorMessage: errorMessage));
   }
+}
 }

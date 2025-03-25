@@ -1,7 +1,9 @@
 import 'package:mealapp/core/configs/theme/app_theme.dart';
-import 'package:mealapp/domain/meal/usecases/get_favorites_meal.dart';
+import 'package:mealapp/domain/meal/usecases/favourite/get_favorites_meal.dart';
 import 'package:mealapp/firebase_options.dart';
+import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 import 'package:mealapp/presentation/splash/pages/splash.dart';
 import 'package:mealapp/service_locator.dart';
@@ -27,6 +29,8 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => SplashCubit()..appStarted()),
         BlocProvider(create: (context) => MealsDisplayCubit(useCase: sl<GetFavoritesMealUseCase>())),
+        BlocProvider(create: (context) => ShoppingListCubit()),
+        BlocProvider(create: (context) => CategoriesDisplayCubit()..displayCategories()),
       ],
       child: MaterialApp(
         theme: AppTheme.appTheme,

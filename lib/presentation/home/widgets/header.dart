@@ -1,5 +1,5 @@
-
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/domain/auth/entity/user.dart';
 import 'package:mealapp/domain/auth/usecases/signout.dart';
 import 'package:mealapp/presentation/meal_details/pages/favorite_meals.dart';
@@ -33,21 +33,11 @@ class Header extends StatelessWidget {
         }
 
         if (state is LoadUserInfoFailure) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error, color: Colors.red),
-                Text(
-                  "Nie udało się załadować danych użytkownika. Spróbuj ponownie.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
-                ),
-              ],
-            ),
+          return ErrorMessage(
+            message: state.message,
+            onRetry: () {
+              context.read<UserInfoDisplayCubit>().displayUserInfo();
+            },
           );
         }
         return Container();
@@ -63,6 +53,10 @@ Widget _userName(UserEntity user) {
       fontSize: 22,
       fontWeight: FontWeight.bold,
     ),
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+    softWrap: true,
+    textAlign: TextAlign.start,
   );
 }
 
@@ -94,7 +88,7 @@ Widget _shoppingList(BuildContext context) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const ShoppingListPage(meals: []),
+          builder: (context) => const ShoppingListPage(),
         ),
       );
     },

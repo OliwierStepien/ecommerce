@@ -1,7 +1,7 @@
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/common/helper/navigator/app_navigator.dart';
-import 'package:mealapp/presentation/auth/pages/signin.dart';
+import 'package:mealapp/presentation/auth/pages/signin_login.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/widgets/header.dart';
 import 'package:mealapp/presentation/home/widgets/meals.dart';
@@ -16,14 +16,16 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-            create: (context) => UserInfoDisplayCubit()..displayUserInfo()),
-        BlocProvider(create: (context) => ButtonStateCubit()),
-      ],
-      child: Scaffold(
-        body: BlocListener<ButtonStateCubit, ButtonState>(
+    return Scaffold(
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => UserInfoDisplayCubit()..displayUserInfo(),
+          ),
+          BlocProvider(create: (context) => ButtonStateCubit()),
+
+        ],
+        child: BlocListener<ButtonStateCubit, ButtonState>(
           listener: (context, state) {
             if (state is ButtonFailureState) {
               final snackbar = SnackBar(
@@ -33,20 +35,19 @@ class HomePage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(snackbar);
             }
             if (state is ButtonSuccessState) {
-              const snackbar = SnackBar(
-                content: Text('Zostałeś wylogowany'),
+              final snackbar = SnackBar(
+                content: Text(state.successMessage),
                 behavior: SnackBarBehavior.floating,
               );
               ScaffoldMessenger.of(context).showSnackBar(snackbar);
-              AppNavigator.pushAndRemove(context, SignInPage());
+              AppNavigator.pushAndRemove(context, SignInLoginPage());
             }
           },
           child: const SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 50),
-                Header(), // 🔹 Header teraz tylko konsumuje stan
+                Header(),
                 SizedBox(height: 24),
                 SearchFieldHome(),
                 SizedBox(height: 24),

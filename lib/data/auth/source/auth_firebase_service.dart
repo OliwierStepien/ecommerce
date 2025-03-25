@@ -1,116 +1,98 @@
-import 'package:dartz/dartz.dart';
+import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
 import 'package:mealapp/data/auth/models/user_creation_req.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealapp/data/auth/models/user_signin_req.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthFirebaseService {
-  Future<Either> signup(UserCreationReq user);
-  Future<Either> signin(UserSigninReq user);
-  Future<Either> sendPasswordResetEmail(String email);
-  Future<Either> signout();
+  Future<String> signup(UserCreationReq user);
+  Future<String> signin(UserSigninReq user);
+  Future<String> sendPasswordResetEmail(String email);
+  Future<String> signout();
   Future<bool> isLoggedIn();
-  Future<Either> getUser();
+  Future<Map<String, dynamic>> getUser();
 }
 
 class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
-  Future<Either> signup(UserCreationReq user) async {
-    try {
-      final returnedData =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: user.email,
-        password: user.password,
-      );
+  Future<String> signup(UserCreationReq user) async {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: user.email,
+            password: user.password,
+          )
+          .timeout(const Duration(seconds: 15));
 
       await FirebaseFirestore.instance
           .collection('Users')
           .doc(returnedData.user!.uid)
           .set({
         'firstName': user.firstName,
-        'lastName': user.lastName,
         'email': user.email,
-      });
+      }).timeout(const Duration(seconds: 15));
 
-      return const Right('Konto zostało utworzone');
-    } on FirebaseAuthException catch (e) {
-      String message = '';
-
-      if (e.code == 'weak-password') {
-        message = 'Hasło jest zbyt słabe';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'Ten email jest już zajęty.';
-      }
-      return Left(message);
-    } catch (e) {
-      return const Left('Coś poszło nie tak');
-    }
+      return 'Konto zostało utworzone';
+    });
   }
 
   @override
-  Future<Either> signin(UserSigninReq user) async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: user.email,
-        password: user.password!,
-      );
+  Future<String> signin(UserSigninReq user) async {
+    return handleFirestoreException(() async {
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: user.email,
+            password: user.password!,
+          )
+          .timeout(const Duration(seconds: 15));
 
-      return const Right('Logowanie zakończone sukcesem');
-    } on FirebaseAuthException catch (e) {
-      String message = '';
-
-      if (e.code == 'invalid-email') {
-        message = 'Nie znaleziono uzytkownika z takim adresem email';
-      } else if (e.code == 'invalid-credential') {
-        message = 'Podano błędne hasło';
-      }
-      return Left(message);
-    } catch (e) {
-      return const Left('Coś poszło nie tak');
-    }
+      return 'Logowanie zakończone sukcesem';
+    });
   }
 
   @override
-  Future<Either> sendPasswordResetEmail(String email) async {
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      return const Right('Email z instrukcją resetu hasła został wysłany');
-    } catch (e) {
-      return const Left('Proszę spróbować ponownie');
-    }
+  Future<String> sendPasswordResetEmail(String email) async {
+    return handleFirestoreException(() async {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: email)
+          .timeout(const Duration(seconds: 15));
+
+      return 'Email z instrukcją resetu hasła został wysłany';
+    });
   }
 
   @override
-  Future<Either> signout() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      return const Right('Uzytkownik został wylogowany');
-    } catch (e) {
-      return const Left('Proszę spróbować ponownie');
-    }
+  Future<String> signout() async {
+    return handleFirestoreException(() async {
+      await FirebaseAuth.instance
+          .signOut()
+          .timeout(const Duration(seconds: 15));
+      return 'Zostałeś wylogowany';
+    });
   }
 
   @override
   Future<bool> isLoggedIn() async {
-    if (FirebaseAuth.instance.currentUser != null) {
-      return true;
-    } else {
-      return false;
-    }
+    return handleFirestoreException(() async {
+      return FirebaseAuth.instance.currentUser != null;
+    });
   }
 
   @override
-  Future<Either> getUser() async {
-    try {
+  Future<Map<String, dynamic>> getUser() async {
+    return handleFirestoreException(() async {
       final currentUser = FirebaseAuth.instance.currentUser;
       final userData = await FirebaseFirestore.instance
           .collection('Users')
           .doc(currentUser?.uid)
           .get()
           .then((value) => value.data());
-      return Right(userData);
-    } catch (e) {
-      return const Left('Proszę spróbować ponownie');
-    }
+
+      if (userData == null) {
+        throw Exception('Użytkownik nie znaleziony');
+      }
+
+      return userData;
+    });
   }
 }
