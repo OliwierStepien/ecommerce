@@ -8,6 +8,10 @@ class SplashCubit extends Cubit<SplashState> {
 
   Future<void> appStarted() async {
     await Future.delayed(const Duration(seconds: 2));
+    checkAuthStatus();
+  }
+
+  void checkAuthStatus() async {
     final isLoggedIn = await sl<IsLoggedInUseCase>().call();
     if (isLoggedIn) {
       emit(Authenticated());

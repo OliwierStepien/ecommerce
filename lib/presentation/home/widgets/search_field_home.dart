@@ -1,8 +1,8 @@
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
-import 'package:mealapp/presentation/search/pages/search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mealapp/routes/routes.dart';
 
 class SearchFieldHome extends StatelessWidget {
   const SearchFieldHome({super.key});
@@ -16,7 +16,7 @@ class SearchFieldHome extends StatelessWidget {
       child: TextField(
         readOnly: true,
         onTap: (){
-          AppNavigator.push(context, const SearchPage());
+          context.push(Routes.nestedSearchPage);
         },
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(12),

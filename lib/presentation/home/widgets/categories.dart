@@ -1,11 +1,10 @@
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/common/helper/images/image_display.dart';
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
-import 'package:mealapp/presentation/all_categories/pages/all_categories.dart';
-import 'package:mealapp/presentation/category_meals/pages/category_meals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/routes/routes.dart';
 
 import '../../category_meals/bloc/categories_display_state.dart';
 
@@ -36,7 +35,7 @@ Widget _seaAll(BuildContext context) {
         ),
         GestureDetector(
           onTap: () {
-            AppNavigator.push(context, const AllCategoriesPage());
+            context.push(Routes.nestedAllCategoriesPage);
           },
           child: const Text(
             'Zobacz wszystkie',
@@ -63,10 +62,9 @@ Widget _categories() {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
-                  AppNavigator.push(
-                    context,
-                    CategoryMealsPage(categoryEntity: state.categories[index]),
-                  );
+                  context.push(Routes.nestedCategoryMealsPage,
+                      extra: state.categories[index],
+                      );
                 },
                 child: Column(
                   children: [

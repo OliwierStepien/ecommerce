@@ -12,6 +12,7 @@ class ShoppingListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const BasicAppbar(
+        hideBack: true,
         title: Text('Lista zakupów'),
       ),
       body: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(

@@ -1,12 +1,12 @@
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/domain/auth/usecases/send_password_reset_email.dart';
-import 'package:mealapp/presentation/auth/pages/password_reset_email.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/routes/routes.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
   ForgotPasswordPage({super.key});
@@ -40,7 +40,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(snackbar);
                 }
                 if (state is ButtonSuccessState) {
-                  AppNavigator.push(context, const PasswordResetEmailPage());
+                  context.go(Routes.passwordResetEmailPage);
                 }
               },
               child: Form(

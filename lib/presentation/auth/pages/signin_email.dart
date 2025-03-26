@@ -1,14 +1,13 @@
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/button/basic_app_button.dart';
 import 'package:mealapp/data/auth/models/user_signin_req.dart';
-import 'package:mealapp/presentation/auth/pages/signin_password.dart';
-import 'package:mealapp/presentation/auth/pages/signup.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:mealapp/routes/routes.dart';
 
-class SignInLoginPage extends StatelessWidget {
-  SignInLoginPage({super.key});
+class SignInEmailPage extends StatelessWidget {
+  SignInEmailPage({super.key});
 
   final TextEditingController _emailCon = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -72,11 +71,8 @@ class SignInLoginPage extends StatelessWidget {
     return BasicAppButton(
       onPressed: () {
         if (_formKey.currentState!.validate()) {
-          AppNavigator.push(
-            context,
-            SignInPasswordPage(
-                userSigninReq: UserSigninReq(email: _emailCon.text)),
-          );
+          context.push(Routes.signInPasswordPage,
+              extra: UserSigninReq(email: _emailCon.text));
         }
       },
       title: 'Kontynuuj',
@@ -92,7 +88,7 @@ class SignInLoginPage extends StatelessWidget {
             text: 'Stwórz nowe',
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                AppNavigator.push(context, SignUpPage());
+                context.push(Routes.signUpPage);
               },
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),

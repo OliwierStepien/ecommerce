@@ -14,6 +14,7 @@ class FavoriteMealsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const BasicAppbar(
+        hideBack: true,
         title: Text('Ulubione posiłki'),
       ),
       body: BlocBuilder<MealsDisplayCubit, MealsDisplayState>(

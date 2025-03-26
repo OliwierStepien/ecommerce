@@ -1,13 +1,13 @@
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
-import 'package:mealapp/presentation/auth/pages/signin_login.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/widgets/header.dart';
 import 'package:mealapp/presentation/home/widgets/meals.dart';
 import 'package:mealapp/presentation/home/widgets/search_field_home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/routes/routes.dart';
 
 import '../widgets/categories.dart';
 
@@ -40,7 +40,7 @@ class HomePage extends StatelessWidget {
                 behavior: SnackBarBehavior.floating,
               );
               ScaffoldMessenger.of(context).showSnackBar(snackbar);
-              AppNavigator.pushAndRemove(context, SignInLoginPage());
+              context.go(Routes.signInEmailPage);
             }
           },
           child: const SingleChildScrollView(

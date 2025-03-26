@@ -24,8 +24,8 @@ class Header extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _shoppingList(context),
-              _favoriteIcon(context),
+              // _shoppingList(context),
+              // _favoriteIcon(context),
               _userName(state.user),
               _logoutIcon(context),
             ],
@@ -69,28 +69,28 @@ Widget _logoutIcon(BuildContext context) {
   );
 }
 
-Widget _favoriteIcon(BuildContext context) {
-  return IconButton(
-    icon: const Icon(Icons.favorite),
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const FavoriteMealsPage()),
-      );
-    },
-  );
-}
+// Widget _favoriteIcon(BuildContext context) {
+//   return IconButton(
+//     icon: const Icon(Icons.favorite),
+//     onPressed: () {
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(builder: (context) => const FavoriteMealsPage()),
+//       );
+//     },
+//   );
+// }
 
-Widget _shoppingList(BuildContext context) {
-  return IconButton(
-    icon: const Icon(Icons.shopping_cart),
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ShoppingListPage(),
-        ),
-      );
-    },
-  );
-}
+// Widget _shoppingList(BuildContext context) {
+//   return IconButton(
+//     icon: const Icon(Icons.shopping_cart),
+//     onPressed: () {
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(
+//           builder: (context) => const ShoppingListPage(),
+//         ),
+//       );
+//     },
+//   );
+// }

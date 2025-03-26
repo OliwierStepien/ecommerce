@@ -5,7 +5,7 @@ import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubi
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
-import 'package:mealapp/presentation/splash/pages/splash.dart';
+import 'package:mealapp/routes/go_router.dart';
 import 'package:mealapp/service_locator.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -32,10 +32,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => ShoppingListCubit()),
         BlocProvider(create: (context) => CategoriesDisplayCubit()..displayCategories()),
       ],
-      child: MaterialApp(
-        theme: AppTheme.appTheme,
+      child: MaterialApp.router(
+        routerConfig: router,
         debugShowCheckedModeBanner: false,
-        home: const SplashPage(),
+        theme: AppTheme.appTheme,
       ),
     );
   }

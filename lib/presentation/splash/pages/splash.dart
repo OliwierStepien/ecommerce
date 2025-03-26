@@ -1,11 +1,10 @@
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/helper/images/image_display.dart';
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
-import 'package:mealapp/presentation/auth/pages/signin_login.dart';
-import 'package:mealapp/presentation/home/pages/home.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_state.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/routes/routes.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -15,10 +14,9 @@ class SplashPage extends StatelessWidget {
     return BlocListener<SplashCubit, SplashState>(
       listener: (context, state) {
         if (state is UnAuthenticated) {
-          AppNavigator.pushReplacement(context, SignInLoginPage());
-        }
-        if (state is Authenticated) {
-          AppNavigator.pushReplacement(context, const HomePage());
+          context.go(Routes.signInEmailPage);
+        } else if (state is Authenticated) {
+          context.go(Routes.homePage);
         }
       },
       child: Scaffold(

@@ -1,14 +1,14 @@
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/data/auth/models/user_creation_req.dart';
 import 'package:mealapp/domain/auth/usecases/signup.dart';
-import 'package:mealapp/presentation/auth/pages/signin_login.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/routes/routes.dart';
 
 class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});
@@ -46,7 +46,7 @@ class SignUpPage extends StatelessWidget {
                       behavior: SnackBarBehavior.floating,
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                    AppNavigator.pushReplacement(context, SignInLoginPage());
+                    context.go(Routes.signInEmailPage);
                   }
                 },
                 child: SingleChildScrollView(
@@ -108,24 +108,24 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-Widget _emailField(BuildContext context) {
-  return TextFormField(
-    controller: _emailCon,
-    decoration: const InputDecoration(
-      hintText: 'Email',
-      border: OutlineInputBorder(),
-    ),
-    validator: (value) {
-      if (value == null || value.isEmpty) {
-        return 'Pole nie może być puste';
-      }
-      if (!value.contains('@')) {
-        return 'Wprowadź poprawny adres email';
-      }
-      return null;
-    },
-  );
-}
+  Widget _emailField(BuildContext context) {
+    return TextFormField(
+      controller: _emailCon,
+      decoration: const InputDecoration(
+        hintText: 'Email',
+        border: OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Pole nie może być puste';
+        }
+        if (!value.contains('@')) {
+          return 'Wprowadź poprawny adres email';
+        }
+        return null;
+      },
+    );
+  }
 
   Widget _passwordField(BuildContext context) {
     return TextFormField(
@@ -145,22 +145,22 @@ Widget _emailField(BuildContext context) {
   }
 
   Widget _finishButton(BuildContext context) {
-  return BasicReactiveButton(
-    onPressed: () {
-      if (_formKey.currentState!.validate()) {
-        context.read<ButtonStateCubit>().execute(
-              usecase: SignupUsecase(),
-              params: UserCreationReq(
-                firstName: _firstNameCon.text,
-                email: _emailCon.text,
-                password: _passwordCon.text,
-              ),
-            );
-      }
-    },
-    title: 'Utwórz konto',
-  );
-}
+    return BasicReactiveButton(
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          context.read<ButtonStateCubit>().execute(
+                usecase: SignupUsecase(),
+                params: UserCreationReq(
+                  firstName: _firstNameCon.text,
+                  email: _emailCon.text,
+                  password: _passwordCon.text,
+                ),
+              );
+        }
+      },
+      title: 'Utwórz konto',
+    );
+  }
 
   Widget _createAccount(BuildContext context) {
     return RichText(
@@ -171,7 +171,7 @@ Widget _emailField(BuildContext context) {
             text: 'Zaloguj się',
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                AppNavigator.pushReplacement(context, SignInLoginPage());
+                context.go(Routes.signInEmailPage);
               },
             style: const TextStyle(
               fontWeight: FontWeight.bold,

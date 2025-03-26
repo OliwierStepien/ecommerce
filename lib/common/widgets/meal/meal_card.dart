@@ -1,7 +1,7 @@
-import 'package:mealapp/common/helper/navigator/app_navigator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
-import 'package:mealapp/presentation/meal_details/pages/meal_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:mealapp/routes/routes.dart';
 
 import '../../../core/configs/theme/app_colors.dart';
 import '../../helper/images/image_display.dart';
@@ -17,9 +17,9 @@ class MealCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        AppNavigator.push(
-          context,
-          MealDetailPage(mealEntity: mealEntity),
+        context.push(
+          Routes.nestedMealDetailPage,
+          extra: mealEntity,
         );
       },
       child: Container(
