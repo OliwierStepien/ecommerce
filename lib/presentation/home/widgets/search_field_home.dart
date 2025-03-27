@@ -30,7 +30,10 @@ class SearchFieldHome extends StatelessWidget {
             AppVectors.search,
             fit: BoxFit.none,
           ),
-          hintText: 'Szukaj'
+          hintText: 'Szukaj',
+          hintStyle: const TextStyle(
+            color: Colors.white,
+          ),
         ),
       ),
     );

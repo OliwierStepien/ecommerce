@@ -1,4 +1,3 @@
-import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class BasicAppbar extends StatelessWidget implements PreferredSizeWidget {
@@ -36,8 +35,8 @@ class BasicAppbar extends StatelessWidget implements PreferredSizeWidget {
         icon: Container(
           height: 50,
           width: 50,
-          decoration: const BoxDecoration(
-            color: AppColors.secondBackground,
+          decoration: BoxDecoration(
+            color: Theme.of(context).inputDecorationTheme.fillColor,
             shape: BoxShape.circle
           ),
           child: const Icon(

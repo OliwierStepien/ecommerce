@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
-import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/presentation/meal_details/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 
@@ -25,10 +24,10 @@ class ShoppingListPage extends StatelessWidget {
                 final item = state[index];
                 final ingredient = item['ingredient']!;
                 final title = item['title']!;
-                final mealEntity = item['mealEntity'] as MealEntity; // Pobieramy MealEntity
+                final mealEntity = item['mealEntity'] as MealEntity;
 
                 return Card(
-                  color: AppColors.secondBackground,
+                  color: Theme.of(context).inputDecorationTheme.fillColor,
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 5),
                   shape: RoundedRectangleBorder(

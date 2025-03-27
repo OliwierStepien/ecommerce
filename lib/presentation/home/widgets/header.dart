@@ -1,13 +1,10 @@
-import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/domain/auth/entity/user.dart';
-import 'package:mealapp/domain/auth/usecases/signout.dart';
-import 'package:mealapp/presentation/meal_details/pages/favorite_meals.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';
-import 'package:mealapp/presentation/shopping_list/pages/shopping_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/presentation/home/widgets/cubit_test.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -24,10 +21,9 @@ class Header extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // _shoppingList(context),
-              // _favoriteIcon(context),
+              _menuIcon(context), 
               _userName(state.user),
-              _logoutIcon(context),
+              // _vegetarianSwitch(context),
             ],
           );
         }
@@ -46,6 +42,15 @@ class Header extends StatelessWidget {
   }
 }
 
+  Widget _menuIcon(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.menu),
+      onPressed: () {
+        Scaffold.of(context).openDrawer();
+      },
+    );
+  }
+
 Widget _userName(UserEntity user) {
   return Text(
     'Witaj ${user.firstName}',
@@ -60,36 +65,20 @@ Widget _userName(UserEntity user) {
   );
 }
 
-Widget _logoutIcon(BuildContext context) {
-  return IconButton(
-    icon: const Icon(Icons.exit_to_app),
-    onPressed: () {
-      context.read<ButtonStateCubit>().execute(usecase: SignoutUsecase());
-    },
-  );
-}
-
-// Widget _favoriteIcon(BuildContext context) {
-//   return IconButton(
-//     icon: const Icon(Icons.favorite),
-//     onPressed: () {
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(builder: (context) => const FavoriteMealsPage()),
-//       );
-//     },
-//   );
-// }
-
-// Widget _shoppingList(BuildContext context) {
-//   return IconButton(
-//     icon: const Icon(Icons.shopping_cart),
-//     onPressed: () {
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(
-//           builder: (context) => const ShoppingListPage(),
-//         ),
+// Widget _vegetarianSwitch(BuildContext context) {
+//   return BlocBuilder<VegetarianFilterCubit, bool>(
+//     builder: (context, isVegetarian) {
+//       return Row(
+//         children: [
+//           Icon(Icons.eco, color: isVegetarian ? Colors.green : Colors.grey),
+//           const SizedBox(width: 8),
+//           Switch(
+//             value: isVegetarian,
+//             onChanged: (newValue) {
+//               context.read<VegetarianFilterCubit>().toggle();
+//             },
+//           ),
+//         ],
 //       );
 //     },
 //   );

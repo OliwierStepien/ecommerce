@@ -2,8 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/routes/routes.dart';
-
-import '../../../core/configs/theme/app_colors.dart';
 import '../../helper/images/image_display.dart';
 
 class MealCard extends StatelessWidget {
@@ -25,7 +23,7 @@ class MealCard extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: AppColors.secondBackground,
+          color: Theme.of(context).inputDecorationTheme.fillColor,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(

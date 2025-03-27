@@ -4,14 +4,13 @@ import 'app_colors.dart';
 
 class AppTheme {
 
-
   static final appTheme = ThemeData(
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
     brightness: Brightness.dark,
 
     snackBarTheme: const SnackBarThemeData(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.primary,
       contentTextStyle: TextStyle(color: Colors.white),
     ),
     inputDecorationTheme: InputDecorationTheme(   

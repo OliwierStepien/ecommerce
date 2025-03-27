@@ -3,7 +3,6 @@ import 'package:mealapp/presentation/meal_details/bloc/favorite_icon_cubit.dart'
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/configs/theme/app_colors.dart';
 
 class FavoriteButton extends StatelessWidget {
   final MealEntity mealEntity;
@@ -40,8 +39,8 @@ class FavoriteButton extends StatelessWidget {
       icon: Container(
         height: 40,
         width: 40,
-        decoration: const BoxDecoration(
-            color: AppColors.secondBackground, shape: BoxShape.circle),
+        decoration: BoxDecoration(
+            color: Theme.of(context).inputDecorationTheme.fillColor, shape: BoxShape.circle),
         child: BlocBuilder<FavoriteIconCubit, bool>(
           builder: (context, state) => Icon(
             state ? Icons.favorite : Icons.favorite_outline,

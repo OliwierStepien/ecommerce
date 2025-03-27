@@ -3,6 +3,7 @@ import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/widgets/header.dart';
+import 'package:mealapp/presentation/home/widgets/main_drawer.dart';
 import 'package:mealapp/presentation/home/widgets/meals.dart';
 import 'package:mealapp/presentation/home/widgets/search_field_home.dart';
 import 'package:flutter/material.dart';
@@ -17,13 +18,12 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const MainDrawer(),
       body: MultiBlocProvider(
         providers: [
           BlocProvider(
             create: (context) => UserInfoDisplayCubit()..displayUserInfo(),
           ),
-          BlocProvider(create: (context) => ButtonStateCubit()),
-
         ],
         child: BlocListener<ButtonStateCubit, ButtonState>(
           listener: (context, state) {
@@ -44,7 +44,8 @@ class HomePage extends StatelessWidget {
             }
           },
           child: const SingleChildScrollView(
-            child: Column(
+            child: 
+            Column(
               children: [
                 SizedBox(height: 50),
                 Header(),
