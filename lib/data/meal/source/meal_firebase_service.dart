@@ -14,6 +14,9 @@ abstract class MealFirebaseService {
   Future<bool> addOrRemoveShoppingListIngredient(MealEntity meal);
   Future<bool> isIngredientInShoppingList(MealEntity meal);
   Future<List<Map<String, dynamic>>> getShoppingList();
+  Future<List<Map<String, dynamic>>> getMealsByIsVegetarian(bool isVegetarian);
+  Future<List<Map<String, dynamic>>> getVegetarianMealsByCategoryId(String categoryId);
+  Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(String title);
 }
 
 class MealFirebaseServiceImpl extends MealFirebaseService {
@@ -170,6 +173,50 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
           .get()
           .timeout(const Duration(seconds: 15));
       return returnedData.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMealsByIsVegetarian(
+      bool isVegetarian) async {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseFirestore.instance
+          .collection("Meals")
+          .where('isVegetarian', isEqualTo: isVegetarian)
+          .get()
+          .timeout(const Duration(seconds: 15));
+      return returnedData.docs.map((e) => e.data()).toList();
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getVegetarianMealsByCategoryId(
+      String categoryId) async {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseFirestore.instance
+          .collection("Meals")
+          .where('categoriesId', arrayContains: categoryId)
+          .where('isVegetarian', isEqualTo: true)
+          .get()
+          .timeout(const Duration(seconds: 15));
+      return returnedData.docs.map((e) => e.data()).toList();
+    });
+  }
+  
+  @override
+  Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(String title) async {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseFirestore.instance
+          .collection("Meals")
+          .where('isVegetarian', isEqualTo: true)
+          .get()
+          .timeout(const Duration(seconds: 15));
+      final filteredMeals = returnedData.docs
+          .map((e) => e.data())
+          .where((meal) =>
+              meal['title'].toLowerCase().contains(title.toLowerCase()))
+          .toList();
+      return filteredMeals;
     });
   }
 }

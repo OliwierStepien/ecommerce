@@ -12,17 +12,15 @@ class ButtonStateCubit extends Cubit<ButtonState> {
   Future<void> execute({dynamic params, required UseCase usecase}) async {
     emit(ButtonLoadingState());
 
-  try {
     Either returnedData = await usecase.call(params: params);
-    returnedData.fold((failure) {
-      final errorMessage = mapFailureToMessage(failure as Failure);
-      emit(ButtonFailureState(errorMessage: errorMessage));
-    }, (successMessage) {
-      emit(ButtonSuccessState(successMessage as String));
-    });
-  } catch (e) {
-    final errorMessage = mapFailureToMessage(GeneralFailure());
-    emit(ButtonFailureState(errorMessage: errorMessage));
+    returnedData.fold(
+      (failure) {
+        final errorMessage = mapFailureToMessage(failure as Failure);
+        emit(ButtonFailureState(errorMessage: errorMessage));
+      },
+      (successMessage) {
+        emit(ButtonSuccessState(successMessage as String));
+      },
+    );
   }
-}
 }

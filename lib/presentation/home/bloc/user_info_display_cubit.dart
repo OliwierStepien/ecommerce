@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class UserInfoDisplayCubit extends Cubit<UserInfoDisplayState> {
   UserInfoDisplayCubit() : super(UserInfoLoading());
 
-  void displayUserInfo() async {
+  Future <void> displayUserInfo() async {
     final returnedData = await sl<GetUserUsecase>().call();
     returnedData.fold((error) {
       emit(LoadUserInfoFailure(message: mapFailureToMessage(error)));

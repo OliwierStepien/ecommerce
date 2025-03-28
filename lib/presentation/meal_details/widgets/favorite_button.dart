@@ -1,6 +1,6 @@
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_icon_cubit.dart';
-import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,7 +13,7 @@ class FavoriteButton extends StatelessWidget {
     return IconButton(
       onPressed: () async {
         final favoriteCubit = context.read<FavoriteIconCubit>();
-        final mealsCubit = context.read<MealsDisplayCubit>();
+        final mealsCubit = context.read<FavoriteMealsCubit>();
 
         final wasFavorite = favoriteCubit.state;
         await favoriteCubit.onTap(mealEntity);
@@ -34,7 +34,7 @@ class FavoriteButton extends StatelessWidget {
           );
         }
 
-        mealsCubit.displayMeals();
+        mealsCubit.displayFavoriteMeals();
       },
       icon: Container(
         height: 40,

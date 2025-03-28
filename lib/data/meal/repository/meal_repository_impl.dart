@@ -32,8 +32,7 @@ class MealRepositoryImpl extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, List<MealEntity>>> getMealsByTitle(
-      String title) async {
+  Future<Either<Failure, List<MealEntity>>> getMealsByTitle(String title) async {
     return handleFirestoreFailure(() async {
       final returnedData =
           await sl<MealFirebaseService>().getMealsByTitle(title);
@@ -77,7 +76,8 @@ class MealRepositoryImpl extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> isIngredientInShoppingList(MealEntity meal) async {
+  Future<Either<Failure, bool>> isIngredientInShoppingList(
+      MealEntity meal) async {
     return handleFirestoreFailure(() async {
       return await sl<MealFirebaseService>().isIngredientInShoppingList(meal);
     });
@@ -87,6 +87,41 @@ class MealRepositoryImpl extends MealRepository {
   Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
     return handleFirestoreFailure(() async {
       final returnedData = await sl<MealFirebaseService>().getShoppingList();
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<MealEntity>>> isMealVegetarian(
+      bool isVegetarian) async {
+    return handleFirestoreFailure(() async {
+      final returnedData =
+          await sl<MealFirebaseService>().getMealsByIsVegetarian(isVegetarian);
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByCategoryId(
+      String categoryId) async {
+    return handleFirestoreFailure(() async {
+      final returnedData = await sl<MealFirebaseService>()
+          .getVegetarianMealsByCategoryId(categoryId);
+      return returnedData
+          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
+          .toList();
+    });
+  }
+  
+  @override
+  Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(String title) async {
+    return handleFirestoreFailure(() async {
+      final returnedData =
+          await sl<MealFirebaseService>().getVegetarianMealsByTitle(title);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();

@@ -12,4 +12,7 @@ abstract class MealRepository {
   Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal);
   Future<Either<Failure, bool>> isIngredientInShoppingList(MealEntity meal);
   Future<Either<Failure, List<MealEntity>>> getShoppingList();
+  Future<Either<Failure, List<MealEntity>>> isMealVegetarian(bool isVegetarian);
+  Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByCategoryId(String categoryId);
+  Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(String title);
 }

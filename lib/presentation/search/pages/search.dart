@@ -6,6 +6,7 @@ import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/domain/meal/usecases/get_meal_by_title.dart';
+import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import 'package:mealapp/presentation/search/widgets/search_field.dart';
 import 'package:mealapp/service_locator.dart';
 import 'package:flutter/material.dart';
@@ -27,30 +28,49 @@ class SearchPage extends StatelessWidget {
             MealsDisplayCubit(useCase: sl<GetMealByTitleUseCase>()),
         child: Scaffold(
           appBar: BasicAppbar(height: 80, title: SearchField()),
-          body: BlocBuilder<MealsDisplayCubit, MealsDisplayState>(
-            builder: (context, state) {
-              if (state is MealsLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (state is MealsLoadingSuccess) {
-                return state.meals.isEmpty ? _notFound() : _meals(state.meals);
-              }
-              if (state is MealsLoadingFailure) {
-                return ErrorMessage(
-                  message: state.message,
-                  onRetry: () {
-                    context.read<MealsDisplayCubit>().displayMeals();
+          body: BlocListener<VegetarianFilterCubit, bool>(
+            listener: (context, isVegetarian) {
+              final currentText = context
+                  .read<MealsDisplayCubit>()
+                  .state is MealsLoadingSuccess
+                  ? (context.read<MealsDisplayCubit>().state as MealsLoadingSuccess)
+                      .meals
+                      .firstOrNull
+                      ?.title
+                  : '';
+              if (currentText!.isNotEmpty) {
+                context.read<MealsDisplayCubit>().displayMeals(
+                  params: {
+                    'title': currentText,
+                    'isVegetarian': isVegetarian,
                   },
                 );
               }
-              return Container();
             },
+            child: BlocBuilder<MealsDisplayCubit, MealsDisplayState>(
+              builder: (context, state) {
+                if (state is MealsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is MealsLoadingSuccess) {
+                  return state.meals.isEmpty ? _notFound() : _meals(state.meals);
+                }
+                if (state is MealsLoadingFailure) {
+                  return ErrorMessage(
+                    message: state.message,
+                    onRetry: () {
+                      context.read<MealsDisplayCubit>().displayMeals();
+                    },
+                  );
+                }
+                return Container();
+              },
+            ),
           ),
         ),
       ),
     );
   }
-}
 
 Widget _notFound() {
   return Column(
@@ -84,4 +104,5 @@ Widget _meals(List<MealEntity> meals) {
       return MealCard(mealEntity: meals[index]);
     },
   );
+}
 }

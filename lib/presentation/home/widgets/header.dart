@@ -4,7 +4,7 @@ import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/presentation/home/widgets/cubit_test.dart';
+import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -23,7 +23,7 @@ class Header extends StatelessWidget {
             children: [
               _menuIcon(context), 
               _userName(state.user),
-              // _vegetarianSwitch(context),
+              _vegetarianSwitch(context),
             ],
           );
         }
@@ -65,21 +65,21 @@ Widget _userName(UserEntity user) {
   );
 }
 
-// Widget _vegetarianSwitch(BuildContext context) {
-//   return BlocBuilder<VegetarianFilterCubit, bool>(
-//     builder: (context, isVegetarian) {
-//       return Row(
-//         children: [
-//           Icon(Icons.eco, color: isVegetarian ? Colors.green : Colors.grey),
-//           const SizedBox(width: 8),
-//           Switch(
-//             value: isVegetarian,
-//             onChanged: (newValue) {
-//               context.read<VegetarianFilterCubit>().toggle();
-//             },
-//           ),
-//         ],
-//       );
-//     },
-//   );
-// }
+Widget _vegetarianSwitch(BuildContext context) {
+  return BlocBuilder<VegetarianFilterCubit, bool>(
+    builder: (context, isVegetarian) {
+      return Row(
+        children: [
+          Icon(Icons.eco, color: isVegetarian ? Colors.green : Colors.grey),
+          const SizedBox(width: 8),
+          Switch(
+            value: isVegetarian,
+            onChanged: (newValue) {
+              context.read<VegetarianFilterCubit>().toggle();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}

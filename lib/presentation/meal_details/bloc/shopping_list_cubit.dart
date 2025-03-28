@@ -7,43 +7,53 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
   ShoppingListCubit() : super([]);
 
   Map<String, dynamic>? _lastRemovedItem;
+  bool _suppressNotifications = false;
 
-  Future<void> addOrRemoveIngredient(String ingredient, MealEntity meal) async {
+  Future<void> addOrRemoveIngredient(
+    String ingredient, 
+    MealEntity meal, {
+    bool suppressNotification = false,
+  }) async {
     final List<Map<String, dynamic>> previousState = List.from(state);
     final List<Map<String, dynamic>> updatedList;
-
-    // Szukamy składnika w aktualnym stanie
-    final existingIngredientIndex = state.indexWhere(
-      (item) => item['ingredient'] == ingredient && item['mealId'] == meal.mealId,
-    );
-
-    if (existingIngredientIndex != -1) {
-      // Zapisujemy usunięty element i jego indeks
-      _lastRemovedItem = {
-        'item': state[existingIngredientIndex],
-        'index': existingIngredientIndex,
-      };
-      updatedList = List.from(state)..removeAt(existingIngredientIndex);
-    } else {
-      // Dodajemy nowy składnik do listy
-      updatedList = List.from(state)
-        ..add({
-          'ingredient': ingredient,
-          'mealId': meal.mealId,
-          'title': meal.title,
-          'mealEntity': meal, // Dodajemy cały obiekt MealEntity
-        });
-    }
-
-    // Emitujemy nowy stan
-    emit(updatedList);
-
+    
     try {
-      // Wywołujemy metodę z repozytorium, przekazując MealEntity
+      _suppressNotifications = suppressNotification;
+
+      // Szukamy składnika w aktualnym stanie
+      final existingIngredientIndex = state.indexWhere(
+        (item) => item['ingredient'] == ingredient && item['mealId'] == meal.mealId,
+      );
+
+      if (existingIngredientIndex != -1) {
+        // Zapisujemy usunięty element i jego indeks
+        _lastRemovedItem = {
+          'item': state[existingIngredientIndex],
+          'index': existingIngredientIndex,
+        };
+        updatedList = List.from(state)..removeAt(existingIngredientIndex);
+      } else {
+        // Dodajemy nowy składnik do listy
+        updatedList = List.from(state)
+          ..add({
+            'ingredient': ingredient,
+            'mealId': meal.mealId,
+            'title': meal.title,
+            'mealEntity': meal,
+          });
+      }
+
+      // Emitujemy nowy stan
+      emit(updatedList);
+
+      // Wywołujemy metodę z repozytorium
       await sl<MealRepository>().addOrRemoveShoppingListIngredient(meal);
     } catch (e) {
       // W przypadku błędu przywracamy poprzedni stan
       emit(previousState);
+      rethrow;
+    } finally {
+      _suppressNotifications = false;
     }
   }
 
@@ -57,7 +67,9 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
 
       // Emitujemy zaktualizowany stan
       emit(updatedList);
-      _lastRemovedItem = null; // Czyścimy zapisany stan
+      _lastRemovedItem = null;
     }
   }
+
+  bool get shouldShowNotification => !_suppressNotifications;
 }

@@ -3,6 +3,7 @@ import 'package:mealapp/core/configs/assets/app_vectors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 
 class SearchField extends StatelessWidget {
   SearchField({super.key});
@@ -16,10 +17,16 @@ class SearchField extends StatelessWidget {
       child: TextField(
         controller: textEditingController,
         onChanged: (value) {
+          final isVegetarian = context.read<VegetarianFilterCubit>().state;
           if (value.isEmpty) {
             context.read<MealsDisplayCubit>().displayInitial();
           } else {
-            context.read<MealsDisplayCubit>().displayMeals(params: value);
+            context.read<MealsDisplayCubit>().displayMeals(
+              params: {
+                'title': value,
+                'isVegetarian': isVegetarian,
+              },
+            );
           }
         },
         decoration: InputDecoration(

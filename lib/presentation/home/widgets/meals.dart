@@ -6,6 +6,7 @@ import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/domain/meal/usecases/get_meal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import '../../../service_locator.dart';
 
 class Meals extends StatelessWidget {
@@ -13,38 +14,33 @@ class Meals extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          MealsDisplayCubit(useCase: sl<GetMealUseCase>())..displayMeals(),
-      child: BlocBuilder<MealsDisplayCubit, MealsDisplayState>(
-        builder: (context, state) {
-          if (state is MealsLoading) {
-            return const CircularProgressIndicator();
-          }
-          if (state is MealsLoadingSuccess) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _title(),
-                const SizedBox(
-                  height: 20,
-                ),
-                _meals(state.meals)
-              ],
-            );
-          }
-          if (state is MealsLoadingFailure) {
-            return ErrorMessage(
-              message: state.message,
-              onRetry: () {
-                context.read<MealsDisplayCubit>().displayMeals();
-              },
-            );
-          }
-          return Container();
-        },
-      ),
+    return BlocBuilder<MealsDisplayCubit, MealsDisplayState>(
+      builder: (context, state) {
+        if (state is MealsInitialState || state is MealsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is MealsLoadingSuccess) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _title(),
+              const SizedBox(height: 20),
+              _meals(state.meals),
+            ],
+          );
+        }
+        if (state is MealsLoadingFailure) {
+          return ErrorMessage(
+            message: state.message,
+            onRetry: () {
+              context.read<MealsDisplayCubit>().displayMeals(
+                params: context.read<VegetarianFilterCubit>().state,
+              );
+            },
+          );
+        }
+        return Container();
+      },
     );
   }
 

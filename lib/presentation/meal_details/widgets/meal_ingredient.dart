@@ -60,62 +60,62 @@ class MealIngredient extends StatelessWidget {
     );
   }
 
-  Widget _buildIngredientItem(
-      BuildContext context, String ingredient, MealEntity mealEntity) {
-    return BlocListener<ShoppingListCubit, List<Map<String, dynamic>>>(
-      listenWhen: (previous, current) {
-        final wasAdded = previous.any((item) =>
-            item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
-        final isNowAdded = current.any((item) =>
-            item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
-        return wasAdded != isNowAdded;
-      },
-      listener: (context, state) {
-        final isNowAdded = state.any((item) =>
+Widget _buildIngredientItem(
+    BuildContext context, String ingredient, MealEntity mealEntity) {
+  return BlocListener<ShoppingListCubit, List<Map<String, dynamic>>>(
+    listenWhen: (previous, current) {
+      final wasAdded = previous.any((item) =>
+          item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
+      final isNowAdded = current.any((item) =>
+          item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
+      return wasAdded != isNowAdded;
+    },
+    listener: (context, state) {
+      final cubit = context.read<ShoppingListCubit>();
+      if (!cubit.shouldShowNotification) return;
+
+      final isNowAdded = state.any((item) =>
+          item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isNowAdded
+                ? 'Dodano "$ingredient" do listy zakupów'
+                : 'Usunięto "$ingredient" z listy zakupów',
+          ),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    },
+    child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
+      builder: (context, state) {
+        final isAdded = state.any((item) =>
             item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isNowAdded
-                  ? 'Dodano "$ingredient" do listy zakupów'
-                  : 'Usunięto "$ingredient" z listy zakupów',
-            ),
-            duration: const Duration(seconds: 1),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text('• $ingredient'),
+              ),
+              IconButton(
+                onPressed: () {
+                  context.read<ShoppingListCubit>()
+                    .addOrRemoveIngredient(ingredient, mealEntity);
+                },
+                icon: Icon(
+                  isAdded ? Icons.check_circle : Icons.add_circle_outline,
+                  color: isAdded ? Colors.green : Colors.grey,
+                ),
+              ),
+            ],
           ),
         );
       },
-      child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
-        builder: (context, state) {
-          final isAdded = state.any((item) =>
-              item['ingredient'] == ingredient && item['mealId'] == mealEntity.mealId);
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    '• $ingredient',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    final shoppingListCubit = context.read<ShoppingListCubit>();
-                    shoppingListCubit.addOrRemoveIngredient(ingredient, mealEntity);
-                  },
-                  icon: Icon(
-                    isAdded ? Icons.check_circle : Icons.add_circle_outline,
-                    color: isAdded ? Colors.green : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
+    ),
+  );
+}
 }

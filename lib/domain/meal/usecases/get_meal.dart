@@ -6,10 +6,13 @@ import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
 class GetMealUseCase
-    implements UseCase<Either<Failure, List<MealEntity>>, void> {
+    implements UseCase<Either<Failure, List<MealEntity>>, bool> {
   @override
-  Future<Either<Failure, List<MealEntity>>> call({void params}) async {
-    return await sl<MealRepository>().getMeals();
-
+  Future<Either<Failure, List<MealEntity>>> call({bool? params}) async {
+    if (params == true) {
+      return await sl<MealRepository>().isMealVegetarian(true);
+    } else {
+      return await sl<MealRepository>().getMeals();
+    }
   }
 }

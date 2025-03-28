@@ -60,24 +60,31 @@ class ShoppingListPage extends StatelessWidget {
                         ),
                         IconButton(
                           onPressed: () {
-                            final shoppingListCubit = context.read<ShoppingListCubit>();
-                            shoppingListCubit.addOrRemoveIngredient(ingredient, mealEntity);
+                            final shoppingListCubit =
+                                context.read<ShoppingListCubit>();
+                            shoppingListCubit.addOrRemoveIngredient(
+                              ingredient,
+                              mealEntity,
+                              suppressNotification: true, // Dodaj tę flagę
+                            );
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Usunięto "$ingredient" z listy zakupów'),
-                                duration: const Duration(seconds: 2),
+                                content: Text(
+                                    'Usunięto "$ingredient" z listy zakupów'),
                                 action: SnackBarAction(
                                   label: 'Cofnij',
                                   textColor: Colors.white,
                                   onPressed: () {
-                                    shoppingListCubit.restoreLastRemovedIngredient();
+                                    shoppingListCubit
+                                        .restoreLastRemovedIngredient();
                                   },
                                 ),
+                                duration: const Duration(seconds: 2),
                               ),
                             );
                           },
-                          icon: const Icon(Icons.delete, color: Colors.white),
+                          icon: const Icon(Icons.delete),
                         ),
                       ],
                     ),
