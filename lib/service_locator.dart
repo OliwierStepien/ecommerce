@@ -21,7 +21,6 @@ import 'package:mealapp/domain/meal/usecases/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecases/get_meal.dart';
 import 'package:mealapp/domain/meal/usecases/get_meal_by_title.dart';
 import 'package:mealapp/domain/meal/usecases/shopping_list/get_shopping_list.dart';
-import 'package:mealapp/domain/meal/usecases/favourite/is_favorite.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mealapp/domain/meal/usecases/shopping_list/is_ingredient_in_shopping_list.dart';
 
@@ -71,8 +70,6 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<AddOrRemoveFavoriteMealUseCase>(
       () => AddOrRemoveFavoriteMealUseCase());
-
-  sl.registerLazySingleton<IsFavoriteUseCase>(() => IsFavoriteUseCase());
 
   sl.registerLazySingleton<GetFavoritesMealUseCase>(
       () => GetFavoritesMealUseCase());

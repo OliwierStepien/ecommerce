@@ -65,7 +65,7 @@ class ShoppingListPage extends StatelessWidget {
                             shoppingListCubit.addOrRemoveIngredient(
                               ingredient,
                               mealEntity,
-                              suppressNotification: true, // Dodaj tę flagę
+                              suppressNotification: true,
                             );
 
                             ScaffoldMessenger.of(context).showSnackBar(

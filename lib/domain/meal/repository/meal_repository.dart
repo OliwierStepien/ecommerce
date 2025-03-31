@@ -7,7 +7,6 @@ abstract class MealRepository {
   Future<Either<Failure, List<MealEntity>>> getMealsByCategoryId(String categoryId);
   Future<Either<Failure, List<MealEntity>>> getMealsByTitle(String title);
   Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(MealEntity meal);
-  Future<Either<Failure, bool>> isFavorite(String mealId);
   Future<Either<Failure, List<MealEntity>>> getFavoritesMeals();
   Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal);
   Future<Either<Failure, bool>> isIngredientInShoppingList(MealEntity meal);

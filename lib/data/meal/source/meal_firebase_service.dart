@@ -9,7 +9,6 @@ abstract class MealFirebaseService {
   Future<List<Map<String, dynamic>>> getMealsByCategoryId(String categoryId);
   Future<List<Map<String, dynamic>>> getMealsByTitle(String title);
   Future<bool> addOrRemoveFavoriteMeal(MealEntity meal);
-  Future<bool> isFavorite(String mealId);
   Future<List<Map<String, dynamic>>> getFavoritesMeals();
   Future<bool> addOrRemoveShoppingListIngredient(MealEntity meal);
   Future<bool> isIngredientInShoppingList(MealEntity meal);
@@ -84,21 +83,6 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
             .add(mealModel.toMap());
         return true;
       }
-    });
-  }
-
-  @override
-  Future<bool> isFavorite(String mealId) async {
-    return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final meals = await FirebaseFirestore.instance
-          .collection("Users")
-          .doc(user!.uid)
-          .collection('Favorites')
-          .where('mealId', isEqualTo: mealId)
-          .get()
-          .timeout(const Duration(seconds: 15));
-      return meals.docs.isNotEmpty;
     });
   }
 

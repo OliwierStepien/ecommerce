@@ -50,13 +50,6 @@ class MealRepositoryImpl extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> isFavorite(String mealId) async {
-    return handleFirestoreFailure(() async {
-      return await sl<MealFirebaseService>().isFavorite(mealId);
-    });
-  }
-
-  @override
   Future<Either<Failure, List<MealEntity>>> getFavoritesMeals() async {
     return handleFirestoreFailure(() async {
       final returnedData = await sl<MealFirebaseService>().getFavoritesMeals();
