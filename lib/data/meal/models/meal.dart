@@ -1,10 +1,22 @@
+import 'package:hive/hive.dart';
+
+part 'meal.g.dart';
+
+@HiveType(typeId: 2)
 class MealModel {
+  @HiveField(0)
   final String title;
+  @HiveField(1)
   final String mealId;
+  @HiveField(2)
   final List<String> categoryId;
+  @HiveField(3)
   final String image;
+  @HiveField(4)
   final List<String> ingredients;
+  @HiveField(5)
   final List<String> steps;
+  @HiveField(6)
   final bool isVegetarian;
 
   MealModel({
@@ -17,7 +29,7 @@ class MealModel {
     required this.isVegetarian,
   });
 
-  Map<String, dynamic> toMap() {
+    Map<String, dynamic> toMap() {
     return {
       'title': title,
       'mealId': mealId,

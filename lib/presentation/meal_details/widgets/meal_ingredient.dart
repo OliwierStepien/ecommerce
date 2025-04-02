@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
-import 'package:mealapp/presentation/meal_details/bloc/shopping_list_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 
 class MealIngredient extends StatelessWidget {
   final MealEntity mealEntity;

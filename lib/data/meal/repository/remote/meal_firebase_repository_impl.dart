@@ -3,7 +3,7 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/models/meal.dart';
-import 'package:mealapp/data/meal/source/meal_firebase_service.dart';
+import 'package:mealapp/data/meal/source/remote/meal_firebase_service.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';

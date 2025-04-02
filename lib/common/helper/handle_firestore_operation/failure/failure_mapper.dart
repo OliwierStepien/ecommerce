@@ -7,7 +7,7 @@ String mapFailureToMessage(Failure failure) {
     case NetworkFailure():
       return 'Ups, brak połączenia z internetem. Sprawdź swoje połączenie i spróbuj ponownie!';
     case CacheFailure():
-      return 'Ups, błąd cache. Proszę spróbować ponownie!';
+      return 'Ups, błąd lokalnego przechowywania danych. Proszę spróbować ponownie!';
     case TimeoutFailure():
       return 'Ups, przekroczono czas oczekiwania na odpowiedź. Proszę spróbować ponownie!';
     case UnauthorizedFailure():
