@@ -21,9 +21,9 @@ class Meals extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _title(),
+              const _MealSectionTitle(),
               const SizedBox(height: 20),
-              _meals(state.meals),
+              _MealsList(meals: state.meals),
             ],
           );
         }
@@ -41,8 +41,13 @@ class Meals extends StatelessWidget {
       },
     );
   }
+}
 
-  Widget _title() {
+class _MealSectionTitle extends StatelessWidget {
+  const _MealSectionTitle();
+
+  @override
+  Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(
         horizontal: 16,
@@ -53,8 +58,14 @@ class Meals extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _meals(List<MealEntity> meals) {
+class _MealsList extends StatelessWidget {
+  final List<MealEntity> meals;
+  const _MealsList({required this.meals});
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 300,
       child: ListView.separated(

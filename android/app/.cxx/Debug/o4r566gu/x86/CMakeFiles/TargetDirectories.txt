@@ -1,0 +1,2 @@
+/Users/oliwierstepien/ecommerce/android/app/.cxx/Debug/o4r566gu/x86/CMakeFiles/edit_cache.dir
+/Users/oliwierstepien/ecommerce/android/app/.cxx/Debug/o4r566gu/x86/CMakeFiles/rebuild_cache.dir

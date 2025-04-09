@@ -21,9 +21,9 @@ class Header extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _menuIcon(context), 
-              _userName(state.user),
-              _vegetarianSwitch(context),
+              const _MenuIcon(),
+              _UserName(user: state.user),
+              const _VegetarianSwitch(),
             ],
           );
         }
@@ -42,7 +42,11 @@ class Header extends StatelessWidget {
   }
 }
 
-  Widget _menuIcon(BuildContext context) {
+class _MenuIcon extends StatelessWidget {
+  const _MenuIcon();
+
+  @override
+  Widget build(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.menu),
       onPressed: () {
@@ -50,36 +54,48 @@ class Header extends StatelessWidget {
       },
     );
   }
-
-Widget _userName(UserEntity user) {
-  return Text(
-    'Witaj ${user.firstName}',
-    style: const TextStyle(
-      fontSize: 22,
-      fontWeight: FontWeight.bold,
-    ),
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    softWrap: true,
-    textAlign: TextAlign.start,
-  );
 }
 
-Widget _vegetarianSwitch(BuildContext context) {
-  return BlocBuilder<VegetarianFilterCubit, bool>(
-    builder: (context, isVegetarian) {
-      return Row(
-        children: [
-          Icon(Icons.eco, color: isVegetarian ? Colors.green : Colors.grey),
-          const SizedBox(width: 8),
-          Switch(
-            value: isVegetarian,
-            onChanged: (newValue) {
-              context.read<VegetarianFilterCubit>().toggle();
-            },
-          ),
-        ],
-      );
-    },
-  );
+class _UserName extends StatelessWidget {
+  final UserEntity user;
+  const _UserName({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Witaj ${user.firstName}',
+      style: const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+      ),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      softWrap: true,
+      textAlign: TextAlign.start,
+    );
+  }
+}
+
+class _VegetarianSwitch extends StatelessWidget {
+  const _VegetarianSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<VegetarianFilterCubit, bool>(
+      builder: (context, isVegetarian) {
+        return Row(
+          children: [
+            Icon(Icons.eco, color: isVegetarian ? Colors.green : Colors.grey),
+            const SizedBox(width: 8),
+            Switch(
+              value: isVegetarian,
+              onChanged: (newValue) {
+                context.read<VegetarianFilterCubit>().toggle();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
