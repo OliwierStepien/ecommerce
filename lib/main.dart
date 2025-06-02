@@ -4,6 +4,7 @@ import 'package:mealapp/core/configs/theme/app_theme.dart';
 import 'package:mealapp/core/storage/hive_init.dart';
 import 'package:mealapp/domain/meal/usecases/get_meal.dart';
 import 'package:mealapp/firebase_options.dart';
+import 'package:mealapp/l10n/app_localizations.dart';
 import 'package:mealapp/l10n/l10n.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
@@ -16,7 +17,7 @@ import 'package:mealapp/service_locator.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 
 Future<void> main() async {
