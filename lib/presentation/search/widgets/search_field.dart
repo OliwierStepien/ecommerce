@@ -1,3 +1,4 @@
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,7 @@ class SearchField extends StatelessWidget {
             AppVectors.search,
             fit: BoxFit.none,
           ),
-          hintText: 'Szukaj',
+          hintText: context.l10n.search,
           hintStyle: const TextStyle(
             color: Colors.white,
           ),

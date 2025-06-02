@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/common/helper/images/image_display.dart';
 import 'package:flutter/material.dart';
@@ -33,17 +34,17 @@ class _SeeAllCategories extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Kategorie',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          Text(
+            context.l10n.categories,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           GestureDetector(
             onTap: () {
               context.push(Routes.nestedAllCategoriesPage);
             },
-            child: const Text(
-              'Zobacz wszystkie',
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16),
+            child: Text(
+              context.l10n.seeAll,
+              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16),
             ),
           )
         ],

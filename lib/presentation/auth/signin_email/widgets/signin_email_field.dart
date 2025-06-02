@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class SigninEmailField extends StatelessWidget {
   final TextEditingController controller;
@@ -8,16 +9,16 @@ class SigninEmailField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        hintText: 'Podaj adres Email',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        hintText: context.l10n.enterEmailAddress,
+        border: const OutlineInputBorder(),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Pole nie może być puste';
+          return context.l10n.fieldCannotBeEmpty;
         }
         if (!value.contains('@')) {
-          return 'Wprowadź poprawny adres email';
+          return context.l10n.enterValidEmailAddress;
         }
         return null;
       },

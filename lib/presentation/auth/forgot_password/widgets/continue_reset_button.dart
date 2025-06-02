@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/domain/auth/usecases/send_password_reset_email.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class ContinueResetButton extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -24,7 +25,7 @@ class ContinueResetButton extends StatelessWidget {
               );
         }
       },
-      title: 'Kontynuuj',
+      title: context.l10n.continueText,
     );
   }
 }

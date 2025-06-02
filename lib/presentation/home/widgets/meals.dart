@@ -1,4 +1,5 @@
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
@@ -48,13 +49,13 @@ class _MealSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
         horizontal: 16,
       ),
       child: Text(
-        'Dania',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        context.l10n.meals,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }

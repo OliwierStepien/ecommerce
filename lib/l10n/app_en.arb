@@ -1,0 +1,78 @@
+{
+    "@@locale": "en",
+    "allCategories": "All categories",
+    "continueText": "Continue",
+    "resetPassword": "Reset password",
+    "enterEmailAddress": "Enter email address",
+    "fieldCannotBeEmpty": "Field cannot be empty",
+    "enterValidEmailAddress": "Enter a valid email address",
+    "backToLoginPage": "Back to login page",
+    "emailWithPasswordResetInstructionsHasBeenSent": "Email with password reset instructions has been sent",
+    "doNotHaveAccount": "Don't have an account? ",
+    "createNew": "Create new",
+    "signIn": "Log in",
+    "forgotPassword": "Forgot password? ",
+    "enterPassword": "Enter password",
+    "alreadyHaveAccount": "Already have an account? ",
+    "createAccount": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First name",
+    "vegetarianMealsSelected": "Vegetarian meals selected",
+    "allMealsSelected": "All meals selected",
+    "favoriteMeals": "Favorite meals",
+    "sorryWeCouldNotFindAnyMatchingResultsForYourSearch": "Sorry, we couldn't find any matching results for your search",
+    "search": "Search",
+    "shoppingList": "Shopping list",
+    "undo": "Undo",
+    "categories": "Categories",
+    "seeAll": "See all",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "meals": "Meals",
+    "ingredients": "Ingredients:",
+    "addToShoppingList": "Add to list",
+    "cookingSteps": "Cooking steps",
+    "fromMealTitle": "From meal: {title}",
+    "deteledFromFavorites": "Deleted from favorites",
+    "addedToFavorites": "Added to favorites",
+    "@fromMealTitle": {
+      "description": "Shows meal name",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Spaghetti Bolognese"
+        }
+      }
+    },
+    "removedIngredientFromShoppingList": "Removed {ingredient} from shopping list",
+    "@removedIngredientFromShoppingList": {
+      "description": "Notification when ingredient is removed",
+      "placeholders": {
+        "ingredient": {
+          "type": "String",
+          "example": "Tomatoes"
+        }
+      }
+    },
+    "helloUser": "Hello {userFirstName}",
+    "@helloUser": {
+      "description": "Greeting message for the user",
+      "placeholders": {
+        "userFirstName": {
+          "type": "Object",
+          "example": "John"
+        }
+      }
+    },
+    "addedIngredientToShoppingList": "Added {ingredient} to shopping list",
+    "@addedIngredientToShoppingList": {
+      "description": "Notification when ingredient is added",
+      "placeholders": {
+        "ingredient": {
+          "type": "String",
+          "example": "Tomatoes"
+        }
+      }
+    }
+  }

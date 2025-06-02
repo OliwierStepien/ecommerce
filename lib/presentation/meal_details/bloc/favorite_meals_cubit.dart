@@ -3,6 +3,7 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/domain/meal/usecases/favourite/add_or_remove_favorite_meal.dart';
 import 'package:mealapp/domain/meal/usecases/favourite/get_favorites_meal.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/service_locator.dart';
@@ -38,8 +39,9 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              isFavorite ? 'Usunięto z ulubionych' : 'Dodano do ulubionych'),
+          content: Text(isFavorite
+              ? context.l10n.deteledFromFavorites
+              : context.l10n.addedToFavorites),
           duration: const Duration(seconds: 1),
         ),
       );

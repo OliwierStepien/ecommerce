@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/routes/routes.dart';
 
 class ResetPassword extends StatelessWidget {
@@ -11,9 +12,9 @@ class ResetPassword extends StatelessWidget {
     return RichText(
       text: TextSpan(
         children: [
-          const TextSpan(text: 'Zapomniałeś hasła? '),
+          TextSpan(text: context.l10n.forgotPassword),
           TextSpan(
-            text: 'Zresetuj hasło',
+            text: context.l10n.resetPassword,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 context.push(Routes.forgotPasswordPage);

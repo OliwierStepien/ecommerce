@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class ResetEmailField extends StatelessWidget {
   final TextEditingController controller;
@@ -17,7 +18,7 @@ class ResetEmailField extends StatelessWidget {
           return 'Pole nie może być puste';
         }
         if (!value.contains('@')) {
-          return 'Wprowadź poprawny adres email';
+          return context.l10n.enterEmailAddress;
         }
         return null;
       },

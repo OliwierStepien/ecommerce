@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/widgets/button/basic_app_button.dart';
 import 'package:mealapp/data/auth/models/user_signin_req.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/routes/routes.dart';
 
 class ContinueEmailButton extends StatelessWidget {
@@ -18,7 +19,7 @@ class ContinueEmailButton extends StatelessWidget {
               extra: UserSigninReq(email: controller.text));
         }
       },
-      title: 'Kontynuuj',
+      title: context.l10n.continueText,
     );
   }
 }

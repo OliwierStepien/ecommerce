@@ -1,0 +1,78 @@
+{
+    "@@locale": "pl",
+    "allCategories": "Wszystkie kategorie",
+    "continueText": "Kontynuuj",
+    "resetPassword": "Zresetuj hasło",
+    "enterEmailAddress": "Podaj adres Email",
+    "fieldCannotBeEmpty": "Pole nie może być puste",
+    "enterValidEmailAddress": "Wprowadź poprawny adres email",
+    "backToLoginPage": "Wróć do strony logowania",
+    "emailWithPasswordResetInstructionsHasBeenSent": "Email z informacją jak zresetować hasło został wysłany",
+    "doNotHaveAccount": "Nie masz konta? ",
+    "createNew": "Stwórz nowe",
+    "signIn": "Zaloguj się",
+    "forgotPassword": "Zapomniałeś hasła? ",
+    "enterPassword": "Podaj hasło",
+    "alreadyHaveAccount": "Masz konto? ",
+    "createAccount": "Utwórz konto",
+    "email": "Email",
+    "password": "Hasło",
+    "firstName": "Imię",
+    "vegetarianMealsSelected": "Wybrano dania wegetariańskie",
+    "allMealsSelected": "Wybrano wszystkie dania",
+    "favoriteMeals": "Ulubione posiłki",
+    "sorryWeCouldNotFindAnyMatchingResultsForYourSearch": "Przepraszamy, nie znaleźliśmy żadnych pasujących wyników dla Twojego wyszukiwania",
+    "search": "Szukaj",
+    "shoppingList": "Lista zakupów",
+    "undo": "Cofnij",
+    "categories": "Kategorie",
+    "seeAll": "Zobacz wszystkie",
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się",
+    "meals": "Dania",
+    "ingredients": "Składniki:",
+    "addToShoppingList": "Dodaj do listy",
+    "cookingSteps": "Przygotowanie",
+    "fromMealTitle": "Z posiłku: {title}",
+    "deteledFromFavorites": "Usunięto z ulubionych",
+    "addedToFavorites": "Dodano do ulubionych",
+    "@fromMealTitle": {
+      "description": "Pokazuje nazwę posiłku",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Spaghetti Bolognese"
+        }
+      }
+    },
+    "removedIngredientFromShoppingList": "Usunięto {ingredient} z listy zakupów",
+    "@removedIngredientFromShoppingList": {
+      "description": "Notification when ingredient is removed",
+      "placeholders": {
+        "ingredient": {
+          "type": "String",
+          "example": "Pomidory"
+        }
+      }
+    },
+    "helloUser": "Cześć {userFirstName}",
+    "@helloUser": {
+      "description": "Powitanie użytkownika",
+      "placeholders": {
+        "userFirstName": {
+          "type": "Object",
+          "example": "Jan"
+        }
+      }
+    },
+    "addedIngredientToShoppingList": "Dodano {ingredient} do listy zakupów",
+    "@addedIngredientToShoppingList": {
+      "description": "Notification when ingredient is added",
+      "placeholders": {
+        "ingredient": {
+          "type": "String",
+          "example": "Pomidory"
+        }
+      }
+    }
+  }

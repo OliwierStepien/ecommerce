@@ -4,6 +4,7 @@ import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/data/auth/models/user_signin_req.dart';
 import 'package:mealapp/domain/auth/usecases/signin.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class ContinuePasswordButton extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -27,7 +28,7 @@ class ContinuePasswordButton extends StatelessWidget {
               .execute(usecase: SigninUsecase(), params: userSigninReq);
         }
       },
-      title: 'Kontynuuj',
+      title: context.l10n.continueText,
     );
   }
 }

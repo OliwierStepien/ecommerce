@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class SignupFirstNameField extends StatelessWidget {
   final TextEditingController controller;
@@ -14,7 +15,7 @@ class SignupFirstNameField extends StatelessWidget {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Pole nie może być puste';
+          return context.l10n.enterValidEmailAddress;
         }
         return null;
       },

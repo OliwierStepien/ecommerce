@@ -1,5 +1,6 @@
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:flutter/material.dart';
@@ -12,9 +13,9 @@ class FavoriteMealsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BasicAppbar(
+      appBar: BasicAppbar(
         hideBack: true,
-        title: Text('Ulubione posiłki'),
+        title: Text(context.l10n.favoriteMeals),
       ),
       body: BlocBuilder<FavoriteMealsCubit, MealsDisplayState>(
         builder: (context, state) {

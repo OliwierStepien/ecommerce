@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class SigninPasswordField extends StatelessWidget {
   final TextEditingController controller;
@@ -8,9 +9,9 @@ class SigninPasswordField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        hintText: 'Podaj hasło',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        hintText: context.l10n.enterPassword,
+        border: const OutlineInputBorder(),
       ),
       obscureText: true,
       validator: (value) {

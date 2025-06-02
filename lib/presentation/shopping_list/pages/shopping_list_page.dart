@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
@@ -11,9 +12,9 @@ class ShoppingListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BasicAppbar(
+      appBar: BasicAppbar(
         hideBack: true,
-        title: Text('Lista zakupów'),
+        title: Text(context.l10n.shoppingList),
       ),
       body: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
         builder: (context, state) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 
 class ShoppingListItem extends StatelessWidget {
@@ -40,7 +41,7 @@ class ShoppingListItem extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Z posiłku: $title',
+                    context.l10n.fromMealTitle(title),
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
@@ -61,9 +62,9 @@ class ShoppingListItem extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content:
-                        Text('Usunięto "$ingredient" z listy zakupów'),
+                        Text(context.l10n.removedIngredientFromShoppingList(ingredient)),
                     action: SnackBarAction(
-                      label: 'Cofnij',
+                      label: context.l10n.undo,
                       textColor: Colors.white,
                       onPressed: () {
                         shoppingListCubit.restoreLastRemovedIngredient();

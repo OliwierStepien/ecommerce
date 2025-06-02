@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class MealNotFound extends StatelessWidget {
   const MealNotFound({super.key});
@@ -13,12 +14,12 @@ class MealNotFound extends StatelessWidget {
       SvgPicture.asset(
         AppVectors.notFound,
       ),
-      const Padding(
-        padding: EdgeInsets.all(16),
+      Padding(
+        padding: const EdgeInsets.all(16),
         child: Text(
-          "Przepraszamy, nie znaleźliśmy żadnych pasujących wyników dla Twojego wyszukiwania.",
+          context.l10n.sorryWeCouldNotFindAnyMatchingResultsForYourSearch,
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
+          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
         ),
       )
     ],

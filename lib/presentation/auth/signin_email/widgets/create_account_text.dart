@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/routes/routes.dart';
 
 class CreateAccountText extends StatelessWidget {
@@ -11,9 +12,9 @@ class CreateAccountText extends StatelessWidget {
     return RichText(
       text: TextSpan(
         children: [
-          const TextSpan(text: 'Nie masz konta? '),
+          TextSpan(text: context.l10n.doNotHaveAccount),
           TextSpan(
-            text: 'Stwórz nowe',
+            text: context.l10n.createNew,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 context.push(Routes.signUpPage);

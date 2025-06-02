@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class SignupPasswordField extends StatelessWidget {
   final TextEditingController controller;
@@ -8,14 +9,14 @@ class SignupPasswordField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        hintText: 'Hasło',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        hintText: context.l10n.password,
+        border: const OutlineInputBorder(),
       ),
       obscureText: true,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Pole nie może być puste';
+          return context.l10n.fieldCannotBeEmpty;
         }
         return null;
       },

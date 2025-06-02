@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/widgets/header.dart';
 import 'package:mealapp/presentation/home/widgets/main_drawer.dart';
@@ -63,8 +64,8 @@ class HomePage extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(isVegetarian 
-          ? 'Wybrano dania wegetariańskie' 
-          : 'Wybrano wszystkie dania'),
+          ? context.l10n.vegetarianMealsSelected 
+          : context.l10n.allMealsSelected),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 1),
       ),);

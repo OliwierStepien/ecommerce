@@ -1,5 +1,6 @@
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:flutter/material.dart';
+import 'package:mealapp/extensions/context_extension.dart';
 
 class MealStep extends StatelessWidget {
   final MealEntity mealEntity;
@@ -15,11 +16,11 @@ class MealStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              'Przygotowanie:',
-              style: TextStyle(
+              context.l10n.cookingSteps,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
