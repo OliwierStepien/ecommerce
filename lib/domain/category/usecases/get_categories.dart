@@ -6,9 +6,9 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure
 import 'package:mealapp/service_locator.dart';
 
 class GetCategoriesUseCase
-    implements UseCase<Either<Failure, List<CategoryEntity>>, dynamic> {
+    implements UseCase<Either<Failure, List<CategoryEntity>>, void> {
   @override
-  Future<Either<Failure, List<CategoryEntity>>> call({dynamic params}) async {
+  Future<Either<Failure, List<CategoryEntity>>> call({void params}) async {
     return await sl<CategoryRepository>().getCategories();
   }
 }
