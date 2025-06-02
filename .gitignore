@@ -46,3 +46,6 @@ app.*.map.json
 
 # Firebase config (ignore local auto-generated options)
 lib/firebase_options.dart
+
+# Google services config
+android/app/google-services.json
