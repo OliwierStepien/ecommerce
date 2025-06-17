@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/domain/auth/usecases/signout.dart';
 import 'package:mealapp/extensions/context_extension.dart';
+import 'package:mealapp/service_locator.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -43,7 +44,7 @@ class MainDrawer extends StatelessWidget {
             onTap: () {
               context
                   .read<ButtonStateCubit>()
-                  .execute(usecase: SignoutUsecase());
+                  .execute(usecase: sl<SignoutUsecase>());
             },
           ),
         ],

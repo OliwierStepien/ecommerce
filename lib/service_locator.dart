@@ -85,45 +85,53 @@ Future<void> initializeDependencies() async {
 
   // Auth usecases
 
-  sl.registerLazySingleton<SignupUsecase>(() => SignupUsecase());
+  sl.registerLazySingleton<SignupUsecase>(
+      () => SignupUsecase(sl<AuthRepository>()));
 
-  sl.registerLazySingleton<SigninUsecase>(() => SigninUsecase());
+  sl.registerLazySingleton<SigninUsecase>(
+      () => SigninUsecase(sl<AuthRepository>()));
 
-  sl.registerLazySingleton<SignoutUsecase>(() => SignoutUsecase());
+  sl.registerLazySingleton<SignoutUsecase>(
+      () => SignoutUsecase(sl<AuthRepository>()));
 
-  sl.registerLazySingleton<IsLoggedInUseCase>(() => IsLoggedInUseCase());
+  sl.registerLazySingleton<IsLoggedInUseCase>(
+      () => IsLoggedInUseCase(sl<AuthRepository>()));
 
   sl.registerLazySingleton<SendPasswordResetEmailUseCase>(
-      () => SendPasswordResetEmailUseCase());
+      () => SendPasswordResetEmailUseCase(sl<AuthRepository>()));
 
-  sl.registerLazySingleton<GetUserUsecase>(() => GetUserUsecase());
+  sl.registerLazySingleton<GetUserUsecase>(
+      () => GetUserUsecase(sl<AuthRepository>()));
 
   // Category usecases
 
-  sl.registerLazySingleton<GetCategoriesUseCase>(() => GetCategoriesUseCase());
+  sl.registerLazySingleton<GetCategoriesUseCase>(
+    () => GetCategoriesUseCase(sl<CategoryRepository>()),
+  );
 
   // Meal usecases
 
-  sl.registerLazySingleton<GetMealUseCase>(() => GetMealUseCase());
+  sl.registerLazySingleton<GetMealUseCase>(
+      () => GetMealUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<GetMealByCategoryIdUseCase>(
-      () => GetMealByCategoryIdUseCase());
+      () => GetMealByCategoryIdUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<GetMealByTitleUseCase>(
-      () => GetMealByTitleUseCase());
+      () => GetMealByTitleUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<AddOrRemoveFavoriteMealUseCase>(
-      () => AddOrRemoveFavoriteMealUseCase());
+      () => AddOrRemoveFavoriteMealUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<GetFavoritesMealUseCase>(
-      () => GetFavoritesMealUseCase());
+      () => GetFavoritesMealUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<AddOrRemoveShoppingListIngredientUseCase>(
-      () => AddOrRemoveShoppingListIngredientUseCase());
+      () => AddOrRemoveShoppingListIngredientUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<IsIngredientInShoppingListUseCase>(
-      () => IsIngredientInShoppingListUseCase());
+      () => IsIngredientInShoppingListUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<GetShoppingListUseCase>(
-      () => GetShoppingListUseCase());
+      () => GetShoppingListUseCase(sl<MealRepository>()));
 }

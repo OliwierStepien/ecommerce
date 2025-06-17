@@ -5,6 +5,7 @@ import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/data/auth/models/user_creation_req.dart';
 import 'package:mealapp/domain/auth/usecases/signup.dart';
 import 'package:mealapp/extensions/context_extension.dart';
+import 'package:mealapp/service_locator.dart';
 
 class SignupButton extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -26,7 +27,7 @@ class SignupButton extends StatelessWidget {
       onPressed: () {
         if (formKey.currentState!.validate()) {
           context.read<ButtonStateCubit>().execute(
-                usecase: SignupUsecase(),
+                usecase: sl<SignupUsecase>(),
                 params: UserCreationReq(
                   firstName: firstNameController.text,
                   email: emailController.text,

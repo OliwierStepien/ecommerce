@@ -3,11 +3,15 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure
 import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
-import 'package:mealapp/service_locator.dart';
 
-class IsIngredientInShoppingListUseCase implements UseCase<Either<Failure, bool>, MealEntity> {
+class IsIngredientInShoppingListUseCase
+    implements UseCase<Either<Failure, bool>, MealEntity> {
+  final MealRepository mealRepository;
+
+  IsIngredientInShoppingListUseCase(this.mealRepository);
+
   @override
   Future<Either<Failure, bool>> call({MealEntity? params}) async {
-    return await sl<MealRepository>().isIngredientInShoppingList(params!);
+    return await mealRepository.isIngredientInShoppingList(params!);
   }
 }

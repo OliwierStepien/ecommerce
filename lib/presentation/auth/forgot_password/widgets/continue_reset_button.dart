@@ -4,6 +4,7 @@ import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/common/widgets/button/basic_reactive_button.dart';
 import 'package:mealapp/domain/auth/usecases/send_password_reset_email.dart';
 import 'package:mealapp/extensions/context_extension.dart';
+import 'package:mealapp/service_locator.dart';
 
 class ContinueResetButton extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -20,7 +21,7 @@ class ContinueResetButton extends StatelessWidget {
       onPressed: () {
         if (formKey.currentState!.validate()) {
           context.read<ButtonStateCubit>().execute(
-                usecase: SendPasswordResetEmailUseCase(),
+                usecase: sl<SendPasswordResetEmailUseCase>(),
                 params: controller.text,
               );
         }
