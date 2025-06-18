@@ -7,12 +7,12 @@ import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/widgets/header.dart';
 import 'package:mealapp/presentation/home/widgets/main_drawer.dart';
-import 'package:mealapp/presentation/home/widgets/meals.dart';
+import 'package:mealapp/presentation/home/widgets/meals_grid_view.dart';
 import 'package:mealapp/presentation/home/widgets/search_field_home.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import 'package:mealapp/routes/routes.dart';
-import '../widgets/categories.dart';
+import '../widgets/categories_row_view.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -41,9 +41,9 @@ class HomePage extends StatelessWidget {
                   SizedBox(height: 24),
                   SearchFieldHome(),
                   SizedBox(height: 24),
-                  Categories(),
+                  CategoriesRowView(),
                   SizedBox(height: 24),
-                  Meals(),
+                  MealsGridView(),
                 ],
               ),
             ),

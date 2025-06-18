@@ -9,8 +9,8 @@ import 'package:mealapp/routes/routes.dart';
 
 import '../../category_meals/bloc/categories_display_state.dart';
 
-class Categories extends StatelessWidget {
-  const Categories({super.key});
+class CategoriesRowView extends StatelessWidget {
+  const CategoriesRowView({super.key});
 
   @override
   Widget build(BuildContext context) {

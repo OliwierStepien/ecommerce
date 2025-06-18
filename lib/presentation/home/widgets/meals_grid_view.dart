@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 
-class Meals extends StatelessWidget {
-  const Meals({super.key});
+class MealsGridView extends StatelessWidget {
+  const MealsGridView({super.key});
 
   @override
   Widget build(BuildContext context) {
