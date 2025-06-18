@@ -36,6 +36,8 @@
     "fromMealTitle": "From meal: {title}",
     "deteledFromFavorites": "Deleted from favorites",
     "addedToFavorites": "Added to favorites",
+    "product": "Product",
+    "add": "Add",
     "@fromMealTitle": {
       "description": "Shows meal name",
       "placeholders": {

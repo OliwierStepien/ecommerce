@@ -71,4 +71,30 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
   }
 
   bool get shouldShowNotification => !_suppressNotifications;
+
+  void addCustomIngredient(String ingredient) {
+  final List<Map<String, dynamic>> updatedList = List.from(state)
+    ..add({
+      'ingredient': ingredient,
+      'mealId': null,
+      'title': '',
+      'mealEntity': null,
+    });
+
+  emit(updatedList);
+}
+
+void removeCustomIngredient(String ingredient) {
+  final index = state.indexWhere((item) =>
+      item['ingredient'] == ingredient && item['mealId'] == null);
+  if (index != -1) {
+    _lastRemovedItem = {
+      'item': state[index],
+      'index': index,
+    };
+
+final List<Map<String, dynamic>> updatedList = List.from(state)..removeAt(index);
+    emit(updatedList);
+  }
+}
 }

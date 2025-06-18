@@ -119,6 +119,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get addedToFavorites => 'Dodano do ulubionych';
 
   @override
+  String get product => 'Produkt';
+
+  @override
+  String get add => 'Dodaj';
+
+  @override
   String removedIngredientFromShoppingList(String ingredient) {
     return 'Usunięto $ingredient z listy zakupów';
   }

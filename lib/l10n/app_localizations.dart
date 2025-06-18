@@ -311,6 +311,18 @@ abstract class AppLocalizations {
   /// **'Added to favorites'**
   String get addedToFavorites;
 
+  /// No description provided for @product.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get product;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
   /// Notification when ingredient is removed
   ///
   /// In en, this message translates to:

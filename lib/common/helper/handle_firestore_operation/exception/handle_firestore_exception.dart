@@ -27,3 +27,4 @@ Future<T> handleFirestoreException<T>(Future<T> Function() operation) async {
     throw GeneralException();
   }
 }
+

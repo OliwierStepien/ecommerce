@@ -36,6 +36,8 @@
     "fromMealTitle": "Z posiłku: {title}",
     "deteledFromFavorites": "Usunięto z ulubionych",
     "addedToFavorites": "Dodano do ulubionych",
+    "product": "Produkt",
+    "add": "Dodaj",
     "@fromMealTitle": {
       "description": "Pokazuje nazwę posiłku",
       "placeholders": {

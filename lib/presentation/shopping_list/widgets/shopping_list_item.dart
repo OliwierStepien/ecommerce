@@ -7,7 +7,7 @@ import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart
 class ShoppingListItem extends StatelessWidget {
   final String ingredient;
   final String title;
-  final MealEntity mealEntity;
+  final MealEntity? mealEntity;
 
   const ShoppingListItem({
     super.key,
@@ -40,40 +40,44 @@ class ShoppingListItem extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    context.l10n.fromMealTitle(title),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                  if (title.trim().isNotEmpty)
+                    Text(
+                      context.l10n.fromMealTitle(title),
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
-                  ),
                 ],
               ),
             ),
             IconButton(
-              onPressed: () {
-                final shoppingListCubit = context.read<ShoppingListCubit>();
-                shoppingListCubit.addOrRemoveIngredient(
-                  ingredient,
-                  mealEntity,
-                  suppressNotification: true,
-                );
+onPressed: () {
+  final shoppingListCubit = context.read<ShoppingListCubit>();
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text(context.l10n.removedIngredientFromShoppingList(ingredient)),
-                    action: SnackBarAction(
-                      label: context.l10n.undo,
-                      textColor: Colors.white,
-                      onPressed: () {
-                        shoppingListCubit.restoreLastRemovedIngredient();
-                      },
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
+  if (mealEntity != null) {
+    shoppingListCubit.addOrRemoveIngredient(
+      ingredient,
+      mealEntity!,
+      suppressNotification: true,
+    );
+  } else {
+    shoppingListCubit.removeCustomIngredient(ingredient);
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        context.l10n.removedIngredientFromShoppingList(ingredient),
+      ),
+      action: SnackBarAction(
+        label: context.l10n.undo,
+        textColor: Colors.white,
+        onPressed: () {
+          shoppingListCubit.restoreLastRemovedIngredient();
+        },
+      ),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+},
               icon: const Icon(Icons.delete),
             ),
           ],
