@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:mealapp/data/category/model/category.dart';
+import 'package:mealapp/data/category/model/category_model.dart';
 
 abstract class CategoryHiveService {
   Future<List<CategoryModel>> getCategories();

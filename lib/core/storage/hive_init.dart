@@ -1,7 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mealapp/data/auth/model/user.dart';
-import 'package:mealapp/data/category/model/category.dart';
-import 'package:mealapp/data/meal/model/meal.dart';
+import 'package:mealapp/data/auth/model/user_model.dart';
+import 'package:mealapp/data/category/model/category_model.dart';
+import 'package:mealapp/data/meal/model/meal_model.dart';
 
 class HiveConfig {
   static Future<void> init() async {

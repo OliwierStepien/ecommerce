@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'meal.g.dart';
+part 'meal_model.g.dart';
 
 @HiveType(typeId: 2)
 class MealModel {

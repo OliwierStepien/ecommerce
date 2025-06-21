@@ -1,4 +1,4 @@
-import 'package:mealapp/data/ingredient/model/ingredient.dart';
+import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 
 class IngredientMapper {

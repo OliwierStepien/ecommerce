@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
 import 'package:mealapp/data/auth/mapper/user_mapper.dart';
-import 'package:mealapp/data/auth/model/user.dart';
+import 'package:mealapp/data/auth/model/user_model.dart';
 import 'package:mealapp/data/auth/model/user_creation_req.dart';
 import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:mealapp/data/auth/source/auth_firebase_service.dart';

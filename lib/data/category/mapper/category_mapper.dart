@@ -1,4 +1,4 @@
-import 'package:mealapp/data/category/model/category.dart';
+import 'package:mealapp/data/category/model/category_model.dart';
 import 'package:mealapp/domain/category/entity/category_entity.dart';
 
 class CategoryMapper {
