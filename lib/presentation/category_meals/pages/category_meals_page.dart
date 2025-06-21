@@ -5,7 +5,7 @@ import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart'
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/domain/category/entity/category.dart';
-import 'package:mealapp/domain/meal/usecases/get_meal_by_category_id.dart';
+import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import 'package:mealapp/service_locator.dart';
 import 'package:flutter/material.dart';

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/core/configs/theme/app_theme.dart';
-import 'package:mealapp/domain/meal/usecases/get_meal.dart';
+import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/l10n/app_localizations.dart';
 import 'package:mealapp/l10n/l10n.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';

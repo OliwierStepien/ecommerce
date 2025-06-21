@@ -1,4 +1,4 @@
-import 'package:mealapp/domain/auth/usecases/is_logged_in.dart';
+import 'package:mealapp/domain/auth/usecase/is_logged_in.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_state.dart';
 import 'package:mealapp/service_locator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

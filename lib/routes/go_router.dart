@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mealapp/data/auth/models/user_signin_req.dart';
+import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:mealapp/domain/category/entity/category.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 import 'package:mealapp/presentation/all_categories/pages/all_categories_page.dart';

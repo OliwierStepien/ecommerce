@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
-import 'package:mealapp/domain/auth/usecases/signout.dart';
+import 'package:mealapp/domain/auth/usecase/signout.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/service_locator.dart';
 

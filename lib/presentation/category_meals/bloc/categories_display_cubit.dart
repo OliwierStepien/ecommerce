@@ -1,6 +1,6 @@
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_state.dart';
-import 'package:mealapp/domain/category/usecases/get_categories.dart';
+import 'package:mealapp/domain/category/usecase/get_categories.dart';
 import 'package:mealapp/service_locator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

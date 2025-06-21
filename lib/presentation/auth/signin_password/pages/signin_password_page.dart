@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
-import 'package:mealapp/data/auth/models/user_signin_req.dart';
+import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/presentation/auth/signin_password/widgets/continue_password_button.dart';

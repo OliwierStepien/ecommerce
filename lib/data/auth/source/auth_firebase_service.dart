@@ -1,7 +1,7 @@
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
-import 'package:mealapp/data/auth/models/user_creation_req.dart';
+import 'package:mealapp/data/auth/model/user_creation_req.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mealapp/data/auth/models/user_signin_req.dart';
+import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthFirebaseService {

@@ -2,7 +2,7 @@ import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
-import 'package:mealapp/domain/meal/usecases/get_meal_by_title.dart';
+import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import 'package:mealapp/presentation/search/widgets/meal_found.dart';
 import 'package:mealapp/presentation/search/widgets/meal_not_found.dart';

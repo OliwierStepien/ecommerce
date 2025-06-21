@@ -1,4 +1,4 @@
-import 'package:mealapp/data/auth/models/user.dart';
+import 'package:mealapp/data/auth/model/user.dart';
 import 'package:mealapp/domain/auth/entity/user.dart';
 
 class UserMapper {

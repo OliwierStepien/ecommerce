@@ -1,4 +1,4 @@
-import 'package:mealapp/data/meal/models/meal.dart';
+import 'package:mealapp/data/meal/model/meal.dart';
 import 'package:mealapp/domain/meal/entity/meal.dart';
 
 class MealMapper {
