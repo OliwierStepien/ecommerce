@@ -5,7 +5,7 @@ import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/add_custom_ingredient_bottom_sheet.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 class ShoppingListPage extends StatelessWidget {
   const ShoppingListPage({super.key});

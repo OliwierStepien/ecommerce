@@ -4,7 +4,7 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/data/category/repository/local/hive_category_repository_impl.dart';
 import 'package:mealapp/data/category/repository/remote/firebase_category_repository_impl.dart';
-import 'package:mealapp/domain/category/entity/category.dart';
+import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:mealapp/domain/category/repository/category_repository.dart';
 import 'package:mealapp/service_locator.dart';
 

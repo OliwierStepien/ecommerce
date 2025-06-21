@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mealapp/domain/auth/entity/user.dart';
+import 'package:mealapp/domain/auth/entity/user_entity.dart';
 
 abstract class UserInfoDisplayState extends Equatable {}
 

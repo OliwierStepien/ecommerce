@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/usecase/favourite/add_or_remove_favorite_meal.dart';
 import 'package:mealapp/domain/meal/usecase/favourite/get_favorites_meal.dart';
 import 'package:mealapp/extensions/context_extension.dart';

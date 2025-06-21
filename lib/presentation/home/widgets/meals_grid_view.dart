@@ -3,7 +3,7 @@ import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';

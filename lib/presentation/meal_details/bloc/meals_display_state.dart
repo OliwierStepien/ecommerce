@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 abstract class MealsDisplayState extends Equatable {}
 @override

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mealapp/domain/category/entity/category.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/category/entity/category_entity.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 class CategoryInfo extends StatelessWidget {
   final CategoryEntity categoryEntity;

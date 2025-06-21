@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/routes/routes.dart';
 import '../../helper/images/image_display.dart';

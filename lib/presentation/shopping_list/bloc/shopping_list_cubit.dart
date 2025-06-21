@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
 

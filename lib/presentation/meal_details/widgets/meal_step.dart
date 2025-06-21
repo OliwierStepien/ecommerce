@@ -1,4 +1,4 @@
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 

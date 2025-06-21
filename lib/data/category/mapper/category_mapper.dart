@@ -1,5 +1,5 @@
 import 'package:mealapp/data/category/model/category.dart';
-import 'package:mealapp/domain/category/entity/category.dart';
+import 'package:mealapp/domain/category/entity/category_entity.dart';
 
 class CategoryMapper {
   static CategoryEntity toEntity(CategoryModel model) {

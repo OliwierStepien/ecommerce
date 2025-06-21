@@ -1,5 +1,5 @@
 import 'package:mealapp/data/auth/model/user.dart';
-import 'package:mealapp/domain/auth/entity/user.dart';
+import 'package:mealapp/domain/auth/entity/user_entity.dart';
 
 class UserMapper {
   static UserEntity toEntity(UserModel model) {

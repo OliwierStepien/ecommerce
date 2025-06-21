@@ -1,5 +1,5 @@
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/presentation/meal_details/widgets/favorite_button.dart';
 import 'package:mealapp/presentation/meal_details/widgets/meal_image.dart';
 import 'package:mealapp/presentation/meal_details/widgets/meal_ingredient.dart';

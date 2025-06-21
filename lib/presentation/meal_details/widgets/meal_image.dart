@@ -1,5 +1,5 @@
 import 'package:mealapp/common/helper/images/image_display.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 
 class MealImage extends StatelessWidget {

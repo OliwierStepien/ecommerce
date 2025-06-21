@@ -1,5 +1,5 @@
 import 'package:mealapp/data/meal/model/meal.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 class MealMapper {
   static MealEntity toEntity(MealModel model) {

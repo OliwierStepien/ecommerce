@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class MealFirebaseService {

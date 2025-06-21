@@ -1,5 +1,5 @@
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
-import 'package:mealapp/domain/auth/entity/user.dart';
+import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';

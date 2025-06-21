@@ -3,7 +3,7 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_
 import 'package:mealapp/data/category/mapper/category_mapper.dart';
 import 'package:mealapp/data/category/model/category.dart';
 import 'package:mealapp/data/category/source/remote/category_firebase_service.dart';
-import 'package:mealapp/domain/category/entity/category.dart';
+import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:mealapp/domain/category/repository/category_repository.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/service_locator.dart';

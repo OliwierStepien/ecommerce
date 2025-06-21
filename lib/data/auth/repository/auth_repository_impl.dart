@@ -6,7 +6,7 @@ import 'package:mealapp/data/auth/model/user.dart';
 import 'package:mealapp/data/auth/model/user_creation_req.dart';
 import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:mealapp/data/auth/source/auth_firebase_service.dart';
-import 'package:mealapp/domain/auth/entity/user.dart';
+import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/service_locator.dart';
 

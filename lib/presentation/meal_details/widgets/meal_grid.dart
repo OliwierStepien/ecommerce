@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
-import 'package:mealapp/domain/meal/entity/meal.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 class MealGrid extends StatelessWidget {
   final List<MealEntity> meals;
