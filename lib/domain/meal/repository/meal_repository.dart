@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 abstract class MealRepository {
@@ -14,4 +15,5 @@ abstract class MealRepository {
   Future<Either<Failure, List<MealEntity>>> isMealVegetarian(bool isVegetarian);
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByCategoryId(String categoryId);
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(String title);
+  Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(String mealId);
 }

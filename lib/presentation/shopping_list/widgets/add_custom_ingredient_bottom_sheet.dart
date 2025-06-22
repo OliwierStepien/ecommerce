@@ -15,6 +15,12 @@ class _AddCustomIngredientBottomSheetState
     extends State<AddCustomIngredientBottomSheet> {
   final TextEditingController _controller = TextEditingController();
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _submit() {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
@@ -26,7 +32,8 @@ class _AddCustomIngredientBottomSheetState
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+          16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

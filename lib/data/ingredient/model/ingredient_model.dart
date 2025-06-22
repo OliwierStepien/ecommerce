@@ -1,9 +1,25 @@
+import 'package:hive/hive.dart';
+
+part 'ingredient_model.g.dart';
+
+@HiveType(typeId: 3)
 class IngredientModel {
-  final num amountPerPortion;
+  @HiveField(0)
+  final num? amountPerPortion;
+
+  @HiveField(1)
   final String ingredientCategory;
+
+  @HiveField(2)
   final String ingredientId;
+
+  @HiveField(3)
   final String ingredientName;
+
+  @HiveField(4)
   final String mealId;
+
+  @HiveField(5)
   final String unit;
 
   IngredientModel(

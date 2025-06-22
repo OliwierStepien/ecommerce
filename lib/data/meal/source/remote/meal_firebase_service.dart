@@ -14,8 +14,10 @@ abstract class MealFirebaseService {
   Future<bool> isIngredientInShoppingList(MealEntity meal);
   Future<List<Map<String, dynamic>>> getShoppingList();
   Future<List<Map<String, dynamic>>> getMealsByIsVegetarian(bool isVegetarian);
-  Future<List<Map<String, dynamic>>> getVegetarianMealsByCategoryId(String categoryId);
+  Future<List<Map<String, dynamic>>> getVegetarianMealsByCategoryId(
+      String categoryId);
   Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(String title);
+  Future<List<Map<String, dynamic>>> getIngredientsForMeal(String mealId);
 }
 
 class MealFirebaseServiceImpl extends MealFirebaseService {
@@ -26,7 +28,19 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
           .collection("Meals")
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
+
+      final meals = returnedData.docs.map((e) => e.data()).toList();
+
+      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
+        final ingredients =
+            await getIngredientsForMeal(meal['mealId'] as String);
+        return {
+          ...meal,
+          'ingredients': ingredients,
+        };
+      }));
+
+      return mealsWithIngredients;
     });
   }
 
@@ -39,7 +53,18 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
           .where('categoriesId', arrayContains: categoryId)
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
+      final meals = returnedData.docs.map((e) => e.data()).toList();
+
+      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
+        final ingredients =
+            await getIngredientsForMeal(meal['mealId'] as String);
+        return {
+          ...meal,
+          'ingredients': ingredients,
+        };
+      }));
+
+      return mealsWithIngredients;
     });
   }
 
@@ -50,12 +75,24 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
           .collection("Meals")
           .get()
           .timeout(const Duration(seconds: 15));
+
       final filteredMeals = returnedData.docs
           .map((e) => e.data())
           .where((meal) =>
               meal['title'].toLowerCase().contains(title.toLowerCase()))
           .toList();
-      return filteredMeals;
+
+      final mealsWithIngredients =
+          await Future.wait(filteredMeals.map((meal) async {
+        final ingredients =
+            await getIngredientsForMeal(meal['mealId'] as String);
+        return {
+          ...meal,
+          'ingredients': ingredients,
+        };
+      }));
+
+      return mealsWithIngredients;
     });
   }
 
@@ -169,7 +206,18 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
           .where('isVegetarian', isEqualTo: isVegetarian)
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
+      final meals = returnedData.docs.map((e) => e.data()).toList();
+
+      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
+        final ingredients =
+            await getIngredientsForMeal(meal['mealId'] as String);
+        return {
+          ...meal,
+          'ingredients': ingredients,
+        };
+      }));
+
+      return mealsWithIngredients;
     });
   }
 
@@ -183,24 +231,60 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
           .where('isVegetarian', isEqualTo: true)
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
+      final meals = returnedData.docs.map((e) => e.data()).toList();
+
+      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
+        final ingredients =
+            await getIngredientsForMeal(meal['mealId'] as String);
+        return {
+          ...meal,
+          'ingredients': ingredients,
+        };
+      }));
+
+      return mealsWithIngredients;
     });
   }
-  
+
   @override
-  Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(String title) async {
+  Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(
+      String title) async {
     return handleFirestoreException(() async {
       final returnedData = await FirebaseFirestore.instance
           .collection("Meals")
           .where('isVegetarian', isEqualTo: true)
           .get()
           .timeout(const Duration(seconds: 15));
+
       final filteredMeals = returnedData.docs
           .map((e) => e.data())
           .where((meal) =>
               meal['title'].toLowerCase().contains(title.toLowerCase()))
           .toList();
-      return filteredMeals;
+
+      final mealsWithIngredients =
+          await Future.wait(filteredMeals.map((meal) async {
+        final ingredients =
+            await getIngredientsForMeal(meal['mealId'] as String);
+        return {
+          ...meal,
+          'ingredients': ingredients,
+        };
+      }));
+
+      return mealsWithIngredients;
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getIngredientsForMeal(String mealId) {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseFirestore.instance
+          .collection("Ingredients")
+          .where('mealId', isEqualTo: mealId)
+          .get()
+          .timeout(const Duration(seconds: 15));
+      return returnedData.docs.map((e) => e.data()).toList();
     });
   }
 }

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class IngredientEntity extends Equatable {
-  final num amountPerPortion;
+  final num? amountPerPortion;
   final String ingredientCategory;
   final String ingredientId;
   final String ingredientName;

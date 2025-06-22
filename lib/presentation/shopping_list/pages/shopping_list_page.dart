@@ -36,18 +36,61 @@ class ShoppingListPage extends StatelessWidget {
             Expanded(
               child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
                 builder: (context, state) {
-                  return ListView.builder(
-                    itemCount: state.length,
-                    itemBuilder: (context, index) {
-                      final item = state[index];
-                      final ingredient = item['ingredient']!;
-                      final title = item['title'] ?? '';
-                      final mealEntity = item['mealEntity'] as MealEntity?;
+                  // Grupuj produkty według kategorii
+                  final Map<String, List<Map<String, dynamic>>> groupedItems =
+                      {};
+                  for (var item in state) {
+                    final category = item['ingredientCategory'] ?? 'Inne';
+                    if (!groupedItems.containsKey(category)) {
+                      groupedItems[category] = [];
+                    }
+                    groupedItems[category]!.add(item);
+                  }
 
-                      return ShoppingListItem(
-                        ingredient: ingredient,
-                        title: title,
-                        mealEntity: mealEntity,
+                  return ListView.builder(
+                    itemCount: groupedItems.length,
+                    itemBuilder: (context, index) {
+                      final category = groupedItems.keys.elementAt(index);
+                      final items = groupedItems[category]!;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              category,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ),
+                          ...items.map((item) {
+                            final ingredientId = item['ingredientId'] ?? '';
+                            final ingredientName = item['ingredientName'] ?? '';
+                            final amountPerPortion = item[
+                                'amountPerPortion']; // Usuwamy domyślną wartość 1
+                            final unit = item['unit'] ?? '';
+                            final title = item['title'] ?? '';
+                            final mealEntity =
+                                item['mealEntity'] as MealEntity?;
+
+                            return ShoppingListItem(
+                              ingredientId: ingredientId,
+                              ingredientName: ingredientName,
+                              amountPerPortion:
+                                  amountPerPortion, // Teraz może być null
+                              unit: unit,
+                              title: title,
+                              mealEntity: mealEntity,
+                              ingredientCategory:
+                                  item['ingredientCategory'] ?? 'Inne',
+                            );
+                          }).toList(),
+                          const SizedBox(height: 16),
+                        ],
                       );
                     },
                   );
@@ -58,7 +101,7 @@ class ShoppingListPage extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: FloatingActionButton(
-                mini: true, // <- Mały FAB
+                mini: true,
                 onPressed: () => _showAddIngredientSheet(context),
                 child: const Icon(Icons.add),
               ),

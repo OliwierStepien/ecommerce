@@ -21,7 +21,7 @@ class MealModelAdapter extends TypeAdapter<MealModel> {
       mealId: fields[1] as String,
       categoryId: (fields[2] as List).cast<String>(),
       image: fields[3] as String,
-      ingredients: (fields[4] as List).cast<String>(),
+      ingredients: (fields[4] as List).cast<IngredientModel>(),
       steps: (fields[5] as List).cast<String>(),
       isVegetarian: fields[6] as bool,
     );

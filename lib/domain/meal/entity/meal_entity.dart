@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 
 class MealEntity extends Equatable {
   final String title;
   final String mealId;
   final List<String> categoryId;
   final String image;
-  final List<String> ingredients;
+  final List<IngredientEntity> ingredients;
   final List<String> steps;
   final bool isVegetarian;
 

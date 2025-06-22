@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
@@ -62,14 +63,17 @@ class MealIngredient extends StatelessWidget {
   }
 
   Widget _buildIngredientItem(
-      BuildContext context, String ingredient, MealEntity mealEntity) {
+    BuildContext context, 
+    IngredientEntity ingredient, 
+    MealEntity mealEntity,
+  ) {
     return BlocListener<ShoppingListCubit, List<Map<String, dynamic>>>(
       listenWhen: (previous, current) {
         final wasAdded = previous.any((item) =>
-            item['ingredient'] == ingredient &&
+            item['ingredientId'] == ingredient.ingredientId &&
             item['mealId'] == mealEntity.mealId);
         final isNowAdded = current.any((item) =>
-            item['ingredient'] == ingredient &&
+            item['ingredientId'] == ingredient.ingredientId &&
             item['mealId'] == mealEntity.mealId);
         return wasAdded != isNowAdded;
       },
@@ -78,15 +82,15 @@ class MealIngredient extends StatelessWidget {
         if (!cubit.shouldShowNotification) return;
 
         final isNowAdded = state.any((item) =>
-            item['ingredient'] == ingredient &&
+            item['ingredientId'] == ingredient.ingredientId &&
             item['mealId'] == mealEntity.mealId);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               isNowAdded
-                  ? context.l10n.addedIngredientToShoppingList(ingredient)
-                  : context.l10n.removedIngredientFromShoppingList(ingredient),
+                  ? context.l10n.addedIngredientToShoppingList(ingredient.ingredientName)
+                  : context.l10n.removedIngredientFromShoppingList(ingredient.ingredientName),
             ),
             duration: const Duration(seconds: 1),
           ),
@@ -95,7 +99,7 @@ class MealIngredient extends StatelessWidget {
       child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
         builder: (context, state) {
           final isAdded = state.any((item) =>
-              item['ingredient'] == ingredient &&
+              item['ingredientId'] == ingredient.ingredientId &&
               item['mealId'] == mealEntity.mealId);
 
           return Padding(
@@ -104,7 +108,9 @@ class MealIngredient extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text('• $ingredient'),
+                  child: Text(
+                    '• ${ingredient.ingredientName} ${ingredient.amountPerPortion} ${ingredient.unit}',
+                  ),
                 ),
                 IconButton(
                   onPressed: () {
