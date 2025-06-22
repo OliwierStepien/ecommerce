@@ -1,17 +1,39 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
-import 'package:mealapp/data/ingredient/mapper/ingredient_mapper.dart';
-import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
+import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
+import 'package:mealapp/data/meal/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/data/meal/source/remote/meal_firebase_service.dart';
-import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
 class MealRepositoryImpl extends MealRepository {
+  @override
+  Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
+      String mealId) {
+    return handleFirestoreFailure(() async {
+      final returnedData =
+          await sl<MealFirebaseService>().getIngredientsForMeal(mealId);
+      return returnedData
+          .map((e) => IngredientMapper.toEntity(IngredientModel.fromMap(e)))
+          .toList();
+    });
+  }
+
+  @override
+Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
+  return handleFirestoreFailure(() async {
+    final returnedData = await sl<MealFirebaseService>().getAllIngredients();
+    return returnedData
+        .map((e) => IngredientMapper.toEntity(IngredientModel.fromMap(e)))
+        .toList();
+  });
+}
+
   @override
   Future<Either<Failure, List<MealEntity>>> getMeals() async {
     return handleFirestoreFailure(() async {
@@ -35,7 +57,8 @@ class MealRepositoryImpl extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, List<MealEntity>>> getMealsByTitle(String title) async {
+  Future<Either<Failure, List<MealEntity>>> getMealsByTitle(
+      String title) async {
     return handleFirestoreFailure(() async {
       final returnedData =
           await sl<MealFirebaseService>().getMealsByTitle(title);
@@ -112,24 +135,15 @@ class MealRepositoryImpl extends MealRepository {
           .toList();
     });
   }
-  
+
   @override
-  Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(String title) async {
+  Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(
+      String title) async {
     return handleFirestoreFailure(() async {
       final returnedData =
           await sl<MealFirebaseService>().getVegetarianMealsByTitle(title);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
-          .toList();
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(String mealId) {
-    return handleFirestoreFailure(() async {
-      final returnedData = await sl<MealFirebaseService>().getIngredientsForMeal(mealId);
-      return returnedData
-          .map((e) => IngredientMapper.toEntity(IngredientModel.fromMap(e)))
           .toList();
     });
   }

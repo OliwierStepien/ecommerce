@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 
 class MealEntity extends Equatable {
   final String title;

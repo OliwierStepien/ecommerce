@@ -1,5 +1,5 @@
-import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
-import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
+import 'package:mealapp/data/meal/model/ingredient_model.dart';
+import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 
 class IngredientMapper {
   static IngredientEntity toEntity(IngredientModel model) {

@@ -1,4 +1,4 @@
-import 'package:mealapp/data/ingredient/mapper/ingredient_mapper.dart';
+import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 

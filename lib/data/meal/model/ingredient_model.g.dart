@@ -17,7 +17,7 @@ class IngredientModelAdapter extends TypeAdapter<IngredientModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return IngredientModel(
-      amountPerPortion: fields[0] as num,
+      amountPerPortion: fields[0] as num?,
       ingredientCategory: fields[1] as String,
       ingredientId: fields[2] as String,
       ingredientName: fields[3] as String,

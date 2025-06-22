@@ -36,7 +36,7 @@ class ShoppingListPage extends StatelessWidget {
             Expanded(
               child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
                 builder: (context, state) {
-                  // Grupuj produkty według kategorii
+
                   final Map<String, List<Map<String, dynamic>>> groupedItems =
                       {};
                   for (var item in state) {
@@ -71,7 +71,7 @@ class ShoppingListPage extends StatelessWidget {
                             final ingredientId = item['ingredientId'] ?? '';
                             final ingredientName = item['ingredientName'] ?? '';
                             final amountPerPortion = item[
-                                'amountPerPortion']; // Usuwamy domyślną wartość 1
+                                'amountPerPortion'];
                             final unit = item['unit'] ?? '';
                             final title = item['title'] ?? '';
                             final mealEntity =
@@ -81,7 +81,7 @@ class ShoppingListPage extends StatelessWidget {
                               ingredientId: ingredientId,
                               ingredientName: ingredientName,
                               amountPerPortion:
-                                  amountPerPortion, // Teraz może być null
+                                  amountPerPortion,
                               unit: unit,
                               title: title,
                               mealEntity: mealEntity,
