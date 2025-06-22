@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
+import 'package:mealapp/data/meal/repository/remote/meal_firebase_repository_impl.dart';
+import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
@@ -11,6 +13,8 @@ class ShoppingListPage extends StatelessWidget {
   const ShoppingListPage({super.key});
 
   void _showAddIngredientSheet(BuildContext context) {
+    final getAllIngredientsUseCase = GetAllIngredientsUseCase(MealRepositoryImpl());
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -18,7 +22,9 @@ class ShoppingListPage extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => const AddCustomIngredientBottomSheet(),
+      builder: (_) => AddCustomIngredientBottomSheet(
+        getAllIngredientsUseCase: getAllIngredientsUseCase,
+      ),
     );
   }
 
@@ -36,15 +42,11 @@ class ShoppingListPage extends StatelessWidget {
             Expanded(
               child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
                 builder: (context, state) {
+                  final Map<String, List<Map<String, dynamic>>> groupedItems = {};
 
-                  final Map<String, List<Map<String, dynamic>>> groupedItems =
-                      {};
                   for (var item in state) {
                     final category = item['ingredientCategory'] ?? 'Inne';
-                    if (!groupedItems.containsKey(category)) {
-                      groupedItems[category] = [];
-                    }
-                    groupedItems[category]!.add(item);
+                    groupedItems.putIfAbsent(category, () => []).add(item);
                   }
 
                   return ListView.builder(
@@ -70,23 +72,19 @@ class ShoppingListPage extends StatelessWidget {
                           ...items.map((item) {
                             final ingredientId = item['ingredientId'] ?? '';
                             final ingredientName = item['ingredientName'] ?? '';
-                            final amountPerPortion = item[
-                                'amountPerPortion'];
+                            final amountPerPortion = item['amountPerPortion'];
                             final unit = item['unit'] ?? '';
                             final title = item['title'] ?? '';
-                            final mealEntity =
-                                item['mealEntity'] as MealEntity?;
+                            final mealEntity = item['mealEntity'] as MealEntity?;
 
                             return ShoppingListItem(
                               ingredientId: ingredientId,
                               ingredientName: ingredientName,
-                              amountPerPortion:
-                                  amountPerPortion,
+                              amountPerPortion: amountPerPortion,
                               unit: unit,
                               title: title,
                               mealEntity: mealEntity,
-                              ingredientCategory:
-                                  item['ingredientCategory'] ?? 'Inne',
+                              ingredientCategory: category,
                             );
                           }).toList(),
                           const SizedBox(height: 16),

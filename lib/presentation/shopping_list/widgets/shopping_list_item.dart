@@ -8,7 +8,7 @@ import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart
 class ShoppingListItem extends StatelessWidget {
   final String ingredientId;
   final String ingredientName;
-  final num? amountPerPortion; // Zmieniamy na nullable
+  final num? amountPerPortion;
   final String unit;
   final String title;
   final MealEntity? mealEntity;
