@@ -30,7 +30,9 @@ class _AddCustomIngredientBottomSheetState
 
     if (name.isEmpty) return;
 
-    context.read<ShoppingListCubit>().addCustomIngredient(name, category: category);
+    context
+        .read<ShoppingListCubit>()
+        .addCustomIngredient(name, category: category);
     Navigator.of(context).pop();
 
     _nameController.clear();

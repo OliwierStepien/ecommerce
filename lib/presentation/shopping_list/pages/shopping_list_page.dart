@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
-import 'package:mealapp/data/meal/repository/remote/meal_firebase_repository_impl.dart';
-import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/add_custom_ingredient_bottom_sheet.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
+import 'package:mealapp/service_locator.dart';
 
 class ShoppingListPage extends StatelessWidget {
   const ShoppingListPage({super.key});
 
   void _showAddIngredientSheet(BuildContext context) {
-    final getAllIngredientsUseCase = GetAllIngredientsUseCase(MealRepositoryImpl());
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -23,7 +21,7 @@ class ShoppingListPage extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => AddCustomIngredientBottomSheet(
-        getAllIngredientsUseCase: getAllIngredientsUseCase,
+        getAllIngredientsUseCase: sl<GetAllIngredientsUseCase>(),
       ),
     );
   }
