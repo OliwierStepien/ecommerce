@@ -79,6 +79,7 @@ class ShoppingListPage extends StatelessWidget {
                               ingredientId: ingredientId,
                               ingredientName: ingredientName,
                               amountPerPortion: amountPerPortion,
+                              scaledAmount: item['scaledAmount'],
                               unit: unit,
                               title: title,
                               mealEntity: mealEntity,

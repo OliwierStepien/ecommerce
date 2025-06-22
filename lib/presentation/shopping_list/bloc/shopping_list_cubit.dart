@@ -10,51 +10,53 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
   Map<String, dynamic>? _lastRemovedItem;
   bool _suppressNotifications = false;
 
-  Future<void> addOrRemoveIngredient(
-    IngredientEntity ingredient, 
-    MealEntity meal, {
-    bool suppressNotification = false,
-  }) async {
-    final List<Map<String, dynamic>> previousState = List.from(state);
-    final List<Map<String, dynamic>> updatedList;
-    
-    try {
-      _suppressNotifications = suppressNotification;
+Future<void> addOrRemoveIngredient(
+  IngredientEntity ingredient, 
+  MealEntity meal, {
+  bool suppressNotification = false,
+  num? scaledAmount, // Dodaj nowy parametr
+}) async {
+  final List<Map<String, dynamic>> previousState = List.from(state);
+  final List<Map<String, dynamic>> updatedList;
+  
+  try {
+    _suppressNotifications = suppressNotification;
 
-      final existingIngredientIndex = state.indexWhere(
-        (item) => item['ingredientId'] == ingredient.ingredientId && 
-                 item['mealId'] == meal.mealId,
-      );
+    final existingIngredientIndex = state.indexWhere(
+      (item) => item['ingredientId'] == ingredient.ingredientId && 
+               item['mealId'] == meal.mealId,
+    );
 
-      if (existingIngredientIndex != -1) {
-        _lastRemovedItem = {
-          'item': state[existingIngredientIndex],
-          'index': existingIngredientIndex,
-        };
-        updatedList = List.from(state)..removeAt(existingIngredientIndex);
-      } else {
-        updatedList = List.from(state)
-          ..add({
-            'ingredientId': ingredient.ingredientId,
-            'ingredientName': ingredient.ingredientName,
-            'amountPerPortion': ingredient.amountPerPortion,
-            'unit': ingredient.unit,
-            'ingredientCategory': ingredient.ingredientCategory,
-            'mealId': meal.mealId,
-            'title': meal.title,
-            'mealEntity': meal,
-          });
-      }
-
-      emit(updatedList);
-      await sl<MealRepository>().addOrRemoveShoppingListIngredient(meal);
-    } catch (e) {
-      emit(previousState);
-      rethrow;
-    } finally {
-      _suppressNotifications = false;
+    if (existingIngredientIndex != -1) {
+      _lastRemovedItem = {
+        'item': state[existingIngredientIndex],
+        'index': existingIngredientIndex,
+      };
+      updatedList = List.from(state)..removeAt(existingIngredientIndex);
+    } else {
+      updatedList = List.from(state)
+        ..add({
+          'ingredientId': ingredient.ingredientId,
+          'ingredientName': ingredient.ingredientName,
+          'amountPerPortion': ingredient.amountPerPortion,
+          'scaledAmount': scaledAmount, // Dodaj scaledAmount
+          'unit': ingredient.unit,
+          'ingredientCategory': ingredient.ingredientCategory,
+          'mealId': meal.mealId,
+          'title': meal.title,
+          'mealEntity': meal,
+        });
     }
+
+    emit(updatedList);
+    await sl<MealRepository>().addOrRemoveShoppingListIngredient(meal);
+  } catch (e) {
+    emit(previousState);
+    rethrow;
+  } finally {
+    _suppressNotifications = false;
   }
+}
 
   void restoreLastRemovedIngredient() {
     if (_lastRemovedItem != null) {
