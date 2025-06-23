@@ -323,6 +323,12 @@ abstract class AppLocalizations {
   /// **'Vegetarian meals'**
   String get vegetarianMeals;
 
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
   /// No description provided for @add.
   ///
   /// In en, this message translates to:

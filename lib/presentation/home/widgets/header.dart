@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
@@ -5,7 +6,7 @@ import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
+import 'package:mealapp/routes/routes.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -24,7 +25,7 @@ class Header extends StatelessWidget {
             children: [
               const _MenuIcon(),
               _UserName(user: state.user),
-              const _VegetarianSwitch(),
+              const _CalendarIcon(),
             ],
           );
         }
@@ -77,25 +78,15 @@ class _UserName extends StatelessWidget {
   }
 }
 
-class _VegetarianSwitch extends StatelessWidget {
-  const _VegetarianSwitch();
+class _CalendarIcon extends StatelessWidget {
+  const _CalendarIcon();
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<VegetarianFilterCubit, bool>(
-      builder: (context, isVegetarian) {
-        return Row(
-          children: [
-            Icon(Icons.eco, color: isVegetarian ? Colors.green : Colors.grey),
-            const SizedBox(width: 8),
-            Switch(
-              value: isVegetarian,
-              onChanged: (newValue) {
-                context.read<VegetarianFilterCubit>().toggle();
-              },
-            ),
-          ],
-        );
+    return IconButton(
+      icon: const Icon(Icons.calendar_month_outlined),
+      onPressed: () {
+        context.push(Routes.nestedCalendarPage);
       },
     );
   }

@@ -11,6 +11,7 @@ import 'package:mealapp/presentation/auth/signin_password/pages/signin_password_
 import 'package:mealapp/presentation/auth/signup/pages/signup_page.dart';
 import 'package:mealapp/presentation/category_meals/pages/category_meals_page.dart';
 import 'package:mealapp/presentation/home/pages/home_page.dart';
+import 'package:mealapp/presentation/calendar/pages/calendar_page.dart';
 import 'package:mealapp/presentation/meal_details/pages/favorite_meals_page.dart';
 import 'package:mealapp/presentation/meal_details/pages/meal_detail_page.dart';
 import 'package:mealapp/presentation/search/pages/search_page.dart';
@@ -70,6 +71,10 @@ final router = GoRouter(
               path: Routes.homePage,
               builder: (context, state) => const HomePage(),
               routes: [
+                GoRoute(
+                  path: Routes.calendarPage,
+                  builder: (context, state) => const CalendarPage(),
+                ),
                 GoRoute(
                   path: Routes.mealDetailPage,
                   builder: (context, state) =>

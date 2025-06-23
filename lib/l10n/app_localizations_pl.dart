@@ -125,6 +125,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get vegetarianMeals => 'Wegetarańskie';
 
   @override
+  String get calendar => 'Kalendarz';
+
+  @override
   String get add => 'Dodaj';
 
   @override

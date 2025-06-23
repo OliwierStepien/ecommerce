@@ -125,6 +125,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vegetarianMeals => 'Vegetarian meals';
 
   @override
+  String get calendar => 'Calendar';
+
+  @override
   String get add => 'Add';
 
   @override
