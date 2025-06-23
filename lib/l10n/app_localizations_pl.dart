@@ -122,6 +122,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get product => 'Produkt';
 
   @override
+  String get vegetarianMeals => 'Wegetarańskie';
+
+  @override
   String get add => 'Dodaj';
 
   @override

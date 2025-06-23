@@ -317,6 +317,12 @@ abstract class AppLocalizations {
   /// **'Product'**
   String get product;
 
+  /// No description provided for @vegetarianMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetarian meals'**
+  String get vegetarianMeals;
+
   /// No description provided for @add.
   ///
   /// In en, this message translates to:
