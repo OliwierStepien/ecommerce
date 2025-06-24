@@ -131,6 +131,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get add => 'Dodaj';
 
   @override
+  String get addMealToDay => 'Dodaj posiłek do dnia';
+
+  @override
+  String get plannedMeals => 'Zaplanowane posiłki';
+
+  @override
   String removedIngredientFromShoppingList(String ingredient) {
     return 'Usunięto $ingredient z listy zakupów';
   }

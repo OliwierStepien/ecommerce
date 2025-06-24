@@ -40,6 +40,8 @@
     "vegetarianMeals": "Wegetarańskie",
     "calendar": "Kalendarz",
     "add": "Dodaj",
+    "addMealToDay": "Dodaj posiłek do dnia",
+    "plannedMeals": "Zaplanowane posiłki",
     "@fromMealTitle": {
       "description": "Pokazuje nazwę posiłku",
       "placeholders": {

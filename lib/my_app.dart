@@ -27,7 +27,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => ButtonStateCubit()),
         BlocProvider(create: (context) => FavoriteMealsCubit()),
         BlocProvider(create: (context) => ShoppingListCubit()),
-        BlocProvider(create: (context) => CategoriesDisplayCubit()..displayCategories()),
+        BlocProvider(
+            create: (context) => CategoriesDisplayCubit()..displayCategories()),
         BlocProvider(create: (_) => VegetarianFilterCubit()),
         BlocProvider(
           create: (context) => MealsDisplayCubit(useCase: sl<GetMealUseCase>()),

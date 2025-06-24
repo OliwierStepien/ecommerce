@@ -40,6 +40,8 @@
     "vegetarianMeals": "Vegetarian meals",
     "calendar": "Calendar",
     "add": "Add",
+    "addMealToDay": "Add meal to day",
+    "plannedMeals": "Planned meals",
     "@fromMealTitle": {
       "description": "Shows meal name",
       "placeholders": {

@@ -335,6 +335,18 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get add;
 
+  /// No description provided for @addMealToDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal to day'**
+  String get addMealToDay;
+
+  /// No description provided for @plannedMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned meals'**
+  String get plannedMeals;
+
   /// Notification when ingredient is removed
   ///
   /// In en, this message translates to:

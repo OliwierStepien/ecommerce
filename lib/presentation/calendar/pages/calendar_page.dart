@@ -4,154 +4,122 @@ import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/calendar/bloc/planned_meals_cubit.dart';
+import 'package:mealapp/presentation/calendar/bloc/planned_meals_state.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class CalendarPage extends StatefulWidget {
+class CalendarPage extends StatelessWidget {
   final MealEntity? mealToAdd;
 
   const CalendarPage({super.key, this.mealToAdd});
 
   @override
-  State<CalendarPage> createState() => _CalendarState();
-}
-
-class _CalendarState extends State<CalendarPage> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-
-  DateTime normalizeDate(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _focusedDay = normalizeDate(_focusedDay);
-    _selectedDay = _focusedDay;
-  }
-
-  void _addMeal() {
-    if (_selectedDay != null && widget.mealToAdd != null) {
-      final selected = normalizeDate(_selectedDay!);
-      context.read<PlannedMealsCubit>().addMeal(selected, widget.mealToAdd!);
-    }
-  }
-
-  void _removeMeal(MealEntity meal) {
-    if (_selectedDay != null) {
-      final selected = normalizeDate(_selectedDay!);
-      context.read<PlannedMealsCubit>().removeMeal(selected, meal);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final normalizedDay = normalizeDate(_selectedDay!);
-    final mealsForDay = context.select<PlannedMealsCubit, List<MealEntity>>(
-      (cubit) => cubit.state[normalizedDay] ?? [],
-    );
+    return BlocBuilder<PlannedMealsCubit, PlannedMealsState>(
+      builder: (context, state) {
+        final cubit = context.read<PlannedMealsCubit>();
+        final plannedMeals =
+            (state is PlannedMealsLoaded) ? state.plannedMeals : {};
+        final selectedDay =
+            (state is PlannedMealsLoaded) ? state.selectedDay : DateTime.now();
+        final focusedDay =
+            (state is PlannedMealsLoaded) ? state.focusedDay : DateTime.now();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.calendar),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TableCalendar(
-                  locale: "pl_PL",
-                  headerStyle: const HeaderStyle(
-                      titleCentered: true, formatButtonVisible: false),
-                  firstDay: DateTime.utc(2025, 1, 1),
-                  lastDay: DateTime.utc(2035, 12, 31),
-                  focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) =>
-                      isSameDay(_selectedDay, day),
-                  calendarFormat: _calendarFormat,
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = normalizeDate(selectedDay);
-                      _focusedDay = normalizeDate(focusedDay);
-                    });
-                  },
-                  onFormatChanged: (format) {
-                    setState(() {
-                      _calendarFormat = format;
-                    });
-                  },
-                  onPageChanged: (focusedDay) {
-                    _focusedDay = normalizeDate(focusedDay);
-                  },
-                ),
-                if (widget.mealToAdd != null)
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _addMeal,
-                      child: const Text("Dodaj posiłek do dnia"),
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(context.l10n.calendar),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TableCalendar(
+                      locale: "pl_PL",
+                      headerStyle: const HeaderStyle(
+                        titleCentered: true,
+                        formatButtonVisible: false,
+                      ),
+                      firstDay: DateTime.utc(2025, 1, 1),
+                      lastDay: DateTime.utc(2035, 12, 31),
+                      focusedDay: focusedDay,
+                      selectedDayPredicate: (day) =>
+                          isSameDay(selectedDay, day),
+                      calendarFormat: CalendarFormat.month,
+                      startingDayOfWeek: StartingDayOfWeek.monday,
+                      onDaySelected: (selected, focused) =>
+                          cubit.changeDay(selected, focused),
+                      onPageChanged: (focused) =>
+                          cubit.changeDay(selectedDay, focused),
                     ),
-                  ),
-                const SizedBox(height: 16),
-                if (mealsForDay.isNotEmpty)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Zaplanowane posiłki',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                    if (mealToAdd != null)
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              cubit.addMeal(selectedDay, mealToAdd!),
+                          child: Text(context.l10n.addMealToDay),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        height: 300,
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: const ClampingScrollPhysics(),
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: mealsForDay.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 10),
-                          itemBuilder: (context, index) {
-                            final meal = mealsForDay[index];
-                            return Stack(
-                              children: [
-                                MealCard(mealEntity: meal),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: Colors.white,
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      icon: const Icon(Icons.close,
-                                          size: 18),
-                                      onPressed: () => _removeMeal(meal),
+                    const SizedBox(height: 16),
+                    if ((plannedMeals[selectedDay] ?? []).isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              context.l10n.plannedMeals,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 300,
+                            child: ListView.separated(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: plannedMeals[selectedDay]!.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 10),
+                              itemBuilder: (context, index) {
+                                final meal = plannedMeals[selectedDay]![index];
+                                return Stack(
+                                  children: [
+                                    MealCard(mealEntity: meal),
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor: Colors.white,
+                                        child: IconButton(
+                                          padding: EdgeInsets.zero,
+                                          icon:
+                                              const Icon(Icons.close, size: 18),
+                                          onPressed: () => cubit.removeMeal(
+                                              selectedDay, meal),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-              ],
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
