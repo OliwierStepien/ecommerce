@@ -117,7 +117,7 @@ class _CategoriesList extends StatelessWidget {
             },
           );
         }
-        return Container();
+        return const SizedBox.shrink();
       },
     );
   }

@@ -17,11 +17,25 @@ class CustomIngredientLoading extends CustomIngredientState {
 
 class CustomIngredientLoaded extends CustomIngredientState {
   final List<String> categories;
+  final String inputText;
 
-  const CustomIngredientLoaded({required this.categories});
+  const CustomIngredientLoaded({
+    required this.categories,
+    this.inputText = '',
+  });
+
+  CustomIngredientLoaded copyWith({
+    List<String>? categories,
+    String? inputText,
+  }) {
+    return CustomIngredientLoaded(
+      categories: categories ?? this.categories,
+      inputText: inputText ?? this.inputText,
+    );
+  }
 
   @override
-  List<Object?> get props => [categories];
+  List<Object?> get props => [categories, inputText];
 }
 
 class CustomIngredientError extends CustomIngredientState {

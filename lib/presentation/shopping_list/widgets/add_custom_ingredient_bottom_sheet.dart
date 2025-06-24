@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 
-class AddCustomIngredientBottomSheet extends StatefulWidget {
+class AddCustomIngredientBottomSheet extends StatelessWidget {
   final GetAllIngredientsUseCase getAllIngredientsUseCase;
 
   const AddCustomIngredientBottomSheet({
@@ -14,19 +15,10 @@ class AddCustomIngredientBottomSheet extends StatefulWidget {
     required this.getAllIngredientsUseCase,
   });
 
-  @override
-  State<AddCustomIngredientBottomSheet> createState() =>
-      _AddCustomIngredientBottomSheetState();
-}
-
-class _AddCustomIngredientBottomSheetState
-    extends State<AddCustomIngredientBottomSheet> {
-  final TextEditingController _nameController = TextEditingController();
-  final ValueNotifier<String?> _selectedCategory = ValueNotifier(null);
-
   void _submit(BuildContext context) {
-    final name = _nameController.text.trim();
-    final category = _selectedCategory.value ?? 'Inne';
+    final cubit = context.read<CustomIngredientCubit>();
+    final name = cubit.nameController.text.trim();
+    final category = cubit.selectedCategory ?? 'Inne';
 
     if (name.isEmpty) return;
 
@@ -34,51 +26,54 @@ class _AddCustomIngredientBottomSheetState
         .read<ShoppingListCubit>()
         .addCustomIngredient(name, category: category);
     Navigator.of(context).pop();
-
-    _nameController.clear();
+    cubit.clearForm();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CustomIngredientCubit()..loadCategories(),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          24,
-          16,
-          MediaQuery.of(context).viewInsets.bottom + 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              context.l10n.addToShoppingList,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: context.l10n.product,
-                border: const OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.next,
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 12),
-            BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
-              builder: (context, state) {
-                if (state is CustomIngredientLoading) {
-                  return const CircularProgressIndicator();
-                } else if (state is CustomIngredientLoaded) {
-                  final categories = [...state.categories]..sort();
+      create: (_) => CustomIngredientCubit(getAllIngredientsUseCase),
+      child: Builder(
+        builder: (context) {
+          final cubit = context.read<CustomIngredientCubit>();
 
-                  return ValueListenableBuilder<String?>(
-                    valueListenable: _selectedCategory,
-                    builder: (_, value, __) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              24,
+              16,
+              MediaQuery.of(context).viewInsets.bottom + 16,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.l10n.addToShoppingList,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
+                  builder: (context, state) {
+                    return TextField(
+                      controller: cubit.nameController,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.product,
+                        border: const OutlineInputBorder(),
+                      ),
+                      textInputAction: TextInputAction.next,
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
+                  builder: (context, state) {
+                    if (state is CustomIngredientLoading) {
+                      return const CircularProgressIndicator();
+                    } else if (state is CustomIngredientLoaded) {
+                      final categories = [...state.categories]..sort();
+
                       return DropdownButtonFormField<String>(
-                        value: categories.contains(value) ? value : null,
+                        value: cubit.selectedCategory,
                         decoration: const InputDecoration(
                           labelText: "Kategoria",
                           border: OutlineInputBorder(),
@@ -89,24 +84,34 @@ class _AddCustomIngredientBottomSheetState
                             child: Text(category),
                           );
                         }).toList(),
-                        onChanged: (val) => _selectedCategory.value = val,
+                        onChanged: (val) => cubit.updateCategory(val),
                       );
-                    },
-                  );
-                } else {
-                  return const Text("Błąd podczas ładowania kategorii");
-                }
-              },
+                    } else if (state is CustomIngredientError) {
+                      return ErrorMessage(
+                        message: state.message,
+                        onRetry: () =>
+                            context.read<CustomIngredientCubit>().loadCategories(),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                const SizedBox(height: 16),
+                BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
+                  builder: (context, state) {
+                    final isDisabled = state is! CustomIngredientLoaded ||
+                        state.inputText.trim().isEmpty;
+
+                    return ElevatedButton(
+                      onPressed: isDisabled ? null : () => _submit(context),
+                      child: Text(context.l10n.add),
+                    );
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _nameController.text.trim().isEmpty
-                  ? null
-                  : () => _submit(context),
-              child: Text(context.l10n.add),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

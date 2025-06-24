@@ -73,7 +73,7 @@ return BlocBuilder<CategoriesDisplayCubit, CategoriesDisplayState>(
           },
         );
       }
-      return Container();
+      return const SizedBox.shrink();
     },
   );
   }
