@@ -9,13 +9,13 @@ abstract class CategoryHiveService {
 class CategoryHiveServiceImpl extends CategoryHiveService {
   @override
   Future<List<CategoryModel>> getCategories() async {
-    final box = await Hive.openBox<CategoryModel>('categories');
+    final box = Hive.box<CategoryModel>('categories');
     return box.values.toList();
   }
 
   @override
   Future<void> saveCategories(List<CategoryModel> categories) async {
-    final box = await Hive.openBox<CategoryModel>('categories');
+    final box = Hive.box<CategoryModel>('categories');
     await box.clear();
     await box.addAll(categories);
   }
