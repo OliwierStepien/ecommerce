@@ -2,8 +2,11 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
-import 'package:mealapp/data/auth/repository/auth_repository_impl.dart';
-import 'package:mealapp/data/auth/source/auth_firebase_service.dart';
+import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
+import 'package:mealapp/data/auth/repository/network_aware_auth_repository.dart';
+import 'package:mealapp/data/auth/repository/remote/firebase_auth_repository_impl.dart';
+import 'package:mealapp/data/auth/source/local/auth_hive_service.dart';
+import 'package:mealapp/data/auth/source/remote/auth_firebase_service.dart';
 import 'package:mealapp/data/category/repository/remote/firebase_category_repository_impl.dart';
 import 'package:mealapp/data/category/repository/local/hive_category_repository_impl.dart';
 import 'package:mealapp/data/category/repository/network_aware_category_repository.dart';
@@ -52,6 +55,8 @@ Future<void> initializeDependencies() async {
 
   sl.registerSingleton<AuthFirebaseService>(AuthFirebaseServiceImpl());
 
+  sl.registerSingleton<AuthHiveService>(AuthHiveServiceImpl());
+
   // Category services
 
   sl.registerSingleton<CategoryFirebaseService>(CategoryFirebaseServiceImpl());
@@ -66,7 +71,12 @@ Future<void> initializeDependencies() async {
 
   // Auth repositories
 
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
+  sl.registerLazySingleton<FirebaseAuthRepositoryImpl>(() => FirebaseAuthRepositoryImpl());
+
+  sl.registerLazySingleton<HiveAuthRepositoryImpl>(
+      () => HiveAuthRepositoryImpl());
+
+  sl.registerLazySingleton<AuthRepository>(() => NetworkAwareAuthRepository());
 
   // Category repositories
 

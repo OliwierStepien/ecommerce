@@ -5,12 +5,12 @@ import 'package:mealapp/data/auth/mapper/user_mapper.dart';
 import 'package:mealapp/data/auth/model/user_model.dart';
 import 'package:mealapp/data/auth/model/user_creation_req.dart';
 import 'package:mealapp/data/auth/model/user_signin_req.dart';
-import 'package:mealapp/data/auth/source/auth_firebase_service.dart';
+import 'package:mealapp/data/auth/source/remote/auth_firebase_service.dart';
 import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/service_locator.dart';
 
-class AuthRepositoryImpl extends AuthRepository {
+class FirebaseAuthRepositoryImpl extends AuthRepository {
   @override
   Future<Either<Failure, String>> signup(UserCreationReq user) async {
     return handleFirestoreFailure(() async {
