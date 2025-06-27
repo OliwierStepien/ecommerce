@@ -8,23 +8,23 @@ import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:mealapp/domain/category/repository/category_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
-class NetworkAwareCategoryRepository extends CategoryRepository {
+class CategoryRepositoryManager extends CategoryRepository {
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
     final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-    debugPrint('[NetworkAwareRepo] Connection status: ${isOnline ? 'ONLINE' : 'OFFLINE'}');
-    debugPrint('[NetworkAwareRepo] Using ${isOnline ? 'Firebase' : 'Hive'} data source');
+    debugPrint('[CategoryRepositoryManager] Connection status: ${isOnline ? 'ONLINE' : 'OFFLINE'}');
+    debugPrint('[CategoryRepositoryManager] Using ${isOnline ? 'Firebase' : 'Hive'} data source');
 
     if (isOnline) {
       final result = await sl<FirebaseCategoryRepositoryImpl>().getCategories();
       
       result.fold(
         (failure) {
-          debugPrint('[NetworkAwareRepo] Firebase error: $failure');
+          debugPrint('[CategoryRepositoryManager] Firebase error: $failure');
         },
         (categories) async {
-          debugPrint('[NetworkAwareRepo] Saving ${categories.length} categories to Hive');
+          debugPrint('[CategoryRepositoryManager] Saving ${categories.length} categories to Hive');
           await sl<HiveCategoryRepositoryImpl>().saveCategories(categories);
         },
       );
@@ -33,8 +33,8 @@ class NetworkAwareCategoryRepository extends CategoryRepository {
     } else {
       final localResult = await sl<HiveCategoryRepositoryImpl>().getCategories();
       localResult.fold(
-        (failure) => debugPrint('[NetworkAwareRepo] Hive error: $failure'),
-        (categories) => debugPrint('[NetworkAwareRepo] Loaded ${categories.length} categories from Hive'),
+        (failure) => debugPrint('[CategoryRepositoryManager] Hive error: $failure'),
+        (categories) => debugPrint('[CategoryRepositoryManager] Loaded ${categories.length} categories from Hive'),
       );
       return localResult;
     }

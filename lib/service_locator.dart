@@ -3,17 +3,25 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
-import 'package:mealapp/data/auth/repository/network_aware_auth_repository.dart';
+import 'package:mealapp/data/auth/repository/auth_repository_manager.dart';
 import 'package:mealapp/data/auth/repository/remote/firebase_auth_repository_impl.dart';
-import 'package:mealapp/data/auth/source/local/auth_hive_service.dart';
-import 'package:mealapp/data/auth/source/remote/auth_firebase_service.dart';
+import 'package:mealapp/data/auth/source/local/hive_auth_service.dart';
+import 'package:mealapp/data/auth/source/remote/firebase_auth_service.dart';
 import 'package:mealapp/data/category/repository/remote/firebase_category_repository_impl.dart';
 import 'package:mealapp/data/category/repository/local/hive_category_repository_impl.dart';
-import 'package:mealapp/data/category/repository/network_aware_category_repository.dart';
-import 'package:mealapp/data/category/source/remote/category_firebase_service.dart';
-import 'package:mealapp/data/category/source/local/category_hive_service.dart';
-import 'package:mealapp/data/meal/repository/remote/meal_firebase_repository_impl.dart';
-import 'package:mealapp/data/meal/source/remote/meal_firebase_service.dart';
+import 'package:mealapp/data/category/repository/category_repository_manager.dart';
+import 'package:mealapp/data/category/source/remote/firebase_category_service.dart';
+import 'package:mealapp/data/category/source/local/hive_category_service.dart';
+import 'package:mealapp/data/meal/repository/local/hive_meal_repository_impl.dart';
+import 'package:mealapp/data/meal/repository/meal_repository_manager.dart';
+import 'package:mealapp/data/meal/repository/remote/firebase_meal_repository_impl.dart';
+import 'package:mealapp/data/meal/source/local/hive_meal_service.dart';
+import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
+import 'package:mealapp/data/planned_meal/repository/local/hive_planned_meal_repository_impl.dart';
+import 'package:mealapp/data/planned_meal/repository/planned_meal_repository_manager.dart';
+import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_meal_repository_impl.dart';
+import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
+import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/domain/auth/usecase/get_user.dart';
 import 'package:mealapp/domain/auth/usecase/is_logged_in.dart';
@@ -35,6 +43,8 @@ import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
 import 'package:mealapp/domain/meal/usecase/shopping_list/get_shopping_list.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mealapp/domain/meal/usecase/shopping_list/is_ingredient_in_shopping_list.dart';
+import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
+import 'package:mealapp/domain/planned_meal/usecase/planned_meal_usecase.dart';
 
 final sl = GetIt.instance;
 
@@ -53,30 +63,39 @@ Future<void> initializeDependencies() async {
 
   // Auth services
 
-  sl.registerSingleton<AuthFirebaseService>(AuthFirebaseServiceImpl());
+  sl.registerSingleton<FirebaseAuthService>(FirebaseAuthServiceImpl());
 
-  sl.registerSingleton<AuthHiveService>(AuthHiveServiceImpl());
+  sl.registerSingleton<HiveAuthService>(HiveAuthServiceImpl());
 
   // Category services
 
-  sl.registerSingleton<CategoryFirebaseService>(CategoryFirebaseServiceImpl());
+  sl.registerSingleton<FirebaseCategoryService>(FirebaseCategoryServiceImpl());
 
-  sl.registerSingleton<CategoryHiveService>(CategoryHiveServiceImpl());
+  sl.registerSingleton<HiveCategoryService>(HiveCategoryServiceImpl());
 
   // Meal services
 
-  sl.registerSingleton<MealFirebaseService>(MealFirebaseServiceImpl());
+  sl.registerSingleton<FirebaseMealService>(FirebaseMealServiceImpl());
+
+  sl.registerSingleton<HiveMealService>(HiveMealServiceImpl());
+
+  // Planned Meal services
+
+  sl.registerSingleton<FirebasePlannedMealService>(
+      FirebasePlannedMealServiceImpl());
+  sl.registerSingleton<HivePlannedMealService>(HivePlannedMealServiceImpl());
 
   // REPOSITORIES
 
   // Auth repositories
 
-  sl.registerLazySingleton<FirebaseAuthRepositoryImpl>(() => FirebaseAuthRepositoryImpl());
+  sl.registerLazySingleton<FirebaseAuthRepositoryImpl>(
+      () => FirebaseAuthRepositoryImpl());
 
   sl.registerLazySingleton<HiveAuthRepositoryImpl>(
       () => HiveAuthRepositoryImpl());
 
-  sl.registerLazySingleton<AuthRepository>(() => NetworkAwareAuthRepository());
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryManager());
 
   // Category repositories
 
@@ -87,11 +106,26 @@ Future<void> initializeDependencies() async {
       () => HiveCategoryRepositoryImpl());
 
   sl.registerLazySingleton<CategoryRepository>(
-      () => NetworkAwareCategoryRepository());
+      () => CategoryRepositoryManager());
 
   // Meal repositories
 
-  sl.registerLazySingleton<MealRepository>(() => MealRepositoryImpl());
+  sl.registerLazySingleton<FirebaseMealRepositoryImpl>(
+      () => FirebaseMealRepositoryImpl());
+
+  sl.registerLazySingleton<HiveMealRepositoryImpl>(
+      () => HiveMealRepositoryImpl());
+
+  sl.registerLazySingleton<MealRepository>(() => MealRepositoryManager());
+
+  // Planned Meal repositories
+
+  sl.registerLazySingleton<FirebasePlannedMealRepositoryImpl>(
+      () => FirebasePlannedMealRepositoryImpl());
+  sl.registerLazySingleton<HivePlannedMealRepositoryImpl>(
+      () => HivePlannedMealRepositoryImpl());
+  sl.registerLazySingleton<PlannedMealRepository>(
+      () => PlannedMealRepositoryManager());
 
   // USECASES
 
@@ -152,4 +186,13 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<GetShoppingListUseCase>(
       () => GetShoppingListUseCase(sl<MealRepository>()));
+
+  // Planned Meal usecases
+
+  sl.registerLazySingleton<GetPlannedMealsUseCase>(
+      () => GetPlannedMealsUseCase(sl<PlannedMealRepository>()));
+  sl.registerLazySingleton<AddPlannedMealUseCase>(
+      () => AddPlannedMealUseCase(sl<PlannedMealRepository>()));
+  sl.registerLazySingleton<RemovePlannedMealUseCase>(
+      () => RemovePlannedMealUseCase(sl<PlannedMealRepository>()));
 }

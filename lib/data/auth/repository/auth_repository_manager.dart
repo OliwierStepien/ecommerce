@@ -9,7 +9,7 @@ import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/service_locator.dart';
 
-class NetworkAwareAuthRepository extends AuthRepository {
+class AuthRepositoryManager extends AuthRepository {
   @override
   Future<Either<Failure, String>> signup(UserCreationReq user) async {
     final isOnline = await sl<NetworkInfo>().checkInternetConnection();

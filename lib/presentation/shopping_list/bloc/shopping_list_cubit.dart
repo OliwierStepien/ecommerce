@@ -14,7 +14,7 @@ Future<void> addOrRemoveIngredient(
   IngredientEntity ingredient, 
   MealEntity meal, {
   bool suppressNotification = false,
-  num? scaledAmount, // Dodaj nowy parametr
+  num? scaledAmount,
 }) async {
   final List<Map<String, dynamic>> previousState = List.from(state);
   final List<Map<String, dynamic>> updatedList;
@@ -39,7 +39,7 @@ Future<void> addOrRemoveIngredient(
           'ingredientId': ingredient.ingredientId,
           'ingredientName': ingredient.ingredientName,
           'amountPerPortion': ingredient.amountPerPortion,
-          'scaledAmount': scaledAmount, // Dodaj scaledAmount
+          'scaledAmount': scaledAmount,
           'unit': ingredient.unit,
           'ingredientCategory': ingredient.ingredientCategory,
           'mealId': meal.mealId,

@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
 
-abstract class CategoryFirebaseService {
+abstract class FirebaseCategoryService {
   Future<List<Map<String, dynamic>>> getCategories();
 }
 
-class CategoryFirebaseServiceImpl extends CategoryFirebaseService {
+class FirebaseCategoryServiceImpl extends FirebaseCategoryService {
   @override
   Future<List<Map<String, dynamic>>> getCategories() async {
     return handleFirestoreException(() async {

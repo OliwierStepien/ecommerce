@@ -5,19 +5,19 @@ import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
-import 'package:mealapp/data/meal/source/remote/meal_firebase_service.dart';
+import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
-class MealRepositoryImpl extends MealRepository {
+class FirebaseMealRepositoryImpl extends MealRepository {
   @override
   Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
       String mealId) {
     return handleFirestoreFailure(() async {
       final returnedData =
-          await sl<MealFirebaseService>().getIngredientsForMeal(mealId);
+          await sl<FirebaseMealService>().getIngredientsForMeal(mealId);
       return returnedData
           .map((e) => IngredientMapper.toEntity(IngredientModel.fromMap(e)))
           .toList();
@@ -27,7 +27,7 @@ class MealRepositoryImpl extends MealRepository {
   @override
 Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   return handleFirestoreFailure(() async {
-    final returnedData = await sl<MealFirebaseService>().getAllIngredients();
+    final returnedData = await sl<FirebaseMealService>().getAllIngredients();
     return returnedData
         .map((e) => IngredientMapper.toEntity(IngredientModel.fromMap(e)))
         .toList();
@@ -37,7 +37,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   @override
   Future<Either<Failure, List<MealEntity>>> getMeals() async {
     return handleFirestoreFailure(() async {
-      final returnedData = await sl<MealFirebaseService>().getMeals();
+      final returnedData = await sl<FirebaseMealService>().getMeals();
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();
@@ -49,7 +49,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
       String categoryId) async {
     return handleFirestoreFailure(() async {
       final returnedData =
-          await sl<MealFirebaseService>().getMealsByCategoryId(categoryId);
+          await sl<FirebaseMealService>().getMealsByCategoryId(categoryId);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();
@@ -61,7 +61,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
       String title) async {
     return handleFirestoreFailure(() async {
       final returnedData =
-          await sl<MealFirebaseService>().getMealsByTitle(title);
+          await sl<FirebaseMealService>().getMealsByTitle(title);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();
@@ -71,14 +71,14 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   @override
   Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(MealEntity meal) async {
     return handleFirestoreFailure(() async {
-      return await sl<MealFirebaseService>().addOrRemoveFavoriteMeal(meal);
+      return await sl<FirebaseMealService>().addOrRemoveFavoriteMeal(meal);
     });
   }
 
   @override
   Future<Either<Failure, List<MealEntity>>> getFavoritesMeals() async {
     return handleFirestoreFailure(() async {
-      final returnedData = await sl<MealFirebaseService>().getFavoritesMeals();
+      final returnedData = await sl<FirebaseMealService>().getFavoritesMeals();
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();
@@ -89,7 +89,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
       MealEntity meal) async {
     return handleFirestoreFailure(() async {
-      return await sl<MealFirebaseService>()
+      return await sl<FirebaseMealService>()
           .addOrRemoveShoppingListIngredient(meal);
     });
   }
@@ -98,14 +98,14 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   Future<Either<Failure, bool>> isIngredientInShoppingList(
       MealEntity meal) async {
     return handleFirestoreFailure(() async {
-      return await sl<MealFirebaseService>().isIngredientInShoppingList(meal);
+      return await sl<FirebaseMealService>().isIngredientInShoppingList(meal);
     });
   }
 
   @override
   Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
     return handleFirestoreFailure(() async {
-      final returnedData = await sl<MealFirebaseService>().getShoppingList();
+      final returnedData = await sl<FirebaseMealService>().getShoppingList();
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();
@@ -117,7 +117,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
       bool isVegetarian) async {
     return handleFirestoreFailure(() async {
       final returnedData =
-          await sl<MealFirebaseService>().getMealsByIsVegetarian(isVegetarian);
+          await sl<FirebaseMealService>().getMealsByIsVegetarian(isVegetarian);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();
@@ -128,7 +128,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByCategoryId(
       String categoryId) async {
     return handleFirestoreFailure(() async {
-      final returnedData = await sl<MealFirebaseService>()
+      final returnedData = await sl<FirebaseMealService>()
           .getVegetarianMealsByCategoryId(categoryId);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
@@ -141,7 +141,7 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
       String title) async {
     return handleFirestoreFailure(() async {
       final returnedData =
-          await sl<MealFirebaseService>().getVegetarianMealsByTitle(title);
+          await sl<FirebaseMealService>().getVegetarianMealsByTitle(title);
       return returnedData
           .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
           .toList();

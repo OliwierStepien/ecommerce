@@ -4,7 +4,7 @@ import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-abstract class MealFirebaseService {
+abstract class FirebaseMealService {
   Future<List<Map<String, dynamic>>> getIngredientsForMeal(String mealId);
   Future<List<Map<String, dynamic>>> getAllIngredients();
   Future<List<Map<String, dynamic>>> getMeals();
@@ -21,7 +21,7 @@ abstract class MealFirebaseService {
   Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(String title);
 }
 
-class MealFirebaseServiceImpl extends MealFirebaseService {
+class FirebaseMealServiceImpl extends FirebaseMealService {
   @override
   Future<List<Map<String, dynamic>>> getIngredientsForMeal(String mealId) {
     return handleFirestoreException(() async {
@@ -35,15 +35,15 @@ class MealFirebaseServiceImpl extends MealFirebaseService {
   }
 
   @override
-Future<List<Map<String, dynamic>>> getAllIngredients() {
-  return handleFirestoreException(() async {
-    final returnedData = await FirebaseFirestore.instance
-        .collection("Ingredients")
-        .get()
-        .timeout(const Duration(seconds: 15));
-    return returnedData.docs.map((e) => e.data()).toList();
-  });
-}
+  Future<List<Map<String, dynamic>>> getAllIngredients() {
+    return handleFirestoreException(() async {
+      final returnedData = await FirebaseFirestore.instance
+          .collection("Ingredients")
+          .get()
+          .timeout(const Duration(seconds: 15));
+      return returnedData.docs.map((e) => e.data()).toList();
+    });
+  }
 
   @override
   Future<List<Map<String, dynamic>>> getMeals() async {

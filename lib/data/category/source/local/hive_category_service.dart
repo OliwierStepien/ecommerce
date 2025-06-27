@@ -1,12 +1,12 @@
 import 'package:hive/hive.dart';
 import 'package:mealapp/data/category/model/category_model.dart';
 
-abstract class CategoryHiveService {
+abstract class HiveCategoryService {
   Future<List<CategoryModel>> getCategories();
   Future<void> saveCategories(List<CategoryModel> categories);
 }
 
-class CategoryHiveServiceImpl extends CategoryHiveService {
+class HiveCategoryServiceImpl extends HiveCategoryService {
   @override
   Future<List<CategoryModel>> getCategories() async {
     final box = Hive.box<CategoryModel>('categories');

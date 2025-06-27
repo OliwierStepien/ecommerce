@@ -6,8 +6,10 @@ import 'package:mealapp/service_locator.dart';
 import 'package:mealapp/my_app.dart';
 
 Future<void> main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
   await HiveConfig.init();
+  // await HiveConfig.clearPlannedMealsBox();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 
 abstract class PlannedMealsState extends Equatable {
   @override
@@ -8,8 +8,10 @@ abstract class PlannedMealsState extends Equatable {
 
 class PlannedMealsInitial extends PlannedMealsState {}
 
+class PlannedMealsLoading extends PlannedMealsState {}
+
 class PlannedMealsLoaded extends PlannedMealsState {
-  final Map<DateTime, List<MealEntity>> plannedMeals;
+  final Map<DateTime, List<PlannedMealEntity>> plannedMeals;
   final DateTime selectedDay;
   final DateTime focusedDay;
 
@@ -26,7 +28,7 @@ class PlannedMealsLoaded extends PlannedMealsState {
 class PlannedMealsError extends PlannedMealsState {
   final String message;
 
-  PlannedMealsError({required this.message});
+  PlannedMealsError(this.message);
 
   @override
   List<Object?> get props => [message];

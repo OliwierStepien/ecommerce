@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/calendar/bloc/planned_meals_cubit.dart';
 import 'package:mealapp/presentation/calendar/bloc/planned_meals_state.dart';
@@ -17,12 +18,15 @@ class CalendarPage extends StatelessWidget {
     return BlocBuilder<PlannedMealsCubit, PlannedMealsState>(
       builder: (context, state) {
         final cubit = context.read<PlannedMealsCubit>();
-        final plannedMeals =
-            (state is PlannedMealsLoaded) ? state.plannedMeals : {};
-        final selectedDay =
-            (state is PlannedMealsLoaded) ? state.selectedDay : DateTime.now();
-        final focusedDay =
-            (state is PlannedMealsLoaded) ? state.focusedDay : DateTime.now();
+        final plannedMeals = (state is PlannedMealsLoaded) 
+            ? state.plannedMeals 
+            : {};
+        final selectedDay = (state is PlannedMealsLoaded)
+            ? state.selectedDay
+            : DateTime.now();
+        final focusedDay = (state is PlannedMealsLoaded)
+            ? state.focusedDay
+            : DateTime.now();
 
         return Scaffold(
           appBar: AppBar(
@@ -44,20 +48,26 @@ class CalendarPage extends StatelessWidget {
                       firstDay: DateTime.utc(2025, 1, 1),
                       lastDay: DateTime.utc(2035, 12, 31),
                       focusedDay: focusedDay,
-                      selectedDayPredicate: (day) =>
-                          isSameDay(selectedDay, day),
+                      selectedDayPredicate: (day) => isSameDay(selectedDay, day),
                       calendarFormat: CalendarFormat.month,
                       startingDayOfWeek: StartingDayOfWeek.monday,
-                      onDaySelected: (selected, focused) =>
-                          cubit.changeDay(selected, focused),
-                      onPageChanged: (focused) =>
-                          cubit.changeDay(selectedDay, focused),
+                      onDaySelected: (selected, focused) {
+                        cubit.changeDay(selected, focused);
+                      },
+                      onPageChanged: (focused) {
+                        cubit.changeDay(selectedDay, focused);
+                      },
                     ),
                     if (mealToAdd != null)
                       Center(
                         child: ElevatedButton(
-                          onPressed: () =>
-                              cubit.addMeal(selectedDay, mealToAdd!),
+                          onPressed: () => cubit.addPlannedMeal(
+                            PlannedMealEntity(
+                              date: selectedDay,
+                              meal: mealToAdd!,
+                            ),
+                            context,
+                          ),
                           child: Text(context.l10n.addMealToDay),
                         ),
                       ),
@@ -80,17 +90,15 @@ class CalendarPage extends StatelessWidget {
                           SizedBox(
                             height: 300,
                             child: ListView.separated(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               scrollDirection: Axis.horizontal,
                               itemCount: plannedMeals[selectedDay]!.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(width: 10),
+                              separatorBuilder: (_, __) => const SizedBox(width: 10),
                               itemBuilder: (context, index) {
-                                final meal = plannedMeals[selectedDay]![index];
+                                final plannedMeal = plannedMeals[selectedDay]![index];
                                 return Stack(
                                   children: [
-                                    MealCard(mealEntity: meal),
+                                    MealCard(mealEntity: plannedMeal.meal),
                                     Positioned(
                                       top: 4,
                                       right: 4,
@@ -99,10 +107,12 @@ class CalendarPage extends StatelessWidget {
                                         backgroundColor: Colors.white,
                                         child: IconButton(
                                           padding: EdgeInsets.zero,
-                                          icon:
-                                              const Icon(Icons.close, size: 18),
-                                          onPressed: () => cubit.removeMeal(
-                                              selectedDay, meal),
+                                          icon: const Icon(Icons.close, size: 18),
+                                          onPressed: () => cubit.removePlannedMeal(
+                                            plannedMeal.date,
+                                            plannedMeal.meal.mealId,
+                                            context,
+                                          ),
                                         ),
                                       ),
                                     ),

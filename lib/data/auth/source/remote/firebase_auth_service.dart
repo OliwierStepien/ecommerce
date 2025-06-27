@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-abstract class AuthFirebaseService {
+abstract class FirebaseAuthService {
   Future<String> signup(UserCreationReq user);
   Future<String> signin(UserSigninReq user);
   Future<String> sendPasswordResetEmail(String email);
@@ -13,7 +13,7 @@ abstract class AuthFirebaseService {
   Future<Map<String, dynamic>> getUser();
 }
 
-class AuthFirebaseServiceImpl extends AuthFirebaseService {
+class FirebaseAuthServiceImpl extends FirebaseAuthService {
   @override
   Future<String> signup(UserCreationReq user) async {
     return handleFirestoreException(() async {
