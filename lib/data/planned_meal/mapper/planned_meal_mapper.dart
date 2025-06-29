@@ -15,6 +15,8 @@ class PlannedMealMapper {
     return PlannedMealModel(
       date: entity.date,
       meal: MealMapper.toModel(entity.meal),
+      isSynced: false,
+      isDeleted: false,
     );
   }
 }

@@ -23,17 +23,32 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
     });
   }
 
-@override
-Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
-  return handleFirestoreFailure(() async {
-    final data = await sl<FirebasePlannedMealService>().getPlannedMeals();
-    return data.map((e) {
-      final model = PlannedMealModel.fromMap(e); // Najpierw do modelu
-      return PlannedMealEntity(
-        date: model.date,
-        meal: MealMapper.toEntity(model.meal), // Potem do encji
-      );
-    }).toList();
-  });
-}
+  @override
+  Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
+    return handleFirestoreFailure(() async {
+      final data = await sl<FirebasePlannedMealService>().getPlannedMeals();
+      return data.map((e) {
+        final model = PlannedMealModel.fromMap(e);
+        return PlannedMealEntity(
+          date: model.date,
+          meal: MealMapper.toEntity(model.meal),
+        );
+      }).toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedPlannedMeals() async {
+    return const Right([]);
+  }
+
+  @override
+  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() async {
+    return const Right([]);
+  }
+
+  @override
+  Future<Either<Failure, void>> markAsSynced(DateTime date, String mealId) async {
+    return const Right(null);
+  }
 }

@@ -44,4 +44,19 @@ class PlannedMealRepositoryManager implements PlannedMealRepository {
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
     return await sl<HivePlannedMealRepositoryImpl>().getPlannedMeals();
   }
+
+  @override
+  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedPlannedMeals() {
+    return sl<HivePlannedMealRepositoryImpl>().getUnsyncedPlannedMeals();
+  }
+
+  @override
+  Future<Either<Failure, void>> markAsSynced(DateTime date, String mealId) {
+    return sl<HivePlannedMealRepositoryImpl>().markAsSynced(date, mealId);
+  }
+  
+  @override
+Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() async {
+  return await sl<HivePlannedMealRepositoryImpl>().getUnsyncedChanges();
+}
 }

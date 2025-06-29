@@ -12,15 +12,25 @@ class PlannedMealModel {
   @HiveField(1)
   final MealModel meal;
 
+  @HiveField(2, defaultValue: false)
+  final bool isSynced;
+
+  @HiveField(3, defaultValue: false)
+  final bool isDeleted;
+
   PlannedMealModel({
     required this.date,
     required this.meal,
+    this.isSynced = false,
+    this.isDeleted = false,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'date': date,
       'meal': meal.toMap(),
+      'isSynced': isSynced,
+      'isDeleted': isDeleted,
     };
   }
 
@@ -28,6 +38,8 @@ class PlannedMealModel {
     return PlannedMealModel(
       date: (map['date'] as Timestamp).toDate(),
       meal: MealModel.fromMap(map['meal']),
+      isSynced: map['isSynced'] ?? false,
+      isDeleted: map['isDeleted'] ?? false,
     );
   }
 }
