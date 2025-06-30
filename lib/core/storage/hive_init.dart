@@ -37,7 +37,6 @@ class HiveConfig {
     ]);
   }
 
-  // DODAJ TĘ NOWĄ METODĘ
   static Future<void> clearPlannedMealsBox() async {
     try {
       final box = Hive.box<PlannedMealModel>('plannedMeals');

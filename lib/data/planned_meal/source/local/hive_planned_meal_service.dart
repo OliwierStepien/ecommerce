@@ -8,21 +8,22 @@ abstract class HivePlannedMealService {
 }
 
 class HivePlannedMealServiceImpl implements HivePlannedMealService {
+
+  Box<PlannedMealModel> get _box => Hive.box<PlannedMealModel>('plannedMeals');
+
   @override
   Future<List<PlannedMealModel>> getPlannedMeals() async {
-    final box = Hive.box<PlannedMealModel>('plannedMeals');
-    return box.values.toList();
+    return _box.values.toList();
   }
 
   @override
   Future<void> savePlannedMeal(PlannedMealModel plannedMeal) async {
-    final box = Hive.box<PlannedMealModel>('plannedMeals');
-    await box.put('${plannedMeal.date}_${plannedMeal.meal.mealId}', plannedMeal);
+    await _box.put(
+        '${plannedMeal.date}_${plannedMeal.meal.mealId}', plannedMeal);
   }
 
   @override
   Future<void> removePlannedMeal(DateTime date, String mealId) async {
-    final box = Hive.box<PlannedMealModel>('plannedMeals');
-    await box.delete('${date}_$mealId');
+    await _box.delete('${date}_$mealId');
   }
 }

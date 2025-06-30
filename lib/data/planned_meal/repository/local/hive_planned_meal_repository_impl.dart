@@ -11,6 +11,7 @@ import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.d
 import 'package:mealapp/service_locator.dart';
 
 class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
+
   @override
   Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) async {
     return handleHiveFailure(() async {
