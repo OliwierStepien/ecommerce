@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
@@ -20,6 +21,7 @@ import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
 import 'package:mealapp/data/planned_meal/repository/local/hive_planned_meal_repository_impl.dart';
 import 'package:mealapp/data/planned_meal/repository/manager/planned_meal_repository_manager.dart';
 import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_meal_repository_impl.dart';
+import 'package:mealapp/data/planned_meal/repository/sync/planned_meal_sync_service.dart';
 import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
 import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
@@ -127,8 +129,9 @@ Future<void> initializeDependencies() async {
       HivePlannedMealRepositoryImpl(
           hivePlannedMealService: sl<HivePlannedMealService>(),
           networkInfo: sl<NetworkInfo>()));
-  sl.registerLazySingleton<PlannedMealRepository>(
-      () => PlannedMealRepositoryManager(localRepository: sl<HivePlannedMealRepositoryImpl>(),
+  sl.registerLazySingleton<PlannedMealRepository>(() =>
+      PlannedMealRepositoryManager(
+          localRepository: sl<HivePlannedMealRepositoryImpl>(),
           remoteRepository: sl<FirebasePlannedMealRepositoryImpl>(),
           networkInfo: sl<NetworkInfo>()));
 
@@ -200,4 +203,20 @@ Future<void> initializeDependencies() async {
       () => AddPlannedMealUseCase(sl<PlannedMealRepository>()));
   sl.registerLazySingleton<RemovePlannedMealUseCase>(
       () => RemovePlannedMealUseCase(sl<PlannedMealRepository>()));
+
+  // SYNC SERVICES & CONNECTION MONITOR
+
+  // Planned Meal
+
+  final syncService = PlannedMealSyncService(
+    firebaseRepo: sl<FirebasePlannedMealRepositoryImpl>(),
+    hiveRepo: sl<HivePlannedMealRepositoryImpl>(),
+    networkInfo: sl<NetworkInfo>(),
+  );
+
+  final connectionMonitor = ConnectionMonitor(syncService: syncService);
+  connectionMonitor.startMonitoring();
+
+  sl.registerSingleton(syncService);
+  sl.registerSingleton(connectionMonitor);
 }
