@@ -24,7 +24,6 @@ class PlannedMealSyncService {
       return Left(NetworkFailure());
     }
 
-    // Get unsynced changes from Hive (which returns models, not entities)
     final changesResult = await hiveRepo.getUnsyncedChanges();
     
     return changesResult.fold(
@@ -33,7 +32,7 @@ class PlannedMealSyncService {
         final box = Hive.box<PlannedMealModel>('plannedMeals');
         
         for (final entity in changes) {
-          // First get the model from Hive to check its properties
+
           final key = '${entity.date}_${entity.meal.mealId}';
           final model = box.get(key);
           
@@ -46,13 +45,13 @@ class PlannedMealSyncService {
             }
             await box.delete(key);
           } else {
-            final result = await firebaseRepo.addPlannedMeal(entity); // Use the entity directly
+            final result = await firebaseRepo.addPlannedMeal(entity);
             if (result.isLeft()) {
               return Left((result as Left).value);
             }
             await box.put(key, PlannedMealModel(
               date: entity.date,
-              meal: MealMapper.toModel(entity.meal), // Convert to model
+              meal: MealMapper.toModel(entity.meal),
               isSynced: true,
               isDeleted: false,
             ));

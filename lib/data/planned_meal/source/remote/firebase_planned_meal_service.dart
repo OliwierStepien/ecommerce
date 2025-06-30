@@ -9,15 +9,25 @@ abstract class FirebasePlannedMealService {
   Future<void> addPlannedMeal(PlannedMealEntity plannedMeal);
   Future<void> removePlannedMeal(DateTime date, String mealId);
   Future<List<Map<String, dynamic>>> getPlannedMeals();
+  Future<List<Map<String, dynamic>>> getUnsyncedPlannedMeals();
 }
 
 class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  FirebasePlannedMealServiceImpl({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
+
   @override
   Future<void> addPlannedMeal(PlannedMealEntity plannedMeal) async {
     return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _auth.currentUser;
       if (user == null) throw UnauthorizedException();
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('Users')
           .doc(user.uid)
           .collection('PlannedMeals')
@@ -25,6 +35,8 @@ class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
           .set({
         'date': plannedMeal.date,
         'meal': MealMapper.toModel(plannedMeal.meal).toMap(),
+        'isSynced': true,
+        'isDeleted': false,
       }).timeout(const Duration(seconds: 15));
     });
   }
@@ -32,9 +44,9 @@ class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
   @override
   Future<void> removePlannedMeal(DateTime date, String mealId) async {
     return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _auth.currentUser;
       if (user == null) throw UnauthorizedException();
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('Users')
           .doc(user.uid)
           .collection('PlannedMeals')
@@ -47,15 +59,21 @@ class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
   @override
   Future<List<Map<String, dynamic>>> getPlannedMeals() async {
     return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _auth.currentUser;
       if (user == null) throw UnauthorizedException();
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection('Users')
           .doc(user.uid)
           .collection('PlannedMeals')
+          .where('isDeleted', isEqualTo: false)
           .get()
           .timeout(const Duration(seconds: 15));
       return returnedData.docs.map((e) => e.data()).toList();
     });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUnsyncedPlannedMeals() async {
+    return [];
   }
 }

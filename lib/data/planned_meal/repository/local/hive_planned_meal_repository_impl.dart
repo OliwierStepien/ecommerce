@@ -1,106 +1,71 @@
 import 'package:dartz/dartz.dart';
-import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_hive_failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
-import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
+import 'package:mealapp/data/planned_meal/mapper/planned_meal_mapper.dart';
 import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
-import 'package:mealapp/service_locator.dart';
 
 class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
+  final HivePlannedMealService _hivePlannedMealService;
+  final NetworkInfo _networkInfo;
+
+  HivePlannedMealRepositoryImpl({
+    required HivePlannedMealService hivePlannedMealService,
+    required NetworkInfo networkInfo,
+  })  : _hivePlannedMealService = hivePlannedMealService,
+        _networkInfo = networkInfo;
 
   @override
-  Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) async {
+  Future<Either<Failure, void>> addPlannedMeal(
+      PlannedMealEntity plannedMeal) async {
     return handleHiveFailure(() async {
-      await sl<HivePlannedMealService>().savePlannedMeal(
-        PlannedMealModel(
-          date: plannedMeal.date,
-          meal: MealMapper.toModel(plannedMeal.meal),
-          isSynced: false,
-          isDeleted: false,
-        ),
-      );
+      final model = PlannedMealMapper.toModel(plannedMeal);
+      await _hivePlannedMealService.savePlannedMeal(model);
     });
   }
 
   @override
-  Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId) async {
+  Future<Either<Failure, void>> removePlannedMeal(
+      DateTime date, String mealId) async {
     return handleHiveFailure(() async {
-      final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-      final box = Hive.box<PlannedMealModel>('plannedMeals');
-      final key = '${date}_$mealId';
-      final model = box.get(key);
-
-      if (model != null) {
-        if (isOnline) {
-          await box.delete(key);
-        } else {
-          await box.put(key, PlannedMealModel(
-            date: model.date,
-            meal: model.meal,
-            isSynced: false,
-            isDeleted: true,
-          ));
-        }
-      }
+      final isOnline = await _networkInfo.checkInternetConnection();
+      await _hivePlannedMealService.removePlannedMeal(date, mealId,
+          isOnline: isOnline);
     });
   }
 
   @override
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
     return handleHiveFailure(() async {
-      final box = Hive.box<PlannedMealModel>('plannedMeals');
-      final meals = box.values.where((model) => !model.isDeleted).toList();
-      return meals.map((model) => PlannedMealEntity(
-        date: model.date,
-        meal: MealMapper.toEntity(model.meal),
-      )).toList();
+      final models = await _hivePlannedMealService.getPlannedMeals();
+      return models.map(PlannedMealMapper.toEntity).toList();
     });
   }
 
   @override
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedPlannedMeals() async {
+  Future<Either<Failure, List<PlannedMealEntity>>>
+      getUnsyncedPlannedMeals() async {
     return handleHiveFailure(() async {
-      final box = Hive.box<PlannedMealModel>('plannedMeals');
-      final unsynced = box.values.where((model) => !model.isSynced && !model.isDeleted).toList();
-      return unsynced.map((model) => PlannedMealEntity(
-        date: model.date,
-        meal: MealMapper.toEntity(model.meal),
-      )).toList();
+      final models = await _hivePlannedMealService.getUnsyncedPlannedMeals();
+      return models.map(PlannedMealMapper.toEntity).toList();
     });
   }
 
-
   @override
-  Future<Either<Failure, void>> markAsSynced(DateTime date, String mealId) async {
+  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() async {
     return handleHiveFailure(() async {
-      final box = Hive.box<PlannedMealModel>('plannedMeals');
-      final key = '${date}_$mealId';
-      final model = box.get(key);
-      
-      if (model != null && !model.isDeleted) {
-        await box.put(key, PlannedMealModel(
-          date: model.date,
-          meal: model.meal,
-          isSynced: true,
-          isDeleted: false,
-        ));
-      }
+      final models = await _hivePlannedMealService.getUnsyncedChanges();
+      return models.map(PlannedMealMapper.toEntity).toList();
     });
   }
-  
+
   @override
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() {
-  return handleHiveFailure(() async {
-    final box = Hive.box<PlannedMealModel>('plannedMeals');
-    final unsynced = box.values.where((model) => !model.isSynced).toList();
-    return unsynced.map((model) => PlannedMealEntity(
-      date: model.date,
-      meal: MealMapper.toEntity(model.meal),
-    )).toList();
-  });
-}
+  Future<Either<Failure, void>> markAsSynced(
+      DateTime date, String mealId) async {
+    return handleHiveFailure(() async {
+      await _hivePlannedMealService.markAsSynced(date, mealId);
+    });
+  }
 }

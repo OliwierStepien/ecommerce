@@ -120,12 +120,17 @@ Future<void> initializeDependencies() async {
 
   // Planned Meal repositories
 
-  sl.registerLazySingleton<FirebasePlannedMealRepositoryImpl>(
-      () => FirebasePlannedMealRepositoryImpl());
-  sl.registerLazySingleton<HivePlannedMealRepositoryImpl>(
-      () => HivePlannedMealRepositoryImpl());
+  sl.registerLazySingleton<FirebasePlannedMealRepositoryImpl>(() =>
+      FirebasePlannedMealRepositoryImpl(
+          firebasePlannedMealService: sl<FirebasePlannedMealService>()));
+  sl.registerLazySingleton<HivePlannedMealRepositoryImpl>(() =>
+      HivePlannedMealRepositoryImpl(
+          hivePlannedMealService: sl<HivePlannedMealService>(),
+          networkInfo: sl<NetworkInfo>()));
   sl.registerLazySingleton<PlannedMealRepository>(
-      () => PlannedMealRepositoryManager());
+      () => PlannedMealRepositoryManager(localRepository: sl<HivePlannedMealRepositoryImpl>(),
+          remoteRepository: sl<FirebasePlannedMealRepositoryImpl>(),
+          networkInfo: sl<NetworkInfo>()));
 
   // USECASES
 
