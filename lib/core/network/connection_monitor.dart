@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/data/planned_meal/repository/planned_meal_sync_service.dart';
+import 'package:mealapp/data/planned_meal/repository/sync/planned_meal_sync_service.dart';
 import 'package:mealapp/service_locator.dart';
 
 class ConnectionMonitor {

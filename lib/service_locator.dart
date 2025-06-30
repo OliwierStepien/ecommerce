@@ -18,7 +18,7 @@ import 'package:mealapp/data/meal/repository/remote/firebase_meal_repository_imp
 import 'package:mealapp/data/meal/source/local/hive_meal_service.dart';
 import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
 import 'package:mealapp/data/planned_meal/repository/local/hive_planned_meal_repository_impl.dart';
-import 'package:mealapp/data/planned_meal/repository/planned_meal_repository_manager.dart';
+import 'package:mealapp/data/planned_meal/repository/manager/planned_meal_repository_manager.dart';
 import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_meal_repository_impl.dart';
 import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
 import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
