@@ -74,15 +74,16 @@ class ShoppingListItem extends StatelessWidget {
     if (mealEntity == null) {
       return ingredientName;
     }
-    
+
     // Dla składników z przepisów pokazuj pełne informacje
-  return [
-    ingredientName,
-    if (scaledAmount != null) 
-      scaledAmount?.toStringAsFixed(scaledAmount?.truncateToDouble() == scaledAmount ? 0 : 2),
-    if (unit.isNotEmpty) unit,
-  ].join(' ');
-}
+    return [
+      ingredientName,
+      if (scaledAmount != null)
+        scaledAmount?.toStringAsFixed(
+            scaledAmount?.truncateToDouble() == scaledAmount ? 0 : 2),
+      if (unit.isNotEmpty) unit,
+    ].join(' ');
+  }
 
   void _removeIngredient(BuildContext context) {
     final shoppingListCubit = context.read<ShoppingListCubit>();

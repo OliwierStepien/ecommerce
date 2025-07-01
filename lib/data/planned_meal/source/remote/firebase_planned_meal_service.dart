@@ -9,7 +9,6 @@ abstract class FirebasePlannedMealService {
   Future<void> addPlannedMeal(PlannedMealEntity plannedMeal);
   Future<void> removePlannedMeal(DateTime date, String mealId);
   Future<List<Map<String, dynamic>>> getPlannedMeals();
-  Future<List<Map<String, dynamic>>> getUnsyncedPlannedMeals();
 }
 
 class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
@@ -70,10 +69,5 @@ class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
           .timeout(const Duration(seconds: 15));
       return returnedData.docs.map((e) => e.data()).toList();
     });
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getUnsyncedPlannedMeals() async {
-    return [];
   }
 }

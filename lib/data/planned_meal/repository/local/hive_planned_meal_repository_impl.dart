@@ -22,7 +22,7 @@ class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
       PlannedMealEntity plannedMeal) async {
     return handleHiveFailure(() async {
       final model = PlannedMealMapper.toModel(plannedMeal);
-      await _hivePlannedMealService.savePlannedMeal(model);
+      await _hivePlannedMealService.addPlannedMeal(model);
     });
   }
 

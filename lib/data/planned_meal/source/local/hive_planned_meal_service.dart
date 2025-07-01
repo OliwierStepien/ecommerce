@@ -5,7 +5,7 @@ abstract class HivePlannedMealService {
   Future<List<PlannedMealModel>> getPlannedMeals();
   Future<List<PlannedMealModel>> getUnsyncedPlannedMeals();
   Future<List<PlannedMealModel>> getUnsyncedChanges();
-  Future<void> savePlannedMeal(PlannedMealModel plannedMeal);
+  Future<void> addPlannedMeal(PlannedMealModel plannedMeal);
   Future<void> markAsSynced(DateTime date, String mealId);
   Future<void> removePlannedMeal(DateTime date, String mealId, {bool isOnline});
 }
@@ -29,7 +29,7 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
   }
 
   @override
-  Future<void> savePlannedMeal(PlannedMealModel plannedMeal) async {
+  Future<void> addPlannedMeal(PlannedMealModel plannedMeal) async {
     await _box.put('${plannedMeal.date}_${plannedMeal.meal.mealId}', plannedMeal);
   }
 
