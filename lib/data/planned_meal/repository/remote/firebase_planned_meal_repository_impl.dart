@@ -50,12 +50,17 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
     });
   }
 
+  // No-op: Firebase doesn't need getUnsyncedChanges
+
+
   @override
   Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() async {
     return handleFirestoreFailure(() async {
       return [];
     });
   }
+
+  // No-op: Firebase doesn't need markAsSynced, handled locally in Hive
 
   @override
   Future<Either<Failure, void>> markAsSynced(

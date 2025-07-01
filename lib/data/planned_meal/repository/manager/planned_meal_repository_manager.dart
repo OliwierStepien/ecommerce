@@ -18,60 +18,44 @@ class PlannedMealRepositoryManager implements PlannedMealRepository {
         _networkInfo = networkInfo;
 
   @override
-  Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) async {
-    final isOnline = await _networkInfo.checkInternetConnection();
-    
-    // Najpierw zawsze zapisujemy lokalnie
-    final localResult = await _localRepository.addPlannedMeal(plannedMeal);
-    
-    if (localResult.isLeft()) {
-      return localResult;
-    }
+Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) async {
+  // 1. Najpierw zawsze zapis lokalny
+  final localResult = await _localRepository.addPlannedMeal(plannedMeal);
+  if (localResult.isLeft()) return localResult;
 
-    if (isOnline) {
-      final remoteResult = await _remoteRepository.addPlannedMeal(plannedMeal);
-      return remoteResult.fold(
-        (failure) async {
-          // Oznacz jako niezsynchronizowane jeśli błąd
-          await _localRepository.markAsSynced(plannedMeal.date, plannedMeal.meal.mealId);
-          return const Right(null);
-        },
-        (_) async {
-          // Oznacz jako zsynchronizowane jeśli sukces
-          await _localRepository.markAsSynced(plannedMeal.date, plannedMeal.meal.mealId);
-          return const Right(null);
-        },
-      );
-    }
-    
-    return const Right(null);
-  }
+  // 2. Synchronizacja jeśli online
+  final isOnline = await _networkInfo.checkInternetConnection();
+  if (!isOnline) return const Right(null);
+
+  final remoteResult = await _remoteRepository.addPlannedMeal(plannedMeal);
+  return remoteResult.fold(
+    (failure) => const Right(null), // Nie oznaczaj sync przy błędzie
+    (_) async {
+      await _localRepository.markAsSynced(plannedMeal.date, plannedMeal.meal.mealId);
+      return const Right(null);
+    },
+  );
+}
 
   @override
-  Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId) async {
-    final isOnline = await _networkInfo.checkInternetConnection();
-    
-    // Najpierw zawsze oznaczamy jako usunięte lokalnie
-    final localResult = await _localRepository.removePlannedMeal(date, mealId);
-    
-    if (localResult.isLeft()) {
-      return localResult;
-    }
+Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId) async {
+  // 1. Najpierw operacja lokalna
+  final localResult = await _localRepository.removePlannedMeal(date, mealId);
+  if (localResult.isLeft()) return localResult;
 
-    if (isOnline) {
-      final remoteResult = await _remoteRepository.removePlannedMeal(date, mealId);
-      return remoteResult.fold(
-        (failure) => const Right(null), // Nadal zachowujemy lokalne usunięcie
-        (_) async {
-          // Jeśli sukces, możemy usunąć całkowicie z lokalnej bazy
-          await _localRepository.removePlannedMeal(date, mealId);
-          return const Right(null);
-        },
-      );
-    }
-    
-    return const Right(null);
-  }
+  // 2. Synchronizacja jeśli online
+  final isOnline = await _networkInfo.checkInternetConnection();
+  if (!isOnline) return const Right(null);
+
+  final remoteResult = await _remoteRepository.removePlannedMeal(date, mealId);
+  return remoteResult.fold(
+    (failure) => const Right(null), // Zachowaj lokalne usunięcie
+    (_) async {
+      await _localRepository.removePlannedMeal(date, mealId); // Pełne usunięcie
+      return const Right(null);
+    },
+  );
+}
 
   @override
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
