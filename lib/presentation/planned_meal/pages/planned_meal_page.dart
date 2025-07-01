@@ -4,14 +4,14 @@ import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
-import 'package:mealapp/presentation/calendar/bloc/planned_meals_cubit.dart';
-import 'package:mealapp/presentation/calendar/bloc/planned_meals_state.dart';
+import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
+import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_state.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class CalendarPage extends StatelessWidget {
+class PlannedMealPage extends StatelessWidget {
   final MealEntity? mealToAdd;
 
-  const CalendarPage({super.key, this.mealToAdd});
+  const PlannedMealPage({super.key, this.mealToAdd});
 
   @override
   Widget build(BuildContext context) {

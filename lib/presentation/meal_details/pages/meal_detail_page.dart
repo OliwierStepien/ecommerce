@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-import 'package:mealapp/presentation/calendar/pages/calendar_page.dart';
+import 'package:mealapp/presentation/planned_meal/pages/planned_meal_page.dart';
 import 'package:mealapp/presentation/meal_details/bloc/portion_cubit.dart';
 import 'package:mealapp/presentation/meal_details/widgets/favorite_button.dart';
 import 'package:mealapp/presentation/meal_details/widgets/meal_image.dart';
@@ -49,7 +49,7 @@ class MealDetailPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => CalendarPage(mealToAdd: mealEntity),
+                            builder: (_) => PlannedMealPage(mealToAdd: mealEntity),
                           ),
                         );
                       },

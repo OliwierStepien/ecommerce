@@ -6,7 +6,7 @@ import 'package:mealapp/core/configs/theme/app_theme.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/l10n/app_localizations.dart';
 import 'package:mealapp/l10n/l10n.dart';
-import 'package:mealapp/presentation/calendar/bloc/planned_meals_cubit.dart';
+import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';

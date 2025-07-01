@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/usecase/planned_meal_usecase.dart';
-import 'package:mealapp/presentation/calendar/bloc/planned_meals_state.dart';
+import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_state.dart';
 import 'package:mealapp/service_locator.dart';
 
 class PlannedMealsCubit extends Cubit<PlannedMealsState> {
