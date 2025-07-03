@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
+import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
 import 'package:mealapp/data/planned_meal/repository/local/hive_planned_meal_repository_impl.dart';
@@ -8,7 +9,7 @@ import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_mea
 import 'package:mealapp/core/network/network_info.dart';
 
 /// Główna klasa odpowiedzialna za synchronizację danych między lokalną bazą Hive a Firebase
-class PlannedMealSyncService {
+class PlannedMealSyncService implements SyncService {
   // Repozytorium Firebase do operacji zdalnych
   final FirebasePlannedMealRepositoryImpl firebaseRepo;
   
@@ -26,6 +27,7 @@ class PlannedMealSyncService {
   });
 
   /// Główna metoda synchronizująca dane
+  @override
   Future<Either<Failure, void>> syncData() async {
     // 1. Sprawdzenie czy urządzenie jest online
     final isOnline = await networkInfo.checkInternetConnection();

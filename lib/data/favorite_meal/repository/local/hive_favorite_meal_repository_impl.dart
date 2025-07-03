@@ -13,25 +13,21 @@ class HiveFavoriteMealRepositoryImpl implements FavoriteMealRepository {
   HiveFavoriteMealRepositoryImpl({
     required HiveFavoriteMealService hiveFavoriteMealService,
     required NetworkInfo networkInfo,
-  }) : _hiveFavoriteMealService = hiveFavoriteMealService;
+  })  : _hiveFavoriteMealService = hiveFavoriteMealService;
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(
-      FavoriteMealEntity meal) async {
+  Future<Either<Failure, void>> addFavoriteMeal(FavoriteMealEntity meal) async {
     return handleHiveFailure(() async {
-      final favorites = await _hiveFavoriteMealService.getFavoriteMeals();
-      final isFavorite =
-          favorites.any((m) => m.meal.mealId == meal.meal.mealId);
+      await _hiveFavoriteMealService.addFavoriteMeal(
+        FavoriteMealMapper.toModel(meal),
+      );
+    });
+  }
 
-      if (isFavorite) {
-        await _hiveFavoriteMealService.removeFavoriteMeal(meal.meal.mealId);
-        return false;
-      } else {
-        await _hiveFavoriteMealService.saveFavoriteMeal(
-          FavoriteMealMapper.toModel(meal),
-        );
-        return true;
-      }
+  @override
+  Future<Either<Failure, void>> removeFavoriteMeal(String mealId) async {
+    return handleHiveFailure(() async {
+      await _hiveFavoriteMealService.removeFavoriteMeal(mealId);
     });
   }
 
@@ -44,8 +40,7 @@ class HiveFavoriteMealRepositoryImpl implements FavoriteMealRepository {
   }
 
   @override
-  Future<Either<Failure, List<FavoriteMealEntity>>>
-      getUnsyncedFavoriteMeals() async {
+  Future<Either<Failure, List<FavoriteMealEntity>>> getUnsyncedFavoriteMeals() async {
     return handleHiveFailure(() async {
       final models = await _hiveFavoriteMealService.getUnsyncedFavoriteMeals();
       return models.map(FavoriteMealMapper.toEntity).toList();
@@ -60,8 +55,7 @@ class HiveFavoriteMealRepositoryImpl implements FavoriteMealRepository {
   }
 
   @override
-  Future<Either<Failure, List<FavoriteMealEntity>>>
-      getUnsyncedChangesForFavoriteMeals() async {
+  Future<Either<Failure, List<FavoriteMealEntity>>> getUnsyncedChangesForFavoriteMeals() async {
     return handleHiveFailure(() async {
       final models = await _hiveFavoriteMealService.getUnsyncedChanges();
       return models.map(FavoriteMealMapper.toEntity).toList();

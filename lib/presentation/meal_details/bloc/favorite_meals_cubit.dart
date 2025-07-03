@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
 import 'package:mealapp/domain/favorite_meal/entity/favorite_meal_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-import 'package:mealapp/domain/favorite_meal/usecase/add_or_remove_favorite_meal.dart';
+import 'package:mealapp/domain/favorite_meal/usecase/add_favorite_meal.dart';
+import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
@@ -33,24 +34,26 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
 
       if (isFavorite) {
         updatedMeals.removeWhere((m) => m.mealId == meal.mealId);
+        await sl<RemoveFavoriteMealUseCase>().call(params: meal.mealId);
       } else {
         updatedMeals.add(meal);
+        await sl<AddFavoriteMealUseCase>().call(
+          params: FavoriteMealEntity(meal: meal),
+        );
       }
 
       emit(MealsLoadingSuccess(meals: updatedMeals));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isFavorite
-              ? context.l10n.deteledFromFavorites
-              : context.l10n.addedToFavorites),
-          duration: const Duration(seconds: 1),
-        ),
-      );
-
-      await sl<AddOrRemoveFavoriteMealUseCase>().call(
-        params: FavoriteMealEntity(meal: meal),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isFavorite
+                ? context.l10n.deteledFromFavorites
+                : context.l10n.addedToFavorites),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
     }
   }
 }

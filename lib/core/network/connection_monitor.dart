@@ -3,15 +3,18 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/data/planned_meal/repository/sync/planned_meal_sync_service.dart';
 import 'package:mealapp/service_locator.dart';
 
+abstract class SyncService {
+  Future<void> syncData();
+}
+
 class ConnectionMonitor {
-  final PlannedMealSyncService syncService;
+  final List<SyncService> syncServices;
   final Connectivity connectivity = Connectivity();
   StreamSubscription<List<ConnectivityResult>>? _subscription;
 
-  ConnectionMonitor({required this.syncService});
+  ConnectionMonitor({required this.syncServices});
 
   void startMonitoring() {
     _subscription = connectivity.onConnectivityChanged.listen((results) async {
@@ -19,7 +22,13 @@ class ConnectionMonitor {
         final isOnline = await sl<NetworkInfo>().checkInternetConnection();
         if (isOnline) {
           debugPrint('[ConnectionMonitor] Internet connection restored - syncing data');
-          await syncService.syncData();
+          for (final service in syncServices) {
+            try {
+              await service.syncData();
+            } catch (e) {
+              debugPrint('[ConnectionMonitor] Error during sync: $e');
+            }
+          }
         }
       }
     });

@@ -5,7 +5,8 @@ import 'package:mealapp/common/helper/handle_firestore_operation/exception/handl
 import 'package:mealapp/data/favorite_meal/model/favorite_meal_model.dart';
 
 abstract class FirebaseFavoriteMealService {
-  Future<bool> addOrRemoveFavoriteMeal(FavoriteMealModel meal);
+  Future<void> addFavoriteMeal(FavoriteMealModel meal);
+  Future<void> removeFavoriteMeal(String mealId);
   Future<List<FavoriteMealModel>> getFavoritesMeals();
 }
 
@@ -19,29 +20,35 @@ class FirebaseFavoriteMealServiceImpl implements FirebaseFavoriteMealService {
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
-@override
-Future<bool> addOrRemoveFavoriteMeal(FavoriteMealModel meal) async {
-  return handleFirestoreException(() async {
-    final user = _auth.currentUser;
-    if (user == null) throw UnauthorizedException();
+  @override
+  Future<void> addFavoriteMeal(FavoriteMealModel meal) async {
+    return handleFirestoreException(() async {
+      final user = _auth.currentUser;
+      if (user == null) throw UnauthorizedException();
 
-    final docRef = _firestore
-        .collection("Users")
-        .doc(user.uid)
-        .collection('Favorites')
-        .doc(meal.meal.mealId); // 👈 użyj mealId jako document ID
+      await _firestore
+          .collection("Users")
+          .doc(user.uid)
+          .collection('Favorites')
+          .doc(meal.meal.mealId)
+          .set(meal.toMap());
+    });
+  }
 
-    final doc = await docRef.get().timeout(const Duration(seconds: 15));
+  @override
+  Future<void> removeFavoriteMeal(String mealId) async {
+    return handleFirestoreException(() async {
+      final user = _auth.currentUser;
+      if (user == null) throw UnauthorizedException();
 
-    if (doc.exists) {
-      await docRef.delete(); // 👈 usuń jeśli istnieje
-      return false;
-    } else {
-      await docRef.set(meal.toMap()); // 👈 dodaj/aktualizuj
-      return true;
-    }
-  });
-}
+      await _firestore
+          .collection("Users")
+          .doc(user.uid)
+          .collection('Favorites')
+          .doc(mealId)
+          .delete();
+    });
+  }
 
   @override
   Future<List<FavoriteMealModel>> getFavoritesMeals() async {
@@ -53,7 +60,6 @@ Future<bool> addOrRemoveFavoriteMeal(FavoriteMealModel meal) async {
           .collection("Users")
           .doc(user.uid)
           .collection('Favorites')
-          .where('isDeleted', isEqualTo: false)
           .get()
           .timeout(const Duration(seconds: 15));
 

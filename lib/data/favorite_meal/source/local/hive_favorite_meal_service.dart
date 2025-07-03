@@ -3,7 +3,7 @@ import 'package:mealapp/data/favorite_meal/model/favorite_meal_model.dart';
 
 abstract class HiveFavoriteMealService {
   Future<List<FavoriteMealModel>> getFavoriteMeals();
-  Future<void> saveFavoriteMeal(FavoriteMealModel meal);
+  Future<void> addFavoriteMeal(FavoriteMealModel meal);
   Future<void> removeFavoriteMeal(String mealId, {bool isOnline});
   Future<List<FavoriteMealModel>> getUnsyncedFavoriteMeals();
   Future<List<FavoriteMealModel>> getUnsyncedChanges();
@@ -11,8 +11,7 @@ abstract class HiveFavoriteMealService {
 }
 
 class HiveFavoriteMealServiceImpl implements HiveFavoriteMealService {
-  Box<FavoriteMealModel> get _box =>
-      Hive.box<FavoriteMealModel>('favoritesMeals');
+  Box<FavoriteMealModel> get _box => Hive.box<FavoriteMealModel>('favoritesMeals');
 
   @override
   Future<List<FavoriteMealModel>> getFavoriteMeals() async {
@@ -20,7 +19,7 @@ class HiveFavoriteMealServiceImpl implements HiveFavoriteMealService {
   }
 
   @override
-  Future<void> saveFavoriteMeal(FavoriteMealModel meal) async {
+  Future<void> addFavoriteMeal(FavoriteMealModel meal) async {
     final key = meal.meal.mealId;
     await _box.put(
       key,
@@ -30,29 +29,26 @@ class HiveFavoriteMealServiceImpl implements HiveFavoriteMealService {
         isDeleted: false,
       ),
     );
-    print("Ulubione posiłki (Hive): ${_box.values.where((m) => !m.isDeleted).length}");
   }
 
   @override
-Future<void> removeFavoriteMeal(String mealId, {bool isOnline = false}) async {
-  if (isOnline) {
-    await _box.delete(mealId);
-    print("Ulubione posiłki (Hive): ${_box.values.where((m) => !m.isDeleted).length}");
-  } else {
-    final existing = _box.get(mealId);
-    if (existing != null) {
-      await _box.put(
-        mealId,
-        FavoriteMealModel(
-          meal: existing.meal,
-          isSynced: false,
-          isDeleted: true,
-        ),
-      );
-      print("Ulubione posiłki (Hive): ${_box.values.where((m) => !m.isDeleted).length}");
+  Future<void> removeFavoriteMeal(String mealId, {bool isOnline = false}) async {
+    if (isOnline) {
+      await _box.delete(mealId);
+    } else {
+      final existing = _box.get(mealId);
+      if (existing != null) {
+        await _box.put(
+          mealId,
+          FavoriteMealModel(
+            meal: existing.meal,
+            isSynced: false,
+            isDeleted: true,
+          ),
+        );
+      }
     }
   }
-}
 
   @override
   Future<List<FavoriteMealModel>> getUnsyncedFavoriteMeals() async {

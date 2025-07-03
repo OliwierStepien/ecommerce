@@ -18,24 +18,45 @@ class FavoriteMealRepositoryManager implements FavoriteMealRepository {
         _networkInfo = networkInfo;
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(FavoriteMealEntity meal) async {
-    // 1. Najpierw lokalna operacja toggle (dodanie/usunięcie)
-    final localResult = await _localRepository.addOrRemoveFavoriteMeal(meal);
+  Future<Either<Failure, void>> addFavoriteMeal(FavoriteMealEntity meal) async {
+    // 1. Najpierw lokalna operacja
+    final localResult = await _localRepository.addFavoriteMeal(meal);
     return await localResult.fold(
       (failure) => Left(failure),
-      (isAddedLocally) async {
+      (_) async {
         // 2. Próba synchronizacji jeśli online
         final isOnline = await _networkInfo.checkInternetConnection();
-        if (!isOnline) return Right(isAddedLocally);
+        if (!isOnline) return const Right(null);
 
-        final remoteResult = await _remoteRepository.addOrRemoveFavoriteMeal(meal);
+        final remoteResult = await _remoteRepository.addFavoriteMeal(meal);
         return remoteResult.fold(
-          (_) => Right(isAddedLocally), // nawet jeśli się nie powiedzie, nie przeszkadzamy użytkownikowi
-          (isAddedRemotely) async {
-            if (isAddedLocally == isAddedRemotely) {
-              await _localRepository.markFavoriteMealAsSynced(meal.meal.mealId);
-            }
-            return Right(isAddedRemotely);
+          (_) => const Right(null),
+          (_) async {
+            await _localRepository.markFavoriteMealAsSynced(meal.meal.mealId);
+            return const Right(null);
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> removeFavoriteMeal(String mealId) async {
+    // 1. Najpierw lokalna operacja
+    final localResult = await _localRepository.removeFavoriteMeal(mealId);
+    return await localResult.fold(
+      (failure) => Left(failure),
+      (_) async {
+        // 2. Próba synchronizacji jeśli online
+        final isOnline = await _networkInfo.checkInternetConnection();
+        if (!isOnline) return const Right(null);
+
+        final remoteResult = await _remoteRepository.removeFavoriteMeal(mealId);
+        return remoteResult.fold(
+          (_) => const Right(null),
+          (_) async {
+            await _localRepository.markFavoriteMealAsSynced(mealId);
+            return const Right(null);
           },
         );
       },

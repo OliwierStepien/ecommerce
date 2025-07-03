@@ -14,38 +14,39 @@ class FirebaseFavoriteMealRepositoryImpl implements FavoriteMealRepository {
       : _firebaseFavoriteMealService = firebaseFavoriteMealService;
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(
-      FavoriteMealEntity meal) async {
+  Future<Either<Failure, void>> addFavoriteMeal(FavoriteMealEntity meal) async {
     return handleFirestoreFailure(() async {
-      return await _firebaseFavoriteMealService.addOrRemoveFavoriteMeal(
+      await _firebaseFavoriteMealService.addFavoriteMeal(
         FavoriteMealMapper.toModel(meal),
       );
     });
   }
 
   @override
+  Future<Either<Failure, void>> removeFavoriteMeal(String mealId) async {
+    return handleFirestoreFailure(() async {
+      await _firebaseFavoriteMealService.removeFavoriteMeal(mealId);
+    });
+  }
+
+  @override
   Future<Either<Failure, List<FavoriteMealEntity>>> getFavoritesMeals() async {
     return handleFirestoreFailure(() async {
-      final returnedData =
-          await _firebaseFavoriteMealService.getFavoritesMeals();
+      final returnedData = await _firebaseFavoriteMealService.getFavoritesMeals();
       return returnedData.map(FavoriteMealMapper.toEntity).toList();
     });
   }
 
   @override
-  Future<Either<Failure, List<FavoriteMealEntity>>>
-      getUnsyncedChangesForFavoriteMeals() async {
+  Future<Either<Failure, List<FavoriteMealEntity>>> getUnsyncedChangesForFavoriteMeals() async {
     return handleFirestoreFailure(() async {
-      // Firebase nie przechowuje niezsynchronizowanych zmian
       return [];
     });
   }
 
   @override
-  Future<Either<Failure, List<FavoriteMealEntity>>>
-      getUnsyncedFavoriteMeals() async {
+  Future<Either<Failure, List<FavoriteMealEntity>>> getUnsyncedFavoriteMeals() async {
     return handleFirestoreFailure(() async {
-      // W Firebase wszystkie dane są traktowane jako zsynchronizowane
       final allMeals = await _firebaseFavoriteMealService.getFavoritesMeals();
       return allMeals.map(FavoriteMealMapper.toEntity).toList();
     });
@@ -54,7 +55,6 @@ class FirebaseFavoriteMealRepositoryImpl implements FavoriteMealRepository {
   @override
   Future<Either<Failure, void>> markFavoriteMealAsSynced(String mealId) async {
     return handleFirestoreFailure(() async {
-      // W Firebase nie ma potrzeby oznaczania jako zsynchronizowane
       return;
     });
   }
