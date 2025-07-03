@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealapp/data/auth/model/user_model.dart';
 import 'package:mealapp/data/category/model/category_model.dart';
+import 'package:mealapp/data/favorite_meal/model/favorite_meal_model.dart';
 import 'package:mealapp/data/meal/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
@@ -22,6 +23,8 @@ class HiveConfig {
     Hive.registerAdapter(IngredientModelAdapter());
     Hive.registerAdapter(ShoppingListItemModelAdapter());
     Hive.registerAdapter(PlannedMealModelAdapter());
+    Hive.registerAdapter(FavoriteMealModelAdapter());
+
   }
 
   static Future<void> _openBoxes() async {
@@ -29,7 +32,7 @@ class HiveConfig {
       Hive.openBox<UserModel>('users'),
       Hive.openBox<CategoryModel>('categories'),
       Hive.openBox<MealModel>('meals'),
-      Hive.openBox<MealModel>('favoritesMeals'),
+      Hive.openBox<FavoriteMealModel>('favoritesMeals'),
       Hive.openBox<MealModel>('shoppingList'),
       Hive.openBox<IngredientModel>('ingredients'),
       Hive.openBox<ShoppingListItemModel>('shoppingListItems'),

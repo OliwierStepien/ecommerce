@@ -69,23 +69,6 @@ Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
   }
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(MealEntity meal) async {
-    return handleFirestoreFailure(() async {
-      return await sl<FirebaseMealService>().addOrRemoveFavoriteMeal(meal);
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<MealEntity>>> getFavoritesMeals() async {
-    return handleFirestoreFailure(() async {
-      final returnedData = await sl<FirebaseMealService>().getFavoritesMeals();
-      return returnedData
-          .map((e) => MealMapper.toEntity(MealModel.fromMap(e)))
-          .toList();
-    });
-  }
-
-  @override
   Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
       MealEntity meal) async {
     return handleFirestoreFailure(() async {

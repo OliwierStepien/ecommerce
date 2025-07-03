@@ -31,7 +31,7 @@ Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) asyn
   return remoteResult.fold(
     (failure) => const Right(null), // Nie oznaczaj sync przy błędzie
     (_) async {
-      await _localRepository.markAsSynced(plannedMeal.date, plannedMeal.meal.mealId);
+      await _localRepository.markPlannedMealAsSynced(plannedMeal.date, plannedMeal.meal.mealId);
       return const Right(null);
     },
   );
@@ -68,12 +68,12 @@ Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId) as
   }
 
   @override
-  Future<Either<Failure, void>> markAsSynced(DateTime date, String mealId) async {
-    return await _localRepository.markAsSynced(date, mealId);
+  Future<Either<Failure, void>> markPlannedMealAsSynced(DateTime date, String mealId) async {
+    return await _localRepository.markPlannedMealAsSynced(date, mealId);
   }
 
   @override
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() async {
-    return await _localRepository.getUnsyncedChanges();
+  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChangesForPlannedMeals() async {
+    return await _localRepository.getUnsyncedChangesForPlannedMeals();
   }
 }

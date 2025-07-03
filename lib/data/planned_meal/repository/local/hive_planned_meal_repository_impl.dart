@@ -54,7 +54,8 @@ class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges() async {
+  Future<Either<Failure, List<PlannedMealEntity>>>
+      getUnsyncedChangesForPlannedMeals() async {
     return handleHiveFailure(() async {
       final models = await _hivePlannedMealService.getUnsyncedChanges();
       return models.map(PlannedMealMapper.toEntity).toList();
@@ -62,7 +63,7 @@ class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, void>> markAsSynced(
+  Future<Either<Failure, void>> markPlannedMealAsSynced(
       DateTime date, String mealId) async {
     return handleHiveFailure(() async {
       await _hivePlannedMealService.markAsSynced(date, mealId);

@@ -34,7 +34,7 @@ class PlannedMealSyncService {
     }
 
     // 2. Pobierz niezsynchronizowane zmiany z lokalnej bazy Hive
-    final changesResult = await hiveRepo.getUnsyncedChanges();
+    final changesResult = await hiveRepo.getUnsyncedChangesForPlannedMeals();
     
     // 3. Obsłuż wynik operacji
     return changesResult.fold(

@@ -60,38 +60,6 @@ class MealRepositoryManager extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(MealEntity meal) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-    
-    if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>().addOrRemoveFavoriteMeal(meal);
-      
-      // Synchronizacja z Hive niezależnie od wyniku
-      result.fold(
-        (failure) => null,
-        (isFavorite) async {
-          if (isFavorite) {
-            await sl<HiveMealService>().saveFavoriteMeal(MealMapper.toModel(meal));
-          } else {
-            await sl<HiveMealService>().removeFavoriteMeal(meal.mealId);
-          }
-        },
-      );
-      
-      return result;
-    } else {
-      return await sl<HiveMealRepositoryImpl>().addOrRemoveFavoriteMeal(meal);
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<MealEntity>>> getFavoritesMeals() async {
-    // W przypadku ulubionych zawsze sprawdzamy lokalne dane,
-    // ponieważ mogą być modyfikowane offline
-    return await sl<HiveMealRepositoryImpl>().getFavoritesMeals();
-  }
-
-  @override
   Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
     // Lista zakupów również przechowywana lokalnie
     return await sl<HiveMealRepositoryImpl>().getShoppingList();

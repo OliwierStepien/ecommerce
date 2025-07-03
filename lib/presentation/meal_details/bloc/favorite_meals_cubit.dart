@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
+import 'package:mealapp/domain/favorite_meal/entity/favorite_meal_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-import 'package:mealapp/domain/meal/usecase/favourite/add_or_remove_favorite_meal.dart';
-import 'package:mealapp/domain/meal/usecase/favourite/get_favorites_meal.dart';
+import 'package:mealapp/domain/favorite_meal/usecase/add_or_remove_favorite_meal.dart';
+import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +19,9 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
     final returnedData = await sl<GetFavoritesMealUseCase>().call();
     returnedData.fold(
       (error) => emit(MealsLoadingFailure(message: mapFailureToMessage(error))),
-      (data) => emit(MealsLoadingSuccess(meals: data)),
+      (data) => emit(MealsLoadingSuccess(
+        meals: data.map((fav) => fav.meal).toList(),
+      )),
     );
   }
 
@@ -34,7 +37,6 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
         updatedMeals.add(meal);
       }
 
-      // Natychmiastowa aktualizacja UI
       emit(MealsLoadingSuccess(meals: updatedMeals));
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -46,8 +48,9 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
         ),
       );
 
-      // Aktualizacja Firestore
-      await sl<AddOrRemoveFavoriteMealUseCase>().call(params: meal);
+      await sl<AddOrRemoveFavoriteMealUseCase>().call(
+        params: FavoriteMealEntity(meal: meal),
+      );
     }
   }
 }

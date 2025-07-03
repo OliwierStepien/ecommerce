@@ -7,6 +7,6 @@ abstract class PlannedMealRepository {
   Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId);
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals();
   Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedPlannedMeals();
-  Future<Either<Failure, void>> markAsSynced(DateTime date, String mealId);
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChanges();
+  Future<Either<Failure, void>> markPlannedMealAsSynced(DateTime date, String mealId);
+  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChangesForPlannedMeals();
 }

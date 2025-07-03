@@ -13,6 +13,11 @@ import 'package:mealapp/data/category/repository/local/hive_category_repository_
 import 'package:mealapp/data/category/repository/category_repository_manager.dart';
 import 'package:mealapp/data/category/source/remote/firebase_category_service.dart';
 import 'package:mealapp/data/category/source/local/hive_category_service.dart';
+import 'package:mealapp/data/favorite_meal/repository/local/hive_favorite_meal_repository_impl.dart';
+import 'package:mealapp/data/favorite_meal/repository/manager/favorite_meal_repository_manager.dart';
+import 'package:mealapp/data/favorite_meal/repository/remote/firebase_favorite_meal_repository_impl.dart';
+import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_service.dart';
+import 'package:mealapp/data/favorite_meal/source/remote/firebase_favorite_meal_service.dart';
 import 'package:mealapp/data/meal/repository/local/hive_meal_repository_impl.dart';
 import 'package:mealapp/data/meal/repository/meal_repository_manager.dart';
 import 'package:mealapp/data/meal/repository/remote/firebase_meal_repository_impl.dart';
@@ -33,12 +38,13 @@ import 'package:mealapp/domain/auth/usecase/signout.dart';
 import 'package:mealapp/domain/auth/usecase/signup.dart';
 import 'package:mealapp/domain/category/repository/category_repository.dart';
 import 'package:mealapp/domain/category/usecase/get_categories.dart';
+import 'package:mealapp/domain/favorite_meal/repository/favorite_meal_repository.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
-import 'package:mealapp/domain/meal/usecase/favourite/add_or_remove_favorite_meal.dart';
+import 'package:mealapp/domain/favorite_meal/usecase/add_or_remove_favorite_meal.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_ingredients_for_meal.dart';
 import 'package:mealapp/domain/meal/usecase/shopping_list/add_or_remove_shopping_list_ingredient.dart';
-import 'package:mealapp/domain/meal/usecase/favourite/get_favorites_meal.dart';
+import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
@@ -86,6 +92,12 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<FirebasePlannedMealService>(
       FirebasePlannedMealServiceImpl());
   sl.registerSingleton<HivePlannedMealService>(HivePlannedMealServiceImpl());
+
+  // Favorite Meal services
+
+  sl.registerSingleton<FirebaseFavoriteMealService>(
+      FirebaseFavoriteMealServiceImpl());
+  sl.registerSingleton<HiveFavoriteMealService>(HiveFavoriteMealServiceImpl());
 
   // REPOSITORIES
 
@@ -135,6 +147,21 @@ Future<void> initializeDependencies() async {
           remoteRepository: sl<FirebasePlannedMealRepositoryImpl>(),
           networkInfo: sl<NetworkInfo>()));
 
+  // Favorite Meal repositories
+
+  sl.registerLazySingleton<FirebaseFavoriteMealRepositoryImpl>(() =>
+      FirebaseFavoriteMealRepositoryImpl(
+          firebaseFavoriteMealService: sl<FirebaseFavoriteMealService>()));
+  sl.registerLazySingleton<HiveFavoriteMealRepositoryImpl>(() =>
+      HiveFavoriteMealRepositoryImpl(
+          hiveFavoriteMealService: sl<HiveFavoriteMealService>(),
+          networkInfo: sl<NetworkInfo>()));
+  sl.registerLazySingleton<FavoriteMealRepository>(() =>
+      FavoriteMealRepositoryManager(
+          localRepository: sl<HiveFavoriteMealRepositoryImpl>(),
+          remoteRepository: sl<FirebaseFavoriteMealRepositoryImpl>(),
+          networkInfo: sl<NetworkInfo>()));
+
   // USECASES
 
   // Auth usecases
@@ -180,12 +207,6 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetMealByTitleUseCase>(
       () => GetMealByTitleUseCase(sl<MealRepository>()));
 
-  sl.registerLazySingleton<AddOrRemoveFavoriteMealUseCase>(
-      () => AddOrRemoveFavoriteMealUseCase(sl<MealRepository>()));
-
-  sl.registerLazySingleton<GetFavoritesMealUseCase>(
-      () => GetFavoritesMealUseCase(sl<MealRepository>()));
-
   sl.registerLazySingleton<AddOrRemoveShoppingListIngredientUseCase>(
       () => AddOrRemoveShoppingListIngredientUseCase(sl<MealRepository>()));
 
@@ -203,6 +224,14 @@ Future<void> initializeDependencies() async {
       () => AddPlannedMealUseCase(sl<PlannedMealRepository>()));
   sl.registerLazySingleton<RemovePlannedMealUseCase>(
       () => RemovePlannedMealUseCase(sl<PlannedMealRepository>()));
+
+  // Favorite Meal usecases
+
+  sl.registerLazySingleton<AddOrRemoveFavoriteMealUseCase>(
+      () => AddOrRemoveFavoriteMealUseCase(sl<FavoriteMealRepository>()));
+
+  sl.registerLazySingleton<GetFavoritesMealUseCase>(
+      () => GetFavoritesMealUseCase(sl<FavoriteMealRepository>()));
 
   // SYNC SERVICES & CONNECTION MONITOR
 

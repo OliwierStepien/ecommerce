@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
-import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -10,8 +9,6 @@ abstract class FirebaseMealService {
   Future<List<Map<String, dynamic>>> getMeals();
   Future<List<Map<String, dynamic>>> getMealsByCategoryId(String categoryId);
   Future<List<Map<String, dynamic>>> getMealsByTitle(String title);
-  Future<bool> addOrRemoveFavoriteMeal(MealEntity meal);
-  Future<List<Map<String, dynamic>>> getFavoritesMeals();
   Future<bool> addOrRemoveShoppingListIngredient(MealEntity meal);
   Future<bool> isIngredientInShoppingList(MealEntity meal);
   Future<List<Map<String, dynamic>>> getShoppingList();
@@ -117,47 +114,6 @@ class FirebaseMealServiceImpl extends FirebaseMealService {
       }));
 
       return mealsWithIngredients;
-    });
-  }
-
-  @override
-  Future<bool> addOrRemoveFavoriteMeal(MealEntity meal) async {
-    return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final meals = await FirebaseFirestore.instance
-          .collection("Users")
-          .doc(user!.uid)
-          .collection('Favorites')
-          .where('mealId', isEqualTo: meal.mealId)
-          .get()
-          .timeout(const Duration(seconds: 15));
-
-      if (meals.docs.isNotEmpty) {
-        await meals.docs.first.reference.delete();
-        return false;
-      } else {
-        final mealModel = MealMapper.toModel(meal);
-        await FirebaseFirestore.instance
-            .collection("Users")
-            .doc(user.uid)
-            .collection('Favorites')
-            .add(mealModel.toMap());
-        return true;
-      }
-    });
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getFavoritesMeals() async {
-    return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final returnedData = await FirebaseFirestore.instance
-          .collection("Users")
-          .doc(user!.uid)
-          .collection('Favorites')
-          .get()
-          .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
     });
   }
 

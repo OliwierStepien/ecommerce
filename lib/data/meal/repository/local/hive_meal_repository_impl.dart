@@ -38,30 +38,6 @@ class HiveMealRepositoryImpl extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveFavoriteMeal(MealEntity meal) async {
-    return handleHiveFailure(() async {
-      final favorites = await sl<HiveMealService>().getFavoriteMeals();
-      final isFavorite = favorites.any((m) => m.mealId == meal.mealId);
-      
-      if (isFavorite) {
-        await sl<HiveMealService>().removeFavoriteMeal(meal.mealId);
-        return false;
-      } else {
-        await sl<HiveMealService>().saveFavoriteMeal(MealMapper.toModel(meal));
-        return true;
-      }
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<MealEntity>>> getFavoritesMeals() async {
-    return handleHiveFailure(() async {
-      final meals = await sl<HiveMealService>().getFavoriteMeals();
-      return meals.map(MealMapper.toEntity).toList();
-    });
-  }
-
-  @override
   Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal) async {
     return handleHiveFailure(() async {
       final shoppingList = await sl<HiveMealService>().getShoppingList();
