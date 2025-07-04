@@ -12,7 +12,6 @@ abstract class FirebaseMealService {
   Future<List<MealModel>> getMealsByTitle(String title);
   Future<bool> addOrRemoveShoppingListIngredient(
       MealModel meal, IngredientModel ingredient, int portionCount);
-  Future<bool> isIngredientInShoppingList(MealModel meal);
   Future<List<MealModel>> getShoppingList();
   Future<List<MealModel>> getMealsByIsVegetarian(bool isVegetarian);
   Future<List<MealModel>> getVegetarianMealsByCategoryId(String categoryId);
@@ -150,22 +149,6 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
     });
   }
 
-  @override
-  Future<bool> isIngredientInShoppingList(MealModel meal) async {
-    return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      final ingredients = await _firestore
-          .collection("Users")
-          .doc(user?.uid)
-          .collection('ShoppingList')
-          .where('mealId', isEqualTo: meal.mealId)
-          .get()
-          .timeout(const Duration(seconds: 15));
-      return ingredients.docs.isNotEmpty;
-    });
-  }
-
-  @override
   @override
   Future<List<MealModel>> getShoppingList() async {
     return handleFirestoreException(() async {

@@ -52,7 +52,6 @@ import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
 import 'package:mealapp/domain/meal/usecase/shopping_list/get_shopping_list.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mealapp/domain/meal/usecase/shopping_list/is_ingredient_in_shopping_list.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/planned_meal/usecase/planned_meal_usecase.dart';
 
@@ -211,9 +210,6 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<AddOrRemoveShoppingListIngredientUseCase>(
       () => AddOrRemoveShoppingListIngredientUseCase(sl<MealRepository>()));
-
-  sl.registerLazySingleton<IsIngredientInShoppingListUseCase>(
-      () => IsIngredientInShoppingListUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<GetShoppingListUseCase>(
       () => GetShoppingListUseCase(sl<MealRepository>()));

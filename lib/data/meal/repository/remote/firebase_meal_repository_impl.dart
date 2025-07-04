@@ -66,15 +66,6 @@ Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
 }
 
   @override
-  Future<Either<Failure, bool>> isIngredientInShoppingList(
-      MealEntity meal) async {
-    return handleFirestoreFailure(() async {
-      return await sl<FirebaseMealService>()
-          .isIngredientInShoppingList(MealMapper.toModel(meal));
-    });
-  }
-
-  @override
   Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
     return handleFirestoreFailure(() async {
       final meals = await sl<FirebaseMealService>().getShoppingList();

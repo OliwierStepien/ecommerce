@@ -194,12 +194,6 @@ class MealRepositoryManager extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> isIngredientInShoppingList(MealEntity meal) async {
-    // Zawsze sprawdzaj lokalne dane, ponieważ lista zakupów jest głównie offline
-    return await sl<HiveMealRepositoryImpl>().isIngredientInShoppingList(meal);
-  }
-
-  @override
   Future<Either<Failure, List<MealEntity>>> isMealVegetarian(bool isVegetarian) async {
     final isOnline = await sl<NetworkInfo>().checkInternetConnection();
     
