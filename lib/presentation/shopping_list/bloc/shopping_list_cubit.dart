@@ -14,19 +14,18 @@ Future<void> addOrRemoveIngredient(
   IngredientEntity ingredient, 
   MealEntity meal, {
   bool suppressNotification = false,
-  num? scaledAmount,
+  required int portionCount,
 }) async {
   final List<Map<String, dynamic>> previousState = List.from(state);
   final List<Map<String, dynamic>> updatedList;
   
   try {
     _suppressNotifications = suppressNotification;
-
     final existingIngredientIndex = state.indexWhere(
       (item) => item['ingredientId'] == ingredient.ingredientId && 
                item['mealId'] == meal.mealId,
     );
-
+    
     if (existingIngredientIndex != -1) {
       _lastRemovedItem = {
         'item': state[existingIngredientIndex],
@@ -34,6 +33,11 @@ Future<void> addOrRemoveIngredient(
       };
       updatedList = List.from(state)..removeAt(existingIngredientIndex);
     } else {
+      // Oblicz skalowaną ilość
+      final scaledAmount = ingredient.amountPerPortion != null 
+          ? ingredient.amountPerPortion! * portionCount 
+          : null;
+      
       updatedList = List.from(state)
         ..add({
           'ingredientId': ingredient.ingredientId,
@@ -45,11 +49,15 @@ Future<void> addOrRemoveIngredient(
           'mealId': meal.mealId,
           'title': meal.title,
           'mealEntity': meal,
+          'portionCount': portionCount,
         });
     }
-
     emit(updatedList);
-    await sl<MealRepository>().addOrRemoveShoppingListIngredient(meal);
+    await sl<MealRepository>().addOrRemoveShoppingListIngredient(
+      meal, 
+      ingredient,
+      portionCount,
+    );
   } catch (e) {
     emit(previousState);
     rethrow;
@@ -73,21 +81,21 @@ Future<void> addOrRemoveIngredient(
 
   bool get shouldShowNotification => !_suppressNotifications;
 
-void addCustomIngredient(String ingredientName, {String category = 'Inne'}) {
-  final List<Map<String, dynamic>> updatedList = List.from(state)
-    ..add({
-      'ingredientId': 'custom_${DateTime.now().millisecondsSinceEpoch}',
-      'ingredientName': ingredientName,
-      'amountPerPortion': null,
-      'unit': '',
-      'ingredientCategory': category,
-      'mealId': null,
-      'title': '',
-      'mealEntity': null,
-    });
+  void addCustomIngredient(String ingredientName, {String category = 'Inne'}) {
+    final List<Map<String, dynamic>> updatedList = List.from(state)
+      ..add({
+        'ingredientId': 'custom_${DateTime.now().millisecondsSinceEpoch}',
+        'ingredientName': ingredientName,
+        'amountPerPortion': null,
+        'unit': '',
+        'ingredientCategory': category,
+        'mealId': null,
+        'title': '',
+        'mealEntity': null,
+      });
 
-  emit(updatedList);
-}
+    emit(updatedList);
+  }
 
   void removeCustomIngredient(String ingredientId) {
     final index = state.indexWhere((item) =>
@@ -98,13 +106,15 @@ void addCustomIngredient(String ingredientName, {String category = 'Inne'}) {
         'index': index,
       };
 
-      final List<Map<String, dynamic>> updatedList = List.from(state)..removeAt(index);
+      final List<Map<String, dynamic>> updatedList = List.from(state)
+        ..removeAt(index);
       emit(updatedList);
     }
   }
 
   void updateIngredientCategory(String ingredientId, String newCategory) {
-    final index = state.indexWhere((item) => item['ingredientId'] == ingredientId);
+    final index =
+        state.indexWhere((item) => item['ingredientId'] == ingredientId);
     if (index != -1) {
       final updatedItem = Map<String, dynamic>.from(state[index])
         ..['ingredientCategory'] = newCategory;

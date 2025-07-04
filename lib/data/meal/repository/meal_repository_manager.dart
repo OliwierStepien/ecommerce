@@ -66,11 +66,11 @@ class MealRepositoryManager extends MealRepository {
   }
 
     @override
-  Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal) async {
+  Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal, IngredientEntity ingredient, int portionCount) async {
     final isOnline = await sl<NetworkInfo>().checkInternetConnection();
     
     if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>().addOrRemoveShoppingListIngredient(meal);
+      final result = await sl<FirebaseMealRepositoryImpl>().addOrRemoveShoppingListIngredient(meal, ingredient, portionCount);
       
       // Synchronizacja z Hive
       result.fold(
@@ -86,7 +86,7 @@ class MealRepositoryManager extends MealRepository {
       
       return result;
     } else {
-      return await sl<HiveMealRepositoryImpl>().addOrRemoveShoppingListIngredient(meal);
+      return await sl<HiveMealRepositoryImpl>().addOrRemoveShoppingListIngredient(meal, ingredient, portionCount);
     }
   }
 

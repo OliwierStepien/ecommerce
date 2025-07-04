@@ -99,6 +99,7 @@ class ShoppingListItem extends StatelessWidget {
           mealId: mealEntity!.mealId,
         ),
         mealEntity!,
+        portionCount: 1,
         suppressNotification: true,
       );
     } else {

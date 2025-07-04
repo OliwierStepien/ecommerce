@@ -38,7 +38,7 @@ class HiveMealRepositoryImpl extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal) async {
+  Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal, IngredientEntity ingredient, int portionCount) async {
     return handleHiveFailure(() async {
       final shoppingList = await sl<HiveMealService>().getShoppingList();
       final isInList = shoppingList.any((m) => m.mealId == meal.mealId);

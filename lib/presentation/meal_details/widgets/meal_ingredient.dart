@@ -73,78 +73,78 @@ class MealIngredient extends StatelessWidget {
   }
 
   Widget _buildIngredientItem(
-  BuildContext context,
-  IngredientEntity ingredient,
-  MealEntity mealEntity,
-  int portionCount,
-) {
-  final scaledAmount = ingredient.amountPerPortion! * portionCount;
+    BuildContext context,
+    IngredientEntity ingredient,
+    MealEntity mealEntity,
+    int portionCount,
+  ) {
+    final scaledAmount = ingredient.amountPerPortion! * portionCount;
 
-  return BlocListener<ShoppingListCubit, List<Map<String, dynamic>>>(
-    listenWhen: (previous, current) {
-      final wasAdded = previous.any((item) =>
-          item['ingredientId'] == ingredient.ingredientId &&
-          item['mealId'] == mealEntity.mealId);
-      final isNowAdded = current.any((item) =>
-          item['ingredientId'] == ingredient.ingredientId &&
-          item['mealId'] == mealEntity.mealId);
-      return wasAdded != isNowAdded;
-    },
-    listener: (context, state) {
-      final cubit = context.read<ShoppingListCubit>();
-      if (!cubit.shouldShowNotification) return;
+    return BlocListener<ShoppingListCubit, List<Map<String, dynamic>>>(
+      listenWhen: (previous, current) {
+        final wasAdded = previous.any((item) =>
+            item['ingredientId'] == ingredient.ingredientId &&
+            item['mealId'] == mealEntity.mealId);
+        final isNowAdded = current.any((item) =>
+            item['ingredientId'] == ingredient.ingredientId &&
+            item['mealId'] == mealEntity.mealId);
+        return wasAdded != isNowAdded;
+      },
+      listener: (context, state) {
+        final cubit = context.read<ShoppingListCubit>();
+        if (!cubit.shouldShowNotification) return;
 
-      final isNowAdded = state.any((item) =>
-          item['ingredientId'] == ingredient.ingredientId &&
-          item['mealId'] == mealEntity.mealId);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isNowAdded
-                ? context.l10n.addedIngredientToShoppingList(ingredient.ingredientName)
-                : context.l10n.removedIngredientFromShoppingList(ingredient.ingredientName),
-          ),
-          duration: const Duration(seconds: 1),
-        ),
-      );
-    },
-    child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
-      builder: (context, state) {
-        final isAdded = state.any((item) =>
+        final isNowAdded = state.any((item) =>
             item['ingredientId'] == ingredient.ingredientId &&
             item['mealId'] == mealEntity.mealId);
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  '• ${ingredient.ingredientName} ${scaledAmount.toStringAsFixed(0)} ${ingredient.unit}',
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  context
-                      .read<ShoppingListCubit>()
-                      .addOrRemoveIngredient(
-                        ingredient, 
-                        mealEntity,
-                        scaledAmount: scaledAmount, // Przekaż scaledAmount
-                      );
-                },
-                icon: Icon(
-                  isAdded ? Icons.check_circle : Icons.add_circle_outline,
-                  color: isAdded ? Colors.green : Colors.grey,
-                ),
-              ),
-            ],
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isNowAdded
+                  ? context.l10n
+                      .addedIngredientToShoppingList(ingredient.ingredientName)
+                  : context.l10n.removedIngredientFromShoppingList(
+                      ingredient.ingredientName),
+            ),
+            duration: const Duration(seconds: 1),
           ),
         );
       },
-    ),
-  );
-}
+      child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
+        builder: (context, state) {
+          final isAdded = state.any((item) =>
+              item['ingredientId'] == ingredient.ingredientId &&
+              item['mealId'] == mealEntity.mealId);
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    '• ${ingredient.ingredientName} ${scaledAmount.toStringAsFixed(0)} ${ingredient.unit}',
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    context.read<ShoppingListCubit>().addOrRemoveIngredient(
+                          ingredient,
+                          mealEntity,
+                          portionCount: portionCount,
+                        );
+                  },
+                  icon: Icon(
+                    isAdded ? Icons.check_circle : Icons.add_circle_outline,
+                    color: isAdded ? Colors.green : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

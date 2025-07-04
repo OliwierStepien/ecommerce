@@ -10,7 +10,8 @@ abstract class FirebaseMealService {
   Future<List<MealModel>> getMeals();
   Future<List<MealModel>> getMealsByCategoryId(String categoryId);
   Future<List<MealModel>> getMealsByTitle(String title);
-  Future<bool> addOrRemoveShoppingListIngredient(MealModel meal);
+  Future<bool> addOrRemoveShoppingListIngredient(
+      MealModel meal, IngredientModel ingredient, int portionCount);
   Future<bool> isIngredientInShoppingList(MealModel meal);
   Future<List<MealModel>> getShoppingList();
   Future<List<MealModel>> getMealsByIsVegetarian(bool isVegetarian);
@@ -88,14 +89,15 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
           .get()
           .timeout(const Duration(seconds: 15));
 
-      final filteredDocs = returnedData.docs.where((doc) => 
+      final filteredDocs = returnedData.docs.where((doc) =>
           doc['title'].toString().toLowerCase().contains(title.toLowerCase()));
 
       return await _getMealsWithIngredients(filteredDocs);
     });
   }
 
-  Future<List<MealModel>> _getMealsWithIngredients(Iterable<QueryDocumentSnapshot> docs) async {
+  Future<List<MealModel>> _getMealsWithIngredients(
+      Iterable<QueryDocumentSnapshot> docs) async {
     return await Future.wait(docs.map((doc) async {
       final ingredients = await getIngredientsForMeal(doc['mealId'] as String);
       return MealModel.fromMap({
@@ -106,13 +108,15 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
   }
 
   @override
-  Future<bool> addOrRemoveShoppingListIngredient(MealModel meal) async {
+  Future<bool> addOrRemoveShoppingListIngredient(
+      MealModel meal, IngredientModel ingredient, int portionCount) async {
     return handleFirestoreException(() async {
       final user = _auth.currentUser;
       final returnedData = await _firestore
           .collection("Users")
           .doc(user?.uid)
           .collection('ShoppingList')
+          .where('ingredientId', isEqualTo: ingredient.ingredientId)
           .where('mealId', isEqualTo: meal.mealId)
           .get()
           .timeout(const Duration(seconds: 15));
@@ -121,6 +125,11 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
         await returnedData.docs.first.reference.delete();
         return false;
       } else {
+        // Oblicz ilość składnika uwzględniając liczbę porcji
+        final scaledAmount = ingredient.amountPerPortion != null
+            ? ingredient.amountPerPortion! * portionCount
+            : null;
+
         await _firestore
             .collection("Users")
             .doc(user?.uid)
@@ -128,7 +137,13 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
             .add({
           'mealId': meal.mealId,
           'title': meal.title,
-          'ingredients': meal.ingredients.map((i) => i.toMap()).toList(),
+          'ingredientId': ingredient.ingredientId,
+          'ingredientName': ingredient.ingredientName,
+          'amountPerPortion': ingredient.amountPerPortion,
+          'scaledAmount': scaledAmount,
+          'unit': ingredient.unit,
+          'ingredientCategory': ingredient.ingredientCategory,
+          'portionCount': portionCount,
         });
         return true;
       }
@@ -151,6 +166,7 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
   }
 
   @override
+  @override
   Future<List<MealModel>> getShoppingList() async {
     return handleFirestoreException(() async {
       final user = _auth.currentUser;
@@ -168,9 +184,16 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
           mealId: data['mealId'] as String,
           categoryId: [],
           image: '',
-          ingredients: (data['ingredients'] as List<dynamic>)
-              .map((i) => IngredientModel.fromMap(i as Map<String, dynamic>))
-              .toList(),
+          ingredients: [
+            IngredientModel(
+              ingredientId: data['ingredientId'] as String,
+              ingredientName: data['ingredientName'] as String,
+              amountPerPortion: data['amountPerPortion'] as num?,
+              unit: data['unit'] as String,
+              ingredientCategory: data['ingredientCategory'] as String,
+              mealId: data['mealId'] as String,
+            )
+          ],
           steps: [],
           isVegetarian: false,
         );
@@ -192,7 +215,8 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
   }
 
   @override
-  Future<List<MealModel>> getVegetarianMealsByCategoryId(String categoryId) async {
+  Future<List<MealModel>> getVegetarianMealsByCategoryId(
+      String categoryId) async {
     return handleFirestoreException(() async {
       final returnedData = await _firestore
           .collection("Meals")
@@ -214,7 +238,7 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
           .get()
           .timeout(const Duration(seconds: 15));
 
-      final filteredDocs = returnedData.docs.where((doc) => 
+      final filteredDocs = returnedData.docs.where((doc) =>
           doc['title'].toString().toLowerCase().contains(title.toLowerCase()));
 
       return await _getMealsWithIngredients(filteredDocs);
