@@ -1,129 +1,117 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
-import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/data/meal/model/ingredient_model.dart';
+import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class FirebaseMealService {
-  Future<List<Map<String, dynamic>>> getIngredientsForMeal(String mealId);
-  Future<List<Map<String, dynamic>>> getAllIngredients();
-  Future<List<Map<String, dynamic>>> getMeals();
-  Future<List<Map<String, dynamic>>> getMealsByCategoryId(String categoryId);
-  Future<List<Map<String, dynamic>>> getMealsByTitle(String title);
-  Future<bool> addOrRemoveShoppingListIngredient(MealEntity meal);
-  Future<bool> isIngredientInShoppingList(MealEntity meal);
-  Future<List<Map<String, dynamic>>> getShoppingList();
-  Future<List<Map<String, dynamic>>> getMealsByIsVegetarian(bool isVegetarian);
-  Future<List<Map<String, dynamic>>> getVegetarianMealsByCategoryId(
-      String categoryId);
-  Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(String title);
+  Future<List<IngredientModel>> getIngredientsForMeal(String mealId);
+  Future<List<IngredientModel>> getAllIngredients();
+  Future<List<MealModel>> getMeals();
+  Future<List<MealModel>> getMealsByCategoryId(String categoryId);
+  Future<List<MealModel>> getMealsByTitle(String title);
+  Future<bool> addOrRemoveShoppingListIngredient(MealModel meal);
+  Future<bool> isIngredientInShoppingList(MealModel meal);
+  Future<List<MealModel>> getShoppingList();
+  Future<List<MealModel>> getMealsByIsVegetarian(bool isVegetarian);
+  Future<List<MealModel>> getVegetarianMealsByCategoryId(String categoryId);
+  Future<List<MealModel>> getVegetarianMealsByTitle(String title);
 }
 
-class FirebaseMealServiceImpl extends FirebaseMealService {
+class FirebaseMealServiceImpl implements FirebaseMealService {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  FirebaseMealServiceImpl({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
+
   @override
-  Future<List<Map<String, dynamic>>> getIngredientsForMeal(String mealId) {
+  Future<List<IngredientModel>> getIngredientsForMeal(String mealId) {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Ingredients")
           .where('mealId', isEqualTo: mealId)
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
+      return returnedData.docs
+          .map((e) => IngredientModel.fromMap(e.data()))
+          .toList();
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAllIngredients() {
+  Future<List<IngredientModel>> getAllIngredients() {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Ingredients")
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((e) => e.data()).toList();
+      return returnedData.docs
+          .map((e) => IngredientModel.fromMap(e.data()))
+          .toList();
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMeals() async {
+  Future<List<MealModel>> getMeals() async {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Meals")
           .get()
           .timeout(const Duration(seconds: 15));
 
-      final meals = returnedData.docs.map((e) => e.data()).toList();
-
-      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
-        final ingredients =
-            await getIngredientsForMeal(meal['mealId'] as String);
-        return {
-          ...meal,
-          'ingredients': ingredients,
-        };
-      }));
-
-      return mealsWithIngredients;
+      return await _getMealsWithIngredients(returnedData.docs);
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMealsByCategoryId(
-      String categoryId) async {
+  Future<List<MealModel>> getMealsByCategoryId(String categoryId) async {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Meals")
           .where('categoriesId', arrayContains: categoryId)
           .get()
           .timeout(const Duration(seconds: 15));
-      final meals = returnedData.docs.map((e) => e.data()).toList();
 
-      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
-        final ingredients =
-            await getIngredientsForMeal(meal['mealId'] as String);
-        return {
-          ...meal,
-          'ingredients': ingredients,
-        };
-      }));
-
-      return mealsWithIngredients;
+      return await _getMealsWithIngredients(returnedData.docs);
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMealsByTitle(String title) async {
+  Future<List<MealModel>> getMealsByTitle(String title) async {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Meals")
           .get()
           .timeout(const Duration(seconds: 15));
 
-      final filteredMeals = returnedData.docs
-          .map((e) => e.data())
-          .where((meal) =>
-              meal['title'].toLowerCase().contains(title.toLowerCase()))
-          .toList();
+      final filteredDocs = returnedData.docs.where((doc) => 
+          doc['title'].toString().toLowerCase().contains(title.toLowerCase()));
 
-      final mealsWithIngredients =
-          await Future.wait(filteredMeals.map((meal) async {
-        final ingredients =
-            await getIngredientsForMeal(meal['mealId'] as String);
-        return {
-          ...meal,
-          'ingredients': ingredients,
-        };
-      }));
-
-      return mealsWithIngredients;
+      return await _getMealsWithIngredients(filteredDocs);
     });
   }
 
+  Future<List<MealModel>> _getMealsWithIngredients(Iterable<QueryDocumentSnapshot> docs) async {
+    return await Future.wait(docs.map((doc) async {
+      final ingredients = await getIngredientsForMeal(doc['mealId'] as String);
+      return MealModel.fromMap({
+        ...doc.data() as Map<String, dynamic>,
+        'ingredients': ingredients.map((i) => i.toMap()).toList(),
+      });
+    }));
+  }
+
   @override
-  Future<bool> addOrRemoveShoppingListIngredient(MealEntity meal) async {
+  Future<bool> addOrRemoveShoppingListIngredient(MealModel meal) async {
     return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final returnedData = await FirebaseFirestore.instance
+      final user = _auth.currentUser;
+      final returnedData = await _firestore
           .collection("Users")
-          .doc(user!.uid)
+          .doc(user?.uid)
           .collection('ShoppingList')
           .where('mealId', isEqualTo: meal.mealId)
           .get()
@@ -133,14 +121,14 @@ class FirebaseMealServiceImpl extends FirebaseMealService {
         await returnedData.docs.first.reference.delete();
         return false;
       } else {
-        await FirebaseFirestore.instance
+        await _firestore
             .collection("Users")
-            .doc(user.uid)
+            .doc(user?.uid)
             .collection('ShoppingList')
             .add({
           'mealId': meal.mealId,
           'title': meal.title,
-          'ingredients': meal.ingredients,
+          'ingredients': meal.ingredients.map((i) => i.toMap()).toList(),
         });
         return true;
       }
@@ -148,14 +136,13 @@ class FirebaseMealServiceImpl extends FirebaseMealService {
   }
 
   @override
-  Future<bool> isIngredientInShoppingList(MealEntity meal) async {
+  Future<bool> isIngredientInShoppingList(MealModel meal) async {
     return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final ingredients = await FirebaseFirestore.instance
+      final user = _auth.currentUser;
+      final ingredients = await _firestore
           .collection("Users")
-          .doc(user!.uid)
+          .doc(user?.uid)
           .collection('ShoppingList')
-          .where('ingredient', isEqualTo: meal.ingredients)
           .where('mealId', isEqualTo: meal.mealId)
           .get()
           .timeout(const Duration(seconds: 15));
@@ -164,95 +151,73 @@ class FirebaseMealServiceImpl extends FirebaseMealService {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getShoppingList() async {
+  Future<List<MealModel>> getShoppingList() async {
     return handleFirestoreException(() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final returnedData = await FirebaseFirestore.instance
+      final user = _auth.currentUser;
+      final returnedData = await _firestore
           .collection("Users")
-          .doc(user!.uid)
+          .doc(user?.uid)
           .collection('ShoppingList')
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs.map((doc) => doc.data()).toList();
+
+      return returnedData.docs.map((doc) {
+        final data = doc.data();
+        return MealModel(
+          title: data['title'] as String,
+          mealId: data['mealId'] as String,
+          categoryId: [],
+          image: '',
+          ingredients: (data['ingredients'] as List<dynamic>)
+              .map((i) => IngredientModel.fromMap(i as Map<String, dynamic>))
+              .toList(),
+          steps: [],
+          isVegetarian: false,
+        );
+      }).toList();
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMealsByIsVegetarian(
-      bool isVegetarian) async {
+  Future<List<MealModel>> getMealsByIsVegetarian(bool isVegetarian) async {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Meals")
           .where('isVegetarian', isEqualTo: isVegetarian)
           .get()
           .timeout(const Duration(seconds: 15));
-      final meals = returnedData.docs.map((e) => e.data()).toList();
 
-      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
-        final ingredients =
-            await getIngredientsForMeal(meal['mealId'] as String);
-        return {
-          ...meal,
-          'ingredients': ingredients,
-        };
-      }));
-
-      return mealsWithIngredients;
+      return await _getMealsWithIngredients(returnedData.docs);
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getVegetarianMealsByCategoryId(
-      String categoryId) async {
+  Future<List<MealModel>> getVegetarianMealsByCategoryId(String categoryId) async {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Meals")
           .where('categoriesId', arrayContains: categoryId)
           .where('isVegetarian', isEqualTo: true)
           .get()
           .timeout(const Duration(seconds: 15));
-      final meals = returnedData.docs.map((e) => e.data()).toList();
 
-      final mealsWithIngredients = await Future.wait(meals.map((meal) async {
-        final ingredients =
-            await getIngredientsForMeal(meal['mealId'] as String);
-        return {
-          ...meal,
-          'ingredients': ingredients,
-        };
-      }));
-
-      return mealsWithIngredients;
+      return await _getMealsWithIngredients(returnedData.docs);
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getVegetarianMealsByTitle(
-      String title) async {
+  Future<List<MealModel>> getVegetarianMealsByTitle(String title) async {
     return handleFirestoreException(() async {
-      final returnedData = await FirebaseFirestore.instance
+      final returnedData = await _firestore
           .collection("Meals")
           .where('isVegetarian', isEqualTo: true)
           .get()
           .timeout(const Duration(seconds: 15));
 
-      final filteredMeals = returnedData.docs
-          .map((e) => e.data())
-          .where((meal) =>
-              meal['title'].toLowerCase().contains(title.toLowerCase()))
-          .toList();
+      final filteredDocs = returnedData.docs.where((doc) => 
+          doc['title'].toString().toLowerCase().contains(title.toLowerCase()));
 
-      final mealsWithIngredients =
-          await Future.wait(filteredMeals.map((meal) async {
-        final ingredients =
-            await getIngredientsForMeal(meal['mealId'] as String);
-        return {
-          ...meal,
-          'ingredients': ingredients,
-        };
-      }));
-
-      return mealsWithIngredients;
+      return await _getMealsWithIngredients(filteredDocs);
     });
   }
 }
