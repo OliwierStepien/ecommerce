@@ -65,28 +65,48 @@ class MealRepositoryManager extends MealRepository {
     return await sl<HiveMealRepositoryImpl>().getShoppingList();
   }
 
-    @override
-  Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(MealEntity meal, IngredientEntity ingredient, int portionCount) async {
+  @override
+  Future<Either<Failure, void>> addToShoppingList(
+      MealEntity meal, IngredientEntity ingredient, int portionCount) async {
     final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-    
+
     if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>().addOrRemoveShoppingListIngredient(meal, ingredient, portionCount);
+      final result = await sl<FirebaseMealRepositoryImpl>()
+          .addToShoppingList(meal, ingredient, portionCount);
       
-      // Synchronizacja z Hive
-      result.fold(
-        (failure) => null,
-        (isInList) async {
-          if (isInList) {
-            await sl<HiveMealService>().addToShoppingList(MealMapper.toModel(meal));
-          } else {
-            await sl<HiveMealService>().removeFromShoppingList(meal.mealId);
-          }
+      return result.fold(
+        (failure) => Left(failure),
+        (_) async {
+          await sl<HiveMealService>()
+              .addToShoppingList(MealMapper.toModel(meal));
+          return const Right(null);
         },
       );
-      
-      return result;
     } else {
-      return await sl<HiveMealRepositoryImpl>().addOrRemoveShoppingListIngredient(meal, ingredient, portionCount);
+      return await sl<HiveMealRepositoryImpl>()
+          .addToShoppingList(meal, ingredient, portionCount);
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> removeFromShoppingList(
+      MealEntity meal, IngredientEntity ingredient) async {
+    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+
+    if (isOnline) {
+      final result = await sl<FirebaseMealRepositoryImpl>()
+          .removeFromShoppingList(meal, ingredient);
+      
+      return result.fold(
+        (failure) => Left(failure),
+        (_) async {
+          await sl<HiveMealService>().removeFromShoppingList(meal.mealId);
+          return const Right(null);
+        },
+      );
+    } else {
+      return await sl<HiveMealRepositoryImpl>()
+          .removeFromShoppingList(meal, ingredient);
     }
   }
 

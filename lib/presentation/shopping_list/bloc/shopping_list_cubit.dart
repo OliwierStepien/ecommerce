@@ -10,35 +10,23 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
   Map<String, dynamic>? _lastRemovedItem;
   bool _suppressNotifications = false;
 
-Future<void> addOrRemoveIngredient(
-  IngredientEntity ingredient, 
-  MealEntity meal, {
-  bool suppressNotification = false,
-  required int portionCount,
-}) async {
-  final List<Map<String, dynamic>> previousState = List.from(state);
-  final List<Map<String, dynamic>> updatedList;
-  
-  try {
-    _suppressNotifications = suppressNotification;
-    final existingIngredientIndex = state.indexWhere(
-      (item) => item['ingredientId'] == ingredient.ingredientId && 
-               item['mealId'] == meal.mealId,
-    );
-    
-    if (existingIngredientIndex != -1) {
-      _lastRemovedItem = {
-        'item': state[existingIngredientIndex],
-        'index': existingIngredientIndex,
-      };
-      updatedList = List.from(state)..removeAt(existingIngredientIndex);
-    } else {
-      // Oblicz skalowaną ilość
-      final scaledAmount = ingredient.amountPerPortion != null 
-          ? ingredient.amountPerPortion! * portionCount 
+  Future<void> addIngredient(
+    IngredientEntity ingredient,
+    MealEntity meal, {
+    required int portionCount,
+    bool suppressNotification = false,
+  }) async {
+    final List<Map<String, dynamic>> previousState = List<Map<String, dynamic>>.from(state);
+
+    try {
+      _suppressNotifications = suppressNotification;
+
+      // Oblicz skalowaną ilość składnika
+      final scaledAmount = ingredient.amountPerPortion != null
+          ? ingredient.amountPerPortion! * portionCount
           : null;
-      
-      updatedList = List.from(state)
+
+      final updatedList = List<Map<String, dynamic>>.from(state)
         ..add({
           'ingredientId': ingredient.ingredientId,
           'ingredientName': ingredient.ingredientName,
@@ -51,27 +39,58 @@ Future<void> addOrRemoveIngredient(
           'mealEntity': meal,
           'portionCount': portionCount,
         });
+
+      emit(updatedList);
+      await sl<MealRepository>()
+          .addToShoppingList(meal, ingredient, portionCount);
+    } catch (e) {
+      emit(previousState);
+      rethrow;
+    } finally {
+      _suppressNotifications = false;
     }
-    emit(updatedList);
-    await sl<MealRepository>().addOrRemoveShoppingListIngredient(
-      meal, 
-      ingredient,
-      portionCount,
-    );
-  } catch (e) {
-    emit(previousState);
-    rethrow;
-  } finally {
-    _suppressNotifications = false;
   }
-}
+
+  Future<void> removeIngredient(
+    IngredientEntity ingredient,
+    MealEntity meal, {
+    bool suppressNotification = false,
+  }) async {
+    final List<Map<String, dynamic>> previousState = List<Map<String, dynamic>>.from(state);
+
+    try {
+      _suppressNotifications = suppressNotification;
+
+      final existingIngredientIndex = state.indexWhere(
+        (item) =>
+            item['ingredientId'] == ingredient.ingredientId &&
+            item['mealId'] == meal.mealId,
+      );
+
+      if (existingIngredientIndex != -1) {
+        _lastRemovedItem = {
+          'item': state[existingIngredientIndex],
+          'index': existingIngredientIndex,
+        };
+
+        final updatedList = List<Map<String, dynamic>>.from(state)..removeAt(existingIngredientIndex);
+        emit(updatedList);
+        await sl<MealRepository>().removeFromShoppingList(meal, ingredient);
+      }
+    } catch (e) {
+      emit(previousState);
+      rethrow;
+    } finally {
+      _suppressNotifications = false;
+    }
+  }
 
   void restoreLastRemovedIngredient() {
     if (_lastRemovedItem != null) {
       final Map<String, dynamic> item = _lastRemovedItem!['item'];
       final int index = _lastRemovedItem!['index'];
 
-      final List<Map<String, dynamic>> updatedList = List.from(state);
+      final updatedList = List<Map<String, dynamic>>.from(state);
       updatedList.insert(index, item);
 
       emit(updatedList);
@@ -82,7 +101,7 @@ Future<void> addOrRemoveIngredient(
   bool get shouldShowNotification => !_suppressNotifications;
 
   void addCustomIngredient(String ingredientName, {String category = 'Inne'}) {
-    final List<Map<String, dynamic>> updatedList = List.from(state)
+    final updatedList = List<Map<String, dynamic>>.from(state)
       ..add({
         'ingredientId': 'custom_${DateTime.now().millisecondsSinceEpoch}',
         'ingredientName': ingredientName,
@@ -106,7 +125,7 @@ Future<void> addOrRemoveIngredient(
         'index': index,
       };
 
-      final List<Map<String, dynamic>> updatedList = List.from(state)
+      final updatedList = List<Map<String, dynamic>>.from(state)
         ..removeAt(index);
       emit(updatedList);
     }

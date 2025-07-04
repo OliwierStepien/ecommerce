@@ -14,7 +14,8 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
       String mealId) {
     return handleFirestoreFailure(() async {
-      final ingredients = await sl<FirebaseMealService>().getIngredientsForMeal(mealId);
+      final ingredients =
+          await sl<FirebaseMealService>().getIngredientsForMeal(mealId);
       return ingredients.map(IngredientMapper.toEntity).toList();
     });
   }
@@ -39,7 +40,8 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<MealEntity>>> getMealsByCategoryId(
       String categoryId) async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getMealsByCategoryId(categoryId);
+      final meals =
+          await sl<FirebaseMealService>().getMealsByCategoryId(categoryId);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -54,16 +56,27 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   }
 
   @override
-Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
-    MealEntity meal, IngredientEntity ingredient, int portionCount) async {
-  return handleFirestoreFailure(() async {
-    return await sl<FirebaseMealService>().addOrRemoveShoppingListIngredient(
-      MealMapper.toModel(meal),
-      IngredientMapper.toModel(ingredient),
-      portionCount,
-    );
-  });
-}
+  Future<Either<Failure, void>> addToShoppingList(
+      MealEntity meal, IngredientEntity ingredient, int portionCount) async {
+    return handleFirestoreFailure(() async {
+      await sl<FirebaseMealService>().addToShoppingList(
+        MealMapper.toModel(meal),
+        IngredientMapper.toModel(ingredient),
+        portionCount,
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> removeFromShoppingList(
+      MealEntity meal, IngredientEntity ingredient) async {
+    return handleFirestoreFailure(() async {
+      await sl<FirebaseMealService>().removeFromShoppingList(
+        MealMapper.toModel(meal),
+        IngredientMapper.toModel(ingredient),
+      );
+    });
+  }
 
   @override
   Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
@@ -77,7 +90,8 @@ Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
   Future<Either<Failure, List<MealEntity>>> isMealVegetarian(
       bool isVegetarian) async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getMealsByIsVegetarian(isVegetarian);
+      final meals =
+          await sl<FirebaseMealService>().getMealsByIsVegetarian(isVegetarian);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -86,7 +100,8 @@ Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByCategoryId(
       String categoryId) async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getVegetarianMealsByCategoryId(categoryId);
+      final meals = await sl<FirebaseMealService>()
+          .getVegetarianMealsByCategoryId(categoryId);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -95,7 +110,8 @@ Future<Either<Failure, bool>> addOrRemoveShoppingListIngredient(
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(
       String title) async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getVegetarianMealsByTitle(title);
+      final meals =
+          await sl<FirebaseMealService>().getVegetarianMealsByTitle(title);
       return meals.map(MealMapper.toEntity).toList();
     });
   }

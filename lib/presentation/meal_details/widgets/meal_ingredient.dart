@@ -129,11 +129,18 @@ class MealIngredient extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    context.read<ShoppingListCubit>().addOrRemoveIngredient(
-                          ingredient,
-                          mealEntity,
-                          portionCount: portionCount,
-                        );
+                    if (isAdded) {
+                      context.read<ShoppingListCubit>().removeIngredient(
+                            ingredient,
+                            mealEntity,
+                          );
+                    } else {
+                      context.read<ShoppingListCubit>().addIngredient(
+                            ingredient,
+                            mealEntity,
+                            portionCount: portionCount,
+                          );
+                    }
                   },
                   icon: Icon(
                     isAdded ? Icons.check_circle : Icons.add_circle_outline,

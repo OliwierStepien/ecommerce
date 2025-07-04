@@ -45,13 +45,14 @@ import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_ingredients_for_meal.dart';
-import 'package:mealapp/domain/meal/usecase/shopping_list/add_or_remove_shopping_list_ingredient.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
+import 'package:mealapp/domain/meal/usecase/shopping_list/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/meal/usecase/shopping_list/get_shopping_list.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mealapp/domain/meal/usecase/shopping_list/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/planned_meal/usecase/planned_meal_usecase.dart';
 
@@ -208,8 +209,11 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetMealByTitleUseCase>(
       () => GetMealByTitleUseCase(sl<MealRepository>()));
 
-  sl.registerLazySingleton<AddOrRemoveShoppingListIngredientUseCase>(
-      () => AddOrRemoveShoppingListIngredientUseCase(sl<MealRepository>()));
+  sl.registerLazySingleton<AddToShoppingListUseCase>(
+      () => AddToShoppingListUseCase(sl<MealRepository>()));
+
+  sl.registerLazySingleton<RemoveFromShoppingListUseCase>(
+      () => RemoveFromShoppingListUseCase(sl<MealRepository>()));
 
   sl.registerLazySingleton<GetShoppingListUseCase>(
       () => GetShoppingListUseCase(sl<MealRepository>()));
@@ -224,39 +228,38 @@ Future<void> initializeDependencies() async {
       () => RemovePlannedMealUseCase(sl<PlannedMealRepository>()));
 
 // Favorite Meal usecases
-sl.registerLazySingleton<AddFavoriteMealUseCase>(
-    () => AddFavoriteMealUseCase(sl<FavoriteMealRepository>()));
-sl.registerLazySingleton<RemoveFavoriteMealUseCase>(
-    () => RemoveFavoriteMealUseCase(sl<FavoriteMealRepository>()));
-sl.registerLazySingleton<GetFavoritesMealUseCase>(
-    () => GetFavoritesMealUseCase(sl<FavoriteMealRepository>()));
+  sl.registerLazySingleton<AddFavoriteMealUseCase>(
+      () => AddFavoriteMealUseCase(sl<FavoriteMealRepository>()));
+  sl.registerLazySingleton<RemoveFavoriteMealUseCase>(
+      () => RemoveFavoriteMealUseCase(sl<FavoriteMealRepository>()));
+  sl.registerLazySingleton<GetFavoritesMealUseCase>(
+      () => GetFavoritesMealUseCase(sl<FavoriteMealRepository>()));
 
   // SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
-final plannedSyncService = PlannedMealSyncService(
-  firebaseRepo: sl<FirebasePlannedMealRepositoryImpl>(),
-  hiveRepo: sl<HivePlannedMealRepositoryImpl>(),
-  networkInfo: sl<NetworkInfo>(),
-);
+  final plannedSyncService = PlannedMealSyncService(
+    firebaseRepo: sl<FirebasePlannedMealRepositoryImpl>(),
+    hiveRepo: sl<HivePlannedMealRepositoryImpl>(),
+    networkInfo: sl<NetworkInfo>(),
+  );
 
 // Favorite Meal
-final favoriteSyncService = FavoriteMealSyncService(
-  firebaseRepo: sl<FirebaseFavoriteMealRepositoryImpl>(),
-  hiveRepo: sl<HiveFavoriteMealRepositoryImpl>(),
-  networkInfo: sl<NetworkInfo>(),
-);
+  final favoriteSyncService = FavoriteMealSyncService(
+    firebaseRepo: sl<FirebaseFavoriteMealRepositoryImpl>(),
+    hiveRepo: sl<HiveFavoriteMealRepositoryImpl>(),
+    networkInfo: sl<NetworkInfo>(),
+  );
 
 // Single ConnectionMonitor for all services
-final connectionMonitor = ConnectionMonitor(
-  syncServices: [plannedSyncService, favoriteSyncService],
-);
+  final connectionMonitor = ConnectionMonitor(
+    syncServices: [plannedSyncService, favoriteSyncService],
+  );
 
-connectionMonitor.startMonitoring();
+  connectionMonitor.startMonitoring();
 
 // Register services
-sl.registerSingleton(plannedSyncService);
-sl.registerSingleton(favoriteSyncService);
-sl.registerSingleton(connectionMonitor);
-
+  sl.registerSingleton(plannedSyncService);
+  sl.registerSingleton(favoriteSyncService);
+  sl.registerSingleton(connectionMonitor);
 }

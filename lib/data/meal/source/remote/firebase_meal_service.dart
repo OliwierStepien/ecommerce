@@ -10,8 +10,10 @@ abstract class FirebaseMealService {
   Future<List<MealModel>> getMeals();
   Future<List<MealModel>> getMealsByCategoryId(String categoryId);
   Future<List<MealModel>> getMealsByTitle(String title);
-  Future<bool> addOrRemoveShoppingListIngredient(
+  Future<void> addToShoppingList(
       MealModel meal, IngredientModel ingredient, int portionCount);
+  Future<void> removeFromShoppingList(
+      MealModel meal, IngredientModel ingredient);
   Future<List<MealModel>> getShoppingList();
   Future<List<MealModel>> getMealsByIsVegetarian(bool isVegetarian);
   Future<List<MealModel>> getVegetarianMealsByCategoryId(String categoryId);
@@ -107,8 +109,35 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
   }
 
   @override
-  Future<bool> addOrRemoveShoppingListIngredient(
+  Future<void> addToShoppingList(
       MealModel meal, IngredientModel ingredient, int portionCount) async {
+    return handleFirestoreException(() async {
+      final user = _auth.currentUser;
+      final scaledAmount = ingredient.amountPerPortion != null
+          ? ingredient.amountPerPortion! * portionCount
+          : null;
+
+      await _firestore
+          .collection("Users")
+          .doc(user?.uid)
+          .collection('ShoppingList')
+          .add({
+        'mealId': meal.mealId,
+        'title': meal.title,
+        'ingredientId': ingredient.ingredientId,
+        'ingredientName': ingredient.ingredientName,
+        'amountPerPortion': ingredient.amountPerPortion,
+        'scaledAmount': scaledAmount,
+        'unit': ingredient.unit,
+        'ingredientCategory': ingredient.ingredientCategory,
+        'portionCount': portionCount,
+      });
+    });
+  }
+
+  @override
+  Future<void> removeFromShoppingList(
+      MealModel meal, IngredientModel ingredient) async {
     return handleFirestoreException(() async {
       final user = _auth.currentUser;
       final returnedData = await _firestore
@@ -122,29 +151,6 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
 
       if (returnedData.docs.isNotEmpty) {
         await returnedData.docs.first.reference.delete();
-        return false;
-      } else {
-        // Oblicz ilość składnika uwzględniając liczbę porcji
-        final scaledAmount = ingredient.amountPerPortion != null
-            ? ingredient.amountPerPortion! * portionCount
-            : null;
-
-        await _firestore
-            .collection("Users")
-            .doc(user?.uid)
-            .collection('ShoppingList')
-            .add({
-          'mealId': meal.mealId,
-          'title': meal.title,
-          'ingredientId': ingredient.ingredientId,
-          'ingredientName': ingredient.ingredientName,
-          'amountPerPortion': ingredient.amountPerPortion,
-          'scaledAmount': scaledAmount,
-          'unit': ingredient.unit,
-          'ingredientCategory': ingredient.ingredientCategory,
-          'portionCount': portionCount,
-        });
-        return true;
       }
     });
   }

@@ -89,7 +89,7 @@ class ShoppingListItem extends StatelessWidget {
     final shoppingListCubit = context.read<ShoppingListCubit>();
 
     if (mealEntity != null) {
-      shoppingListCubit.addOrRemoveIngredient(
+      shoppingListCubit.removeIngredient(
         IngredientEntity(
           ingredientId: ingredientId,
           ingredientName: ingredientName,
@@ -99,7 +99,6 @@ class ShoppingListItem extends StatelessWidget {
           mealId: mealEntity!.mealId,
         ),
         mealEntity!,
-        portionCount: 1,
         suppressNotification: true,
       );
     } else {
