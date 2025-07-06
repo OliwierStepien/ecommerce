@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-import 'package:mealapp/domain/meal/repository/meal_repository.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
 class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
@@ -41,8 +41,8 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
         });
 
       emit(updatedList);
-      await sl<MealRepository>()
-          .addToShoppingList(meal, ingredient, portionCount);
+      await sl<ShoppingListMealIngredientRepository>()
+          .addMealIngredientToShoppingList(meal, ingredient, portionCount);
     } catch (e) {
       emit(previousState);
       rethrow;
@@ -75,7 +75,7 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
 
         final updatedList = List<Map<String, dynamic>>.from(state)..removeAt(existingIngredientIndex);
         emit(updatedList);
-        await sl<MealRepository>().removeFromShoppingList(meal, ingredient);
+        await sl<ShoppingListMealIngredientRepository>().removeMealIngredientFromShoppingList(meal, ingredient);
       }
     } catch (e) {
       emit(previousState);

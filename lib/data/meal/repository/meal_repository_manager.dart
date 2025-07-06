@@ -60,57 +60,6 @@ class MealRepositoryManager extends MealRepository {
   }
 
   @override
-  Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
-    // Lista zakupów również przechowywana lokalnie
-    return await sl<HiveMealRepositoryImpl>().getShoppingList();
-  }
-
-  @override
-  Future<Either<Failure, void>> addToShoppingList(
-      MealEntity meal, IngredientEntity ingredient, int portionCount) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-
-    if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>()
-          .addToShoppingList(meal, ingredient, portionCount);
-      
-      return result.fold(
-        (failure) => Left(failure),
-        (_) async {
-          await sl<HiveMealService>()
-              .addToShoppingList(MealMapper.toModel(meal));
-          return const Right(null);
-        },
-      );
-    } else {
-      return await sl<HiveMealRepositoryImpl>()
-          .addToShoppingList(meal, ingredient, portionCount);
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> removeFromShoppingList(
-      MealEntity meal, IngredientEntity ingredient) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-
-    if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>()
-          .removeFromShoppingList(meal, ingredient);
-      
-      return result.fold(
-        (failure) => Left(failure),
-        (_) async {
-          await sl<HiveMealService>().removeFromShoppingList(meal.mealId);
-          return const Right(null);
-        },
-      );
-    } else {
-      return await sl<HiveMealRepositoryImpl>()
-          .removeFromShoppingList(meal, ingredient);
-    }
-  }
-
-  @override
   Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() async {
     final isOnline = await sl<NetworkInfo>().checkInternetConnection();
     

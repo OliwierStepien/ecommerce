@@ -56,37 +56,6 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   }
 
   @override
-  Future<Either<Failure, void>> addToShoppingList(
-      MealEntity meal, IngredientEntity ingredient, int portionCount) async {
-    return handleFirestoreFailure(() async {
-      await sl<FirebaseMealService>().addToShoppingList(
-        MealMapper.toModel(meal),
-        IngredientMapper.toModel(ingredient),
-        portionCount,
-      );
-    });
-  }
-
-  @override
-  Future<Either<Failure, void>> removeFromShoppingList(
-      MealEntity meal, IngredientEntity ingredient) async {
-    return handleFirestoreFailure(() async {
-      await sl<FirebaseMealService>().removeFromShoppingList(
-        MealMapper.toModel(meal),
-        IngredientMapper.toModel(ingredient),
-      );
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<MealEntity>>> getShoppingList() async {
-    return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getShoppingList();
-      return meals.map(MealMapper.toEntity).toList();
-    });
-  }
-
-  @override
   Future<Either<Failure, List<MealEntity>>> isMealVegetarian(
       bool isVegetarian) async {
     return handleFirestoreFailure(() async {

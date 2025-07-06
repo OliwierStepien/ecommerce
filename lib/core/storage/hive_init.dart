@@ -6,7 +6,7 @@ import 'package:mealapp/data/favorite_meal/model/favorite_meal_model.dart';
 import 'package:mealapp/data/meal/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
-import 'package:mealapp/data/shopping_list/model/shopping_list_item_model.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart';
 
 class HiveConfig {
   static Future<void> init() async {
@@ -21,7 +21,7 @@ class HiveConfig {
     Hive.registerAdapter(CategoryModelAdapter());
     Hive.registerAdapter(MealModelAdapter());
     Hive.registerAdapter(IngredientModelAdapter());
-    Hive.registerAdapter(ShoppingListItemModelAdapter());
+    Hive.registerAdapter(ShoppingListMealIngredientModelAdapter());
     Hive.registerAdapter(PlannedMealModelAdapter());
     Hive.registerAdapter(FavoriteMealModelAdapter());
 
@@ -32,11 +32,10 @@ class HiveConfig {
       Hive.openBox<UserModel>('users'),
       Hive.openBox<CategoryModel>('categories'),
       Hive.openBox<MealModel>('meals'),
-      Hive.openBox<FavoriteMealModel>('favoritesMeals'),
-      Hive.openBox<MealModel>('shoppingList'),
       Hive.openBox<IngredientModel>('ingredients'),
-      Hive.openBox<ShoppingListItemModel>('shoppingListItems'),
+      Hive.openBox<ShoppingListMealIngredientModel>('shoppingListMealIngredients'),
       Hive.openBox<PlannedMealModel>('plannedMeals'),
+      Hive.openBox<FavoriteMealModel>('favoritesMeals'),      
     ]);
   }
 

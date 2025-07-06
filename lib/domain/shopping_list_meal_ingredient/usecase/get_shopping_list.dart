@@ -2,16 +2,16 @@ import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-import 'package:mealapp/domain/meal/repository/meal_repository.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 
 class GetShoppingListUseCase
     implements UseCase<Either<Failure, List<MealEntity>>, void> {
-  final MealRepository mealRepository;
+  final ShoppingListMealIngredientRepository shoppingListMealIngredientRepository;
 
-  GetShoppingListUseCase(this.mealRepository);
+  GetShoppingListUseCase(this.shoppingListMealIngredientRepository);
 
   @override
   Future<Either<Failure, List<MealEntity>>> call({void params}) async {
-    return await mealRepository.getShoppingList();
+    return await shoppingListMealIngredientRepository.getMealIngredientToShoppingList();
   }
 }

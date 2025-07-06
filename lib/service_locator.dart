@@ -30,6 +30,12 @@ import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_mea
 import 'package:mealapp/data/planned_meal/repository/sync/planned_meal_sync_service.dart';
 import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
 import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/repository/local/hive_shopping_list_meal_ingredient_repository.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/repository/manager/shopping_list_meal_ingredient_repository_manager.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/repository/remote/firebase_shopping_list_meal_ingredient_repository.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/repository/sync/shopping_list_meal_ingredient_sync_service.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/source/local/hive_shopping_list_meal_ingredient_service.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/source/remote/firebase_shopping_list_meal_ingredient_service.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/domain/auth/usecase/get_user.dart';
 import 'package:mealapp/domain/auth/usecase/is_logged_in.dart';
@@ -49,10 +55,11 @@ import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
-import 'package:mealapp/domain/meal/usecase/shopping_list/add_to_shopping_list_usecase.dart';
-import 'package:mealapp/domain/meal/usecase/shopping_list/get_shopping_list.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mealapp/domain/meal/usecase/shopping_list/remove_from_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/planned_meal/usecase/planned_meal_usecase.dart';
 
@@ -100,6 +107,13 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<FirebaseFavoriteMealService>(
       FirebaseFavoriteMealServiceImpl());
   sl.registerSingleton<HiveFavoriteMealService>(HiveFavoriteMealServiceImpl());
+
+  // Shopping List Meal Ingredient services
+
+  sl.registerSingleton<FirebaseShoppingListMealIngredientService>(
+      FirebaseShoppingListMealIngredientServiceImpl());
+  sl.registerSingleton<HiveShoppingListMealIngredientService>(
+      HiveShoppingListMealIngredientServiceImpl());
 
   // REPOSITORIES
 
@@ -164,6 +178,25 @@ Future<void> initializeDependencies() async {
           remoteRepository: sl<FirebaseFavoriteMealRepositoryImpl>(),
           networkInfo: sl<NetworkInfo>()));
 
+  // Shopping List Meal Ingredient repositories
+
+  sl.registerLazySingleton<FirebaseShoppingListMealIngredientRepositoryImpl>(
+      () => FirebaseShoppingListMealIngredientRepositoryImpl(
+            firebaseShoppingListMealIngredientService:
+                sl<FirebaseShoppingListMealIngredientService>(),
+          ));
+  sl.registerLazySingleton<HiveShoppingListMealIngredientRepositoryImpl>(() =>
+      HiveShoppingListMealIngredientRepositoryImpl(
+          hiveShoppingListMealIngredientService:
+              sl<HiveShoppingListMealIngredientService>(),
+          networkInfo: sl<NetworkInfo>()));
+  sl.registerLazySingleton<ShoppingListMealIngredientRepository>(() =>
+      ShoppingListMealIngredientRepositoryManager(
+          localRepository: sl<HiveShoppingListMealIngredientRepositoryImpl>(),
+          remoteRepository:
+              sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
+          networkInfo: sl<NetworkInfo>()));
+
   // USECASES
 
   // Auth usecases
@@ -209,15 +242,6 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetMealByTitleUseCase>(
       () => GetMealByTitleUseCase(sl<MealRepository>()));
 
-  sl.registerLazySingleton<AddToShoppingListUseCase>(
-      () => AddToShoppingListUseCase(sl<MealRepository>()));
-
-  sl.registerLazySingleton<RemoveFromShoppingListUseCase>(
-      () => RemoveFromShoppingListUseCase(sl<MealRepository>()));
-
-  sl.registerLazySingleton<GetShoppingListUseCase>(
-      () => GetShoppingListUseCase(sl<MealRepository>()));
-
   // Planned Meal usecases
 
   sl.registerLazySingleton<GetPlannedMealsUseCase>(
@@ -235,6 +259,18 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetFavoritesMealUseCase>(
       () => GetFavoritesMealUseCase(sl<FavoriteMealRepository>()));
 
+  // Shopping List Meal Ingredient usecases
+
+  sl.registerLazySingleton<AddToShoppingListUseCase>(() =>
+      AddToShoppingListUseCase(sl<ShoppingListMealIngredientRepository>()));
+
+  sl.registerLazySingleton<RemoveFromShoppingListUseCase>(() =>
+      RemoveFromShoppingListUseCase(
+          sl<ShoppingListMealIngredientRepository>()));
+
+  sl.registerLazySingleton<GetShoppingListUseCase>(
+      () => GetShoppingListUseCase(sl<ShoppingListMealIngredientRepository>()));
+
   // SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
@@ -251,9 +287,18 @@ Future<void> initializeDependencies() async {
     networkInfo: sl<NetworkInfo>(),
   );
 
+  // Shopping List Meal Ingredient
+
+  final shoppingListMealIngredientSyncService =
+      ShoppingListMealIngredientSyncService(
+    firebaseRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
+    hiveRepo: sl<HiveShoppingListMealIngredientRepositoryImpl>(),
+    networkInfo: sl<NetworkInfo>(),
+  );
+
 // Single ConnectionMonitor for all services
   final connectionMonitor = ConnectionMonitor(
-    syncServices: [plannedSyncService, favoriteSyncService],
+    syncServices: [plannedSyncService, favoriteSyncService, shoppingListMealIngredientSyncService],
   );
 
   connectionMonitor.startMonitoring();
@@ -261,5 +306,6 @@ Future<void> initializeDependencies() async {
 // Register services
   sl.registerSingleton(plannedSyncService);
   sl.registerSingleton(favoriteSyncService);
+  sl.registerSingleton(shoppingListMealIngredientSyncService);
   sl.registerSingleton(connectionMonitor);
 }

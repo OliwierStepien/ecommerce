@@ -10,11 +10,6 @@ abstract class FirebaseMealService {
   Future<List<MealModel>> getMeals();
   Future<List<MealModel>> getMealsByCategoryId(String categoryId);
   Future<List<MealModel>> getMealsByTitle(String title);
-  Future<void> addToShoppingList(
-      MealModel meal, IngredientModel ingredient, int portionCount);
-  Future<void> removeFromShoppingList(
-      MealModel meal, IngredientModel ingredient);
-  Future<List<MealModel>> getShoppingList();
   Future<List<MealModel>> getMealsByIsVegetarian(bool isVegetarian);
   Future<List<MealModel>> getVegetarianMealsByCategoryId(String categoryId);
   Future<List<MealModel>> getVegetarianMealsByTitle(String title);
@@ -22,13 +17,11 @@ abstract class FirebaseMealService {
 
 class FirebaseMealServiceImpl implements FirebaseMealService {
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
 
   FirebaseMealServiceImpl({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  })  : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<List<IngredientModel>> getIngredientsForMeal(String mealId) {
@@ -106,88 +99,6 @@ class FirebaseMealServiceImpl implements FirebaseMealService {
         'ingredients': ingredients.map((i) => i.toMap()).toList(),
       });
     }));
-  }
-
-  @override
-  Future<void> addToShoppingList(
-      MealModel meal, IngredientModel ingredient, int portionCount) async {
-    return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      final scaledAmount = ingredient.amountPerPortion != null
-          ? ingredient.amountPerPortion! * portionCount
-          : null;
-
-      await _firestore
-          .collection("Users")
-          .doc(user?.uid)
-          .collection('ShoppingList')
-          .add({
-        'mealId': meal.mealId,
-        'title': meal.title,
-        'ingredientId': ingredient.ingredientId,
-        'ingredientName': ingredient.ingredientName,
-        'amountPerPortion': ingredient.amountPerPortion,
-        'scaledAmount': scaledAmount,
-        'unit': ingredient.unit,
-        'ingredientCategory': ingredient.ingredientCategory,
-        'portionCount': portionCount,
-      });
-    });
-  }
-
-  @override
-  Future<void> removeFromShoppingList(
-      MealModel meal, IngredientModel ingredient) async {
-    return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      final returnedData = await _firestore
-          .collection("Users")
-          .doc(user?.uid)
-          .collection('ShoppingList')
-          .where('ingredientId', isEqualTo: ingredient.ingredientId)
-          .where('mealId', isEqualTo: meal.mealId)
-          .get()
-          .timeout(const Duration(seconds: 15));
-
-      if (returnedData.docs.isNotEmpty) {
-        await returnedData.docs.first.reference.delete();
-      }
-    });
-  }
-
-  @override
-  Future<List<MealModel>> getShoppingList() async {
-    return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      final returnedData = await _firestore
-          .collection("Users")
-          .doc(user?.uid)
-          .collection('ShoppingList')
-          .get()
-          .timeout(const Duration(seconds: 15));
-
-      return returnedData.docs.map((doc) {
-        final data = doc.data();
-        return MealModel(
-          title: data['title'] as String,
-          mealId: data['mealId'] as String,
-          categoryId: [],
-          image: '',
-          ingredients: [
-            IngredientModel(
-              ingredientId: data['ingredientId'] as String,
-              ingredientName: data['ingredientName'] as String,
-              amountPerPortion: data['amountPerPortion'] as num?,
-              unit: data['unit'] as String,
-              ingredientCategory: data['ingredientCategory'] as String,
-              mealId: data['mealId'] as String,
-            )
-          ],
-          steps: [],
-          isVegetarian: false,
-        );
-      }).toList();
-    });
   }
 
   @override
