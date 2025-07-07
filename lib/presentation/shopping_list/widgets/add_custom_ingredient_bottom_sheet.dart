@@ -15,19 +15,16 @@ class AddCustomIngredientBottomSheet extends StatelessWidget {
     required this.getAllIngredientsUseCase,
   });
 
-  void _submit(BuildContext context) {
-    final cubit = context.read<CustomIngredientCubit>();
-    final name = cubit.nameController.text.trim();
-    final category = cubit.selectedCategory ?? 'Inne';
+void _submit(BuildContext context) {
+  final cubit = context.read<CustomIngredientCubit>();
+  final ingredient = cubit.getCustomIngredient();
 
-    if (name.isEmpty) return;
+  if (ingredient == null) return;
 
-    context
-        .read<ShoppingListCubit>()
-        .addCustomIngredient(name, category: category);
-    Navigator.of(context).pop();
-    cubit.clearForm();
-  }
+  context.read<ShoppingListCubit>().addCustomIngredient(ingredient);
+  Navigator.of(context).pop();
+  cubit.clearForm();
+}
 
   @override
   Widget build(BuildContext context) {

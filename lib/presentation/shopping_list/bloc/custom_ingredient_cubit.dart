@@ -3,11 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 
 class CustomIngredientCubit extends Cubit<CustomIngredientState> {
   final GetAllIngredientsUseCase getAllIngredientsUseCase;
   final TextEditingController nameController = TextEditingController();
-  String? selectedCategory;
+  String selectedCategory = 'Inne';
 
   CustomIngredientCubit(this.getAllIngredientsUseCase)
       : super(const CustomIngredientLoading()) {
@@ -20,28 +21,24 @@ class CustomIngredientCubit extends Cubit<CustomIngredientState> {
     final result = await getAllIngredientsUseCase();
 
     result.fold(
-      (failure) {
-        emit(CustomIngredientError(message: mapFailureToMessage(failure)));
-      },
+      (failure) => emit(CustomIngredientError(message: mapFailureToMessage(failure))),
       (ingredients) {
-        final uniqueCategories = ingredients
-            .map((i) => i.ingredientCategory)
-            .where((cat) => cat.trim().isNotEmpty)
+        final categories = ingredients
+            .map((e) => e.ingredientCategory.trim())
+            .where((e) => e.isNotEmpty)
             .toSet()
             .toList();
 
-        if (!uniqueCategories.contains('Inne')) {
-          uniqueCategories.insert(0, 'Inne');
-        }
+        if (!categories.contains('Inne')) categories.insert(0, 'Inne');
 
         selectedCategory = 'Inne';
-        emit(CustomIngredientLoaded(categories: uniqueCategories));
+        emit(CustomIngredientLoaded(categories: categories));
       },
     );
   }
 
   void updateCategory(String? category) {
-    selectedCategory = category;
+    selectedCategory = category ?? 'Inne';
     if (state is CustomIngredientLoaded) {
       emit((state as CustomIngredientLoaded).copyWith());
     }
@@ -49,8 +46,9 @@ class CustomIngredientCubit extends Cubit<CustomIngredientState> {
 
   void _onTextChanged() {
     if (state is CustomIngredientLoaded) {
-      final newText = nameController.text;
-      emit((state as CustomIngredientLoaded).copyWith(inputText: newText));
+      emit((state as CustomIngredientLoaded).copyWith(
+        inputText: nameController.text,
+      ));
     }
   }
 
@@ -60,6 +58,16 @@ class CustomIngredientCubit extends Cubit<CustomIngredientState> {
     if (state is CustomIngredientLoaded) {
       emit((state as CustomIngredientLoaded).copyWith());
     }
+  }
+
+  CustomIngredientEntity? getCustomIngredient() {
+    final name = nameController.text.trim();
+    if (name.isEmpty) return null;
+    return CustomIngredientEntity(
+      ingredientId: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+      ingredientName: name,
+      ingredientCategory: selectedCategory,
+    );
   }
 
   @override

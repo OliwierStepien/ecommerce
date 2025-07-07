@@ -6,29 +6,20 @@ import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
 
 class ShoppingListItem extends StatelessWidget {
-  final String ingredientId;
-  final String ingredientName;
-  final num? amountPerPortion;
+  final IngredientEntity? ingredient;
+  final MealEntity? meal;
   final num? scaledAmount;
-  final String unit;
-  final String title;
-  final MealEntity? mealEntity;
-  final String ingredientCategory;
 
   const ShoppingListItem({
     super.key,
-    required this.ingredientId,
-    required this.ingredientName,
-    required this.amountPerPortion,
-    this.scaledAmount,
-    required this.unit,
-    required this.title,
-    required this.mealEntity,
-    required this.ingredientCategory,
+    required this.ingredient,
+    required this.meal,
+    required this.scaledAmount,
   });
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
       color: Theme.of(context).inputDecorationTheme.fillColor,
       elevation: 2,
@@ -45,15 +36,15 @@ class ShoppingListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _buildIngredientText(),
+                    _buildIngredientText(context),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (title.trim().isNotEmpty)
+                  if (meal?.title.trim().isNotEmpty ?? false)
                     Text(
-                      context.l10n.fromMealTitle(title),
+                      context.l10n.fromMealTitle(meal!.title),
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                 ],
@@ -69,46 +60,44 @@ class ShoppingListItem extends StatelessWidget {
     );
   }
 
-  String _buildIngredientText() {
-    // Dla customowych składników (gdzie mealEntity == null) pokazuj tylko nazwę
-    if (mealEntity == null) {
-      return ingredientName;
+  String _buildIngredientText(context) {
+    if (ingredient == null) {
+      return context.l10n.customIngredient;
     }
 
-    // Dla składników z przepisów pokazuj pełne informacje
-    return [
-      ingredientName,
+    final parts = <String>[
+      ingredient!.ingredientName,
       if (scaledAmount != null)
-        scaledAmount?.toStringAsFixed(
-            scaledAmount?.truncateToDouble() == scaledAmount ? 0 : 2),
-      if (unit.isNotEmpty) unit,
-    ].join(' ');
+        scaledAmount!.truncateToDouble() == scaledAmount
+            ? scaledAmount!.toInt().toString()
+            : scaledAmount!.toStringAsFixed(2),
+      if (ingredient!.unit.isNotEmpty) ingredient!.unit,
+    ];
+
+    return parts.join(' ');
   }
 
   void _removeIngredient(BuildContext context) {
     final shoppingListCubit = context.read<ShoppingListCubit>();
 
-    if (mealEntity != null) {
+    if (ingredient != null && meal != null) {
       shoppingListCubit.removeIngredient(
-        IngredientEntity(
-          ingredientId: ingredientId,
-          ingredientName: ingredientName,
-          amountPerPortion: amountPerPortion,
-          unit: unit,
-          ingredientCategory: ingredientCategory,
-          mealId: mealEntity!.mealId,
-        ),
-        mealEntity!,
+        ingredient!,
+        meal!,
         suppressNotification: true,
       );
     } else {
-      shoppingListCubit.removeCustomIngredient(ingredientId);
+      shoppingListCubit.removeCustomIngredient(
+        ingredient?.ingredientId ?? '',
+      );
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          context.l10n.removedIngredientFromShoppingList(ingredientName),
+          context.l10n.removedIngredientFromShoppingList(
+            ingredient?.ingredientName ?? context.l10n.ingredients,
+          ),
         ),
         action: SnackBarAction(
           label: context.l10n.undo,

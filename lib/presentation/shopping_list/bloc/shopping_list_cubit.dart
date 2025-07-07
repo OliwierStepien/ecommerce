@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 import 'package:mealapp/service_locator.dart';
 
 class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
@@ -100,21 +101,20 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
 
   bool get shouldShowNotification => !_suppressNotifications;
 
-  void addCustomIngredient(String ingredientName, {String category = 'Inne'}) {
-    final updatedList = List<Map<String, dynamic>>.from(state)
-      ..add({
-        'ingredientId': 'custom_${DateTime.now().millisecondsSinceEpoch}',
-        'ingredientName': ingredientName,
-        'amountPerPortion': null,
-        'unit': '',
-        'ingredientCategory': category,
-        'mealId': null,
-        'title': '',
-        'mealEntity': null,
-      });
-
-    emit(updatedList);
-  }
+void addCustomIngredient(CustomIngredientEntity ingredient) {
+  final updatedList = List<Map<String, dynamic>>.from(state)
+    ..add({
+      'ingredientId': ingredient.ingredientId,
+      'ingredientName': ingredient.ingredientName,
+      'ingredientCategory': ingredient.ingredientCategory,
+      'mealId': null,
+      'title': '',
+      'mealEntity': null,
+      'amountPerPortion': null,
+      'unit': '',
+    });
+  emit(updatedList);
+}
 
   void removeCustomIngredient(String ingredientId) {
     final index = state.indexWhere((item) =>
