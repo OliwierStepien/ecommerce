@@ -6,24 +6,25 @@ import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/remote/firebase_shopping_list_meal_ingredient_service.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
-import 'package:mealapp/service_locator.dart';
 
 class FirebaseShoppingListMealIngredientRepositoryImpl
     implements ShoppingListMealIngredientRepository {
+  final FirebaseShoppingListMealIngredientService
+      _firebaseShoppingListMealIngredientService;
 
-        final FirebaseShoppingListMealIngredientService _firebaseShoppingListMealIngredientService;
-
-    FirebaseShoppingListMealIngredientRepositoryImpl(
-      {required FirebaseShoppingListMealIngredientService firebaseShoppingListMealIngredientService})
-      : _firebaseShoppingListMealIngredientService = firebaseShoppingListMealIngredientService;
+  FirebaseShoppingListMealIngredientRepositoryImpl(
+      {required FirebaseShoppingListMealIngredientService
+          firebaseShoppingListMealIngredientService})
+      : _firebaseShoppingListMealIngredientService =
+            firebaseShoppingListMealIngredientService;
 
   @override
   Future<Either<Failure, void>> addMealIngredientToShoppingList(
       MealEntity meal, IngredientEntity ingredient, int portionCount) async {
     return handleFirestoreFailure(() async {
-      await sl<FirebaseShoppingListMealIngredientService>().addMealIngredientToShoppingList(
+      await _firebaseShoppingListMealIngredientService
+          .addMealIngredientToShoppingList(
         MealMapper.toModel(meal),
         IngredientMapper.toModel(ingredient),
         portionCount,
@@ -35,7 +36,8 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
   Future<Either<Failure, void>> removeMealIngredientFromShoppingList(
       MealEntity meal, IngredientEntity ingredient) async {
     return handleFirestoreFailure(() async {
-      await sl<FirebaseShoppingListMealIngredientService>().removeMealIngredientFromShoppingList(
+      await _firebaseShoppingListMealIngredientService
+          .removeMealIngredientFromShoppingList(
         MealMapper.toModel(meal),
         IngredientMapper.toModel(ingredient),
       );
@@ -46,7 +48,8 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
   Future<Either<Failure, List<MealEntity>>>
       getMealIngredientToShoppingList() async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseShoppingListMealIngredientService>().getMealIngredientToShoppingList();
+      final meals = await _firebaseShoppingListMealIngredientService
+          .getMealIngredientToShoppingList();
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -62,10 +65,11 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
   @override
   Future<Either<Failure, List<MealEntity>>>
       getUnsyncedShoppingListMealIngredient() async {
-      final allMeals = await _firebaseShoppingListMealIngredientService.getMealIngredientToShoppingList();
-      return handleFirestoreFailure(() async {
-        return allMeals.map(MealMapper.toEntity).toList();
-      });
+    final allMeals = await _firebaseShoppingListMealIngredientService
+        .getMealIngredientToShoppingList();
+    return handleFirestoreFailure(() async {
+      return allMeals.map(MealMapper.toEntity).toList();
+    });
   }
 
   @override

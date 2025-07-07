@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealapp/data/auth/model/user_model.dart';
 import 'package:mealapp/data/category/model/category_model.dart';
@@ -37,17 +37,6 @@ class HiveConfig {
       Hive.openBox<PlannedMealModel>('plannedMeals'),
       Hive.openBox<FavoriteMealModel>('favoritesMeals'),      
     ]);
-  }
-
-  static Future<void> clearPlannedMealsBox() async {
-    try {
-      final box = Hive.box<PlannedMealModel>('plannedMeals');
-      await box.clear();
-      debugPrint('Successfully cleared plannedMeals box');
-    } catch (e) {
-      debugPrint('Error clearing plannedMeals box: $e');
-      rethrow;
-    }
   }
 
   static Future<void> close() async {

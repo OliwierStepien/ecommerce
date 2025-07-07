@@ -298,7 +298,12 @@ Future<void> initializeDependencies() async {
 
 // Single ConnectionMonitor for all services
   final connectionMonitor = ConnectionMonitor(
-    syncServices: [plannedSyncService, favoriteSyncService, shoppingListMealIngredientSyncService],
+    networkInfo: sl<NetworkInfo>(),
+    syncServices: [
+      plannedSyncService,
+      favoriteSyncService,
+      shoppingListMealIngredientSyncService
+    ],
   );
 
   connectionMonitor.startMonitoring();

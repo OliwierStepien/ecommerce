@@ -1,25 +1,26 @@
 import 'dart:async';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/service_locator.dart';
-
 abstract class SyncService {
   Future<void> syncData();
 }
 
 class ConnectionMonitor {
   final List<SyncService> syncServices;
+  final NetworkInfo _networkInfo;
   final Connectivity connectivity = Connectivity();
   StreamSubscription<List<ConnectivityResult>>? _subscription;
 
-  ConnectionMonitor({required this.syncServices});
+  ConnectionMonitor({required this.syncServices, required NetworkInfo networkInfo})
+      : _networkInfo = networkInfo {
+    startMonitoring();
+  }
 
   void startMonitoring() {
     _subscription = connectivity.onConnectivityChanged.listen((results) async {
       if (results.any((result) => result != ConnectivityResult.none)) {
-        final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+        final isOnline = await _networkInfo.checkInternetConnection();
         if (isOnline) {
           debugPrint('[ConnectionMonitor] Internet connection restored - syncing data');
           for (final service in syncServices) {
