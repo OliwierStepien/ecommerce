@@ -61,6 +61,9 @@ import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
+import 'package:mealapp/domain/planned_meal/usecase/add_planned_meal_usecase.dart';
+import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dart';
+import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
@@ -71,7 +74,6 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shoppin
 import 'package:get_it/get_it.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
-import 'package:mealapp/domain/planned_meal/usecase/planned_meal_usecase.dart';
 
 final sl = GetIt.instance;
 
