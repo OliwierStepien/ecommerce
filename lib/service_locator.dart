@@ -30,6 +30,12 @@ import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_mea
 import 'package:mealapp/data/planned_meal/repository/sync/planned_meal_sync_service.dart';
 import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
 import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
+import 'package:mealapp/data/shopping_list_custom_item/repository/local/hive_shopping_list_custom_item_repository.dart';
+import 'package:mealapp/data/shopping_list_custom_item/repository/manager/shopping_list_custom_item_repository_manager.dart';
+import 'package:mealapp/data/shopping_list_custom_item/repository/remote/firebase_shopping_list_custom_item_repository.dart';
+import 'package:mealapp/data/shopping_list_custom_item/repository/sync/shopping_list_custom_item_sync_service.dart';
+import 'package:mealapp/data/shopping_list_custom_item/source/local/hive_shopping_list_custom_item_service.dart';
+import 'package:mealapp/data/shopping_list_custom_item/source/remote/firebase_shopping_list_custom_item_service.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/repository/local/hive_shopping_list_meal_ingredient_repository.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/repository/manager/shopping_list_meal_ingredient_repository_manager.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/repository/remote/firebase_shopping_list_meal_ingredient_repository.dart';
@@ -55,6 +61,10 @@ import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
@@ -114,6 +124,13 @@ Future<void> initializeDependencies() async {
       FirebaseShoppingListMealIngredientServiceImpl());
   sl.registerSingleton<HiveShoppingListMealIngredientService>(
       HiveShoppingListMealIngredientServiceImpl());
+
+  // Shopping List Custom Item services
+
+  sl.registerSingleton<FirebaseShoppingListCustomItemService>(
+      FirebaseShoppingListCustomItemServiceImpl());
+  sl.registerSingleton<HiveShoppingListCustomItemService>(
+      HiveShoppingListCustomItemServiceImpl());
 
   // REPOSITORIES
 
@@ -197,6 +214,24 @@ Future<void> initializeDependencies() async {
               sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
           networkInfo: sl<NetworkInfo>()));
 
+  // Shopping List Custom Item repositories
+
+  sl.registerLazySingleton<FirebaseShoppingListCustomItemRepositoryImpl>(
+      () => FirebaseShoppingListCustomItemRepositoryImpl(
+            firebaseShoppingListCustomItemService:
+                sl<FirebaseShoppingListCustomItemService>(),
+          ));
+  sl.registerLazySingleton<HiveShoppingListCustomItemRepositoryImpl>(() =>
+      HiveShoppingListCustomItemRepositoryImpl(
+          hiveShoppingListCustomItemService:
+              sl<HiveShoppingListCustomItemService>(),
+          networkInfo: sl<NetworkInfo>()));
+  sl.registerLazySingleton<ShoppingListCustomItemRepository>(() =>
+      ShoppingListCustomItemRepositoryManager(
+          localRepository: sl<HiveShoppingListCustomItemRepositoryImpl>(),
+          remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
+          networkInfo: sl<NetworkInfo>()));
+
   // USECASES
 
   // Auth usecases
@@ -271,6 +306,18 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetShoppingListUseCase>(
       () => GetShoppingListUseCase(sl<ShoppingListMealIngredientRepository>()));
 
+  // Shopping List Custom Item usecases
+
+  sl.registerLazySingleton<AddCustomItemToShoppingListUseCase>(() =>
+      AddCustomItemToShoppingListUseCase(sl<ShoppingListCustomItemRepository>()));
+
+  sl.registerLazySingleton<RemoveCustomItemFromShoppingListUseCase>(() =>
+      RemoveCustomItemFromShoppingListUseCase(
+          sl<ShoppingListCustomItemRepository>()));
+
+  sl.registerLazySingleton<GetShoppingListCustomItemUseCase>(
+      () => GetShoppingListCustomItemUseCase(sl<ShoppingListCustomItemRepository>()));
+
   // SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
@@ -296,13 +343,22 @@ Future<void> initializeDependencies() async {
     networkInfo: sl<NetworkInfo>(),
   );
 
+  // Shopping List Meal Ingredient
+
+  final shoppingListCustomItemSyncService = ShoppingListCustomItemSyncService(
+    remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
+    hiveService: sl<HiveShoppingListCustomItemService>(),
+    networkInfo: sl<NetworkInfo>(),
+  );
+
 // Single ConnectionMonitor for all services
   final connectionMonitor = ConnectionMonitor(
     networkInfo: sl<NetworkInfo>(),
     syncServices: [
       plannedSyncService,
       favoriteSyncService,
-      shoppingListMealIngredientSyncService
+      shoppingListMealIngredientSyncService,
+      shoppingListCustomItemSyncService
     ],
   );
 
@@ -312,5 +368,6 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton(plannedSyncService);
   sl.registerSingleton(favoriteSyncService);
   sl.registerSingleton(shoppingListMealIngredientSyncService);
+  sl.registerSingleton(shoppingListCustomItemSyncService);
   sl.registerSingleton(connectionMonitor);
 }

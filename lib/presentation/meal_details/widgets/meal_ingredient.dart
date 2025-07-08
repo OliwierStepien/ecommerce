@@ -4,7 +4,7 @@ import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/portion_cubit.dart';
-import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 
 class MealIngredient extends StatelessWidget {
   final MealEntity mealEntity;
@@ -80,7 +80,7 @@ class MealIngredient extends StatelessWidget {
   ) {
     final scaledAmount = ingredient.amountPerPortion! * portionCount;
 
-    return BlocListener<ShoppingListCubit, List<Map<String, dynamic>>>(
+    return BlocListener<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
       listenWhen: (previous, current) {
         final wasAdded = previous.any((item) =>
             item['ingredientId'] == ingredient.ingredientId &&
@@ -91,7 +91,7 @@ class MealIngredient extends StatelessWidget {
         return wasAdded != isNowAdded;
       },
       listener: (context, state) {
-        final cubit = context.read<ShoppingListCubit>();
+        final cubit = context.read<ShoppingListMealIngredientCubit>();
         if (!cubit.shouldShowNotification) return;
 
         final isNowAdded = state.any((item) =>
@@ -111,7 +111,7 @@ class MealIngredient extends StatelessWidget {
           ),
         );
       },
-      child: BlocBuilder<ShoppingListCubit, List<Map<String, dynamic>>>(
+      child: BlocBuilder<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
         builder: (context, state) {
           final isAdded = state.any((item) =>
               item['ingredientId'] == ingredient.ingredientId &&
@@ -130,12 +130,12 @@ class MealIngredient extends StatelessWidget {
                 IconButton(
                   onPressed: () {
                     if (isAdded) {
-                      context.read<ShoppingListCubit>().removeIngredient(
+                      context.read<ShoppingListMealIngredientCubit>().removeIngredient(
                             ingredient,
                             mealEntity,
                           );
                     } else {
-                      context.read<ShoppingListCubit>().addIngredient(
+                      context.read<ShoppingListMealIngredientCubit>().addIngredient(
                             ingredient,
                             mealEntity,
                             portionCount: portionCount,

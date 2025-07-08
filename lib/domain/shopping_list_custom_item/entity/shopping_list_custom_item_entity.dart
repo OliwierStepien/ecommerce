@@ -1,11 +1,20 @@
-class CustomIngredientEntity {
-  final String ingredientId;
-  final String ingredientName;
-  final String ingredientCategory;
+import 'package:equatable/equatable.dart';
 
-  CustomIngredientEntity({
-    required this.ingredientId,
-    required this.ingredientName,
-    required this.ingredientCategory,
+class ShoppingListCustomItemEntity extends Equatable {
+  final String customItemId;
+  final String customItemName;
+  final String customItemCategory;
+
+  const ShoppingListCustomItemEntity({
+    required this.customItemId,
+    required this.customItemName,
+    required this.customItemCategory,
   });
+
+  @override
+  List<Object?> get props => [
+        customItemId,
+        customItemName,
+        customItemCategory,
+      ];
 }

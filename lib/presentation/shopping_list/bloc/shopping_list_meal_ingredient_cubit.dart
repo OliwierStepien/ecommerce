@@ -1,12 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
-import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
-import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/service_locator.dart';
 
-class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
-  ShoppingListCubit() : super([]);
+class ShoppingListMealIngredientCubit
+    extends Cubit<List<Map<String, dynamic>>> {
+  ShoppingListMealIngredientCubit() : super([]);
 
   Map<String, dynamic>? _lastRemovedItem;
   bool _suppressNotifications = false;
@@ -17,12 +18,11 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
     required int portionCount,
     bool suppressNotification = false,
   }) async {
-    final List<Map<String, dynamic>> previousState = List<Map<String, dynamic>>.from(state);
+    final previousState = List<Map<String, dynamic>>.from(state);
 
     try {
       _suppressNotifications = suppressNotification;
 
-      // Oblicz skalowaną ilość składnika
       final scaledAmount = ingredient.amountPerPortion != null
           ? ingredient.amountPerPortion! * portionCount
           : null;
@@ -39,11 +39,15 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
           'title': meal.title,
           'mealEntity': meal,
           'portionCount': portionCount,
+          'isCustom': false,
         });
 
       emit(updatedList);
-      await sl<ShoppingListMealIngredientRepository>()
-          .addMealIngredientToShoppingList(meal, ingredient, portionCount);
+      await sl<AddToShoppingListUseCase>().call(params: {
+        'meal': meal,
+        'ingredient': ingredient,
+        'portionCount': portionCount,
+      });
     } catch (e) {
       emit(previousState);
       rethrow;
@@ -57,7 +61,7 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
     MealEntity meal, {
     bool suppressNotification = false,
   }) async {
-    final List<Map<String, dynamic>> previousState = List<Map<String, dynamic>>.from(state);
+    final previousState = List<Map<String, dynamic>>.from(state);
 
     try {
       _suppressNotifications = suppressNotification;
@@ -74,9 +78,13 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
           'index': existingIngredientIndex,
         };
 
-        final updatedList = List<Map<String, dynamic>>.from(state)..removeAt(existingIngredientIndex);
+        final updatedList = List<Map<String, dynamic>>.from(state)
+          ..removeAt(existingIngredientIndex);
         emit(updatedList);
-        await sl<ShoppingListMealIngredientRepository>().removeMealIngredientFromShoppingList(meal, ingredient);
+        await sl<RemoveFromShoppingListUseCase>().call(params: {
+          'meal': meal,
+          'ingredient': ingredient,
+        });
       }
     } catch (e) {
       emit(previousState);
@@ -87,9 +95,9 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
   }
 
   void restoreLastRemovedIngredient() {
-    if (_lastRemovedItem != null) {
-      final Map<String, dynamic> item = _lastRemovedItem!['item'];
-      final int index = _lastRemovedItem!['index'];
+    if (_lastRemovedItem != null && !_lastRemovedItem!['item']['isCustom']) {
+      final item = _lastRemovedItem!['item'];
+      final index = _lastRemovedItem!['index'];
 
       final updatedList = List<Map<String, dynamic>>.from(state);
       updatedList.insert(index, item);
@@ -100,48 +108,4 @@ class ShoppingListCubit extends Cubit<List<Map<String, dynamic>>> {
   }
 
   bool get shouldShowNotification => !_suppressNotifications;
-
-void addCustomIngredient(CustomIngredientEntity ingredient) {
-  final updatedList = List<Map<String, dynamic>>.from(state)
-    ..add({
-      'ingredientId': ingredient.ingredientId,
-      'ingredientName': ingredient.ingredientName,
-      'ingredientCategory': ingredient.ingredientCategory,
-      'mealId': null,
-      'title': '',
-      'mealEntity': null,
-      'amountPerPortion': null,
-      'unit': '',
-    });
-  emit(updatedList);
-}
-
-  void removeCustomIngredient(String ingredientId) {
-    final index = state.indexWhere((item) =>
-        item['ingredientId'] == ingredientId && item['mealId'] == null);
-    if (index != -1) {
-      _lastRemovedItem = {
-        'item': state[index],
-        'index': index,
-      };
-
-      final updatedList = List<Map<String, dynamic>>.from(state)
-        ..removeAt(index);
-      emit(updatedList);
-    }
-  }
-
-  void updateIngredientCategory(String ingredientId, String newCategory) {
-    final index =
-        state.indexWhere((item) => item['ingredientId'] == ingredientId);
-    if (index != -1) {
-      final updatedItem = Map<String, dynamic>.from(state[index])
-        ..['ingredientCategory'] = newCategory;
-
-      final updatedList = List<Map<String, dynamic>>.from(state)
-        ..[index] = updatedItem;
-
-      emit(updatedList);
-    }
-  }
 }

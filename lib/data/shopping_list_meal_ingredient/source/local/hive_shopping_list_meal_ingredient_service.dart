@@ -36,6 +36,14 @@ class HiveShoppingListMealIngredientServiceImpl
         isDeleted: false,
       ),
     );
+      // Debug info
+  final allIngredients = await getMealIngredientToShoppingList();
+  print('✅ Dodano składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
+  print('🛒 Liczba składników w shopping list: ${allIngredients.length}');
+  print('📋 Składniki:');
+  for (final item in allIngredients) {
+    print(' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+  }
   }
 
   @override
@@ -61,6 +69,14 @@ class HiveShoppingListMealIngredientServiceImpl
         );
       }
     }
+      // Debug info
+  final allIngredients = await getMealIngredientToShoppingList();
+  print('❌ Usunięto składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
+  print('🛒 Liczba składników w shopping list: ${allIngredients.length}');
+  print('📋 Składniki:');
+  for (final item in allIngredients) {
+    print(' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+  }
   }
 
   @override

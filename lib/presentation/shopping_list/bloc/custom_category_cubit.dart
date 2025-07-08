@@ -5,12 +5,12 @@ import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart'
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 
-class CustomIngredientCubit extends Cubit<CustomIngredientState> {
+class CustomCategoryCubit extends Cubit<CustomIngredientState> {
   final GetAllIngredientsUseCase getAllIngredientsUseCase;
   final TextEditingController nameController = TextEditingController();
   String selectedCategory = 'Inne';
 
-  CustomIngredientCubit(this.getAllIngredientsUseCase)
+  CustomCategoryCubit(this.getAllIngredientsUseCase)
       : super(const CustomIngredientLoading()) {
     loadCategories();
     nameController.addListener(_onTextChanged);
@@ -60,13 +60,13 @@ class CustomIngredientCubit extends Cubit<CustomIngredientState> {
     }
   }
 
-  CustomIngredientEntity? getCustomIngredient() {
+  ShoppingListCustomItemEntity? getCustomIngredient() {
     final name = nameController.text.trim();
     if (name.isEmpty) return null;
-    return CustomIngredientEntity(
-      ingredientId: 'custom_${DateTime.now().millisecondsSinceEpoch}',
-      ingredientName: name,
-      ingredientCategory: selectedCategory,
+    return ShoppingListCustomItemEntity(
+      customItemId: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+      customItemName: name,
+      customItemCategory: selectedCategory,
     );
   }
 

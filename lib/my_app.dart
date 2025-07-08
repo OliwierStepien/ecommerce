@@ -11,7 +11,8 @@ import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubi
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
-import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 import 'package:mealapp/routes/go_router.dart';
 import 'package:mealapp/service_locator.dart';
@@ -26,7 +27,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => SplashCubit()..appStarted()),
         BlocProvider(create: (context) => ButtonStateCubit()),
         BlocProvider(create: (context) => FavoriteMealsCubit()),
-        BlocProvider(create: (context) => ShoppingListCubit()),
+        BlocProvider(create: (context) => ShoppingListMealIngredientCubit()),
+        BlocProvider(create: (context) => ShoppingListCustomItemCubit()),
         BlocProvider(
             create: (context) => CategoriesDisplayCubit()..displayCategories()),
         BlocProvider(create: (_) => VegetarianFilterCubit()),

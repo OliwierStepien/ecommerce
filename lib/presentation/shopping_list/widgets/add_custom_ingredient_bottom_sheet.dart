@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
 import 'package:mealapp/extensions/context_extension.dart';
-import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/custom_category_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';
-import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 
 class AddCustomIngredientBottomSheet extends StatelessWidget {
   final GetAllIngredientsUseCase getAllIngredientsUseCase;
@@ -15,24 +15,29 @@ class AddCustomIngredientBottomSheet extends StatelessWidget {
     required this.getAllIngredientsUseCase,
   });
 
-void _submit(BuildContext context) {
-  final cubit = context.read<CustomIngredientCubit>();
-  final ingredient = cubit.getCustomIngredient();
+  void _submit(BuildContext context) {
+    final categoryCubit = context.read<CustomCategoryCubit>();
+    final customCubit = context.read<ShoppingListCustomItemCubit>();
+    final ingredient = categoryCubit.getCustomIngredient();
 
-  if (ingredient == null) return;
+    if (ingredient == null) return;
 
-  context.read<ShoppingListCubit>().addCustomIngredient(ingredient);
-  Navigator.of(context).pop();
-  cubit.clearForm();
-}
+    customCubit.addCustomIngredient(ingredient);
+    Navigator.of(context).pop();
+    categoryCubit.clearForm();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => CustomIngredientCubit(getAllIngredientsUseCase),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => CustomCategoryCubit(getAllIngredientsUseCase),
+        ),
+      ],
       child: Builder(
         builder: (context) {
-          final cubit = context.read<CustomIngredientCubit>();
+          final cubit = context.read<CustomCategoryCubit>();
 
           return Padding(
             padding: EdgeInsets.fromLTRB(
@@ -49,7 +54,7 @@ void _submit(BuildContext context) {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
+                BlocBuilder<CustomCategoryCubit, CustomIngredientState>(
                   builder: (context, state) {
                     return TextField(
                       controller: cubit.nameController,
@@ -62,7 +67,7 @@ void _submit(BuildContext context) {
                   },
                 ),
                 const SizedBox(height: 12),
-                BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
+                BlocBuilder<CustomCategoryCubit, CustomIngredientState>(
                   builder: (context, state) {
                     if (state is CustomIngredientLoading) {
                       return const CircularProgressIndicator();
@@ -86,15 +91,14 @@ void _submit(BuildContext context) {
                     } else if (state is CustomIngredientError) {
                       return ErrorMessage(
                         message: state.message,
-                        onRetry: () =>
-                            context.read<CustomIngredientCubit>().loadCategories(),
+                        onRetry: () => cubit.loadCategories(),
                       );
                     }
                     return const SizedBox.shrink();
                   },
                 ),
                 const SizedBox(height: 16),
-                BlocBuilder<CustomIngredientCubit, CustomIngredientState>(
+                BlocBuilder<CustomCategoryCubit, CustomIngredientState>(
                   builder: (context, state) {
                     final isDisabled = state is! CustomIngredientLoaded ||
                         state.inputText.trim().isEmpty;

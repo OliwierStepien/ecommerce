@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
-import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 
 class ShoppingListItem extends StatelessWidget {
   final IngredientEntity? ingredient;
@@ -19,7 +20,6 @@ class ShoppingListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
       color: Theme.of(context).inputDecorationTheme.fillColor,
       elevation: 2,
@@ -61,9 +61,7 @@ class ShoppingListItem extends StatelessWidget {
   }
 
   String _buildIngredientText(context) {
-    if (ingredient == null) {
-      return context.l10n.customIngredient;
-    }
+    if (ingredient == null) return context.l10n.customIngredient;
 
     final parts = <String>[
       ingredient!.ingredientName,
@@ -78,36 +76,46 @@ class ShoppingListItem extends StatelessWidget {
   }
 
   void _removeIngredient(BuildContext context) {
-    final shoppingListCubit = context.read<ShoppingListCubit>();
-
     if (ingredient != null && meal != null) {
-      shoppingListCubit.removeIngredient(
+      final mealCubit = context.read<ShoppingListMealIngredientCubit>();
+      mealCubit.removeIngredient(
         ingredient!,
         meal!,
         suppressNotification: true,
       );
-    } else {
-      shoppingListCubit.removeCustomIngredient(
-        ingredient?.ingredientId ?? '',
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.l10n.removedIngredientFromShoppingList(
+              ingredient!.ingredientName),
+          ),
+          action: SnackBarAction(
+            label: context.l10n.undo,
+            textColor: Colors.white,
+            onPressed: () => mealCubit.restoreLastRemovedIngredient(),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (ingredient != null) {
+      final customCubit = context.read<ShoppingListCustomItemCubit>();
+      customCubit.removeCustomIngredient(ingredient!.ingredientId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.l10n.removedIngredientFromShoppingList(
+              ingredient!.ingredientName),
+          ),
+          action: SnackBarAction(
+            label: context.l10n.undo,
+            textColor: Colors.white,
+            onPressed: () => customCubit.restoreLastRemovedIngredient(),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
       );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.l10n.removedIngredientFromShoppingList(
-            ingredient?.ingredientName ?? context.l10n.ingredients,
-          ),
-        ),
-        action: SnackBarAction(
-          label: context.l10n.undo,
-          textColor: Colors.white,
-          onPressed: () {
-            shoppingListCubit.restoreLastRemovedIngredient();
-          },
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 }
