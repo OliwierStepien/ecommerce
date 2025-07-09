@@ -12,7 +12,8 @@ abstract class FirebaseShoppingListMealIngredientService {
   Future<List<MealModel>> getMealIngredientToShoppingList();
 }
 
-class FirebaseShoppingListMealIngredientServiceImpl implements FirebaseShoppingListMealIngredientService {
+class FirebaseShoppingListMealIngredientServiceImpl
+    implements FirebaseShoppingListMealIngredientService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
@@ -27,6 +28,7 @@ class FirebaseShoppingListMealIngredientServiceImpl implements FirebaseShoppingL
       MealModel meal, IngredientModel ingredient, int portionCount) async {
     return handleFirestoreException(() async {
       final user = _auth.currentUser;
+      final docId = '${meal.mealId}_${ingredient.ingredientId}';
       final scaledAmount = ingredient.amountPerPortion != null
           ? ingredient.amountPerPortion! * portionCount
           : null;
@@ -35,7 +37,8 @@ class FirebaseShoppingListMealIngredientServiceImpl implements FirebaseShoppingL
           .collection("Users")
           .doc(user?.uid)
           .collection('ShoppingList')
-          .add({
+          .doc(docId) // <-- Klucz dokumentu, zapobiega duplikatom
+          .set({
         'mealId': meal.mealId,
         'title': meal.title,
         'ingredientId': ingredient.ingredientId,

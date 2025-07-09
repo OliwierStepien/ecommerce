@@ -26,33 +26,46 @@ class ShoppingListMealIngredientSyncService implements SyncService {
       return Left(NetworkFailure());
     }
 
-    // Pobierz bezpośrednio modele z Hive zamiast zgrupowanych danych
     final box = Hive.box<ShoppingListMealIngredientModel>('shoppingListMealIngredients');
     final unsyncedModels = box.values.where((model) => !model.isSynced).toList();
 
-    // Najpierw usuń wszystkie oznaczone do usunięcia
-    final modelsToDelete = unsyncedModels.where((model) => model.isDeleted);
+    // Usuń unikalne pary (mealId + ingredientId) oznaczone jako isDeleted
+    final modelsToDelete = unsyncedModels
+        .where((model) => model.isDeleted)
+        .toSet()
+        .toList();
+
     for (final model in modelsToDelete) {
       final result = await _firebaseRepo.removeMealIngredientFromShoppingList(
         MealMapper.toEntity(model.meal),
         IngredientMapper.toEntity(model.ingredient),
       );
       if (result.isLeft()) return Left((result as Left).value);
-      
+
       await box.delete('${model.meal.mealId}_${model.ingredient.ingredientId}');
     }
 
-    // Następnie dodaj/aktualizuj nowe składniki
-    final modelsToAddOrUpdate = unsyncedModels.where((model) => !model.isDeleted);
+    // Dodaj/aktualizuj unikalne pary (mealId + ingredientId), nie oznaczone jako deleted
+    final modelsToAddOrUpdate = unsyncedModels
+        .where((model) => !model.isDeleted)
+        .toList()
+        .fold<Map<String, ShoppingListMealIngredientModel>>({}, (map, model) {
+          final key = '${model.meal.mealId}_${model.ingredient.ingredientId}';
+          map[key] = model; // nadpisuje – zachowuje ostatnią wersję
+          return map;
+        })
+        .values
+        .toList();
+
     for (final model in modelsToAddOrUpdate) {
-      // Najpierw usuń istniejący składnik (jeśli istnieje) aby uniknąć duplikatów
+      // Usuń wszelkie poprzednie wpisy w Firebase (jeśli istnieją)
       final removeResult = await _firebaseRepo.removeMealIngredientFromShoppingList(
         MealMapper.toEntity(model.meal),
         IngredientMapper.toEntity(model.ingredient),
       );
       if (removeResult.isLeft()) return Left((removeResult as Left).value);
 
-      // Następnie dodaj nową wersję
+      // Dodaj składnik zaktualizowany
       final addResult = await _firebaseRepo.addMealIngredientToShoppingList(
         MealMapper.toEntity(model.meal),
         IngredientMapper.toEntity(model.ingredient),
