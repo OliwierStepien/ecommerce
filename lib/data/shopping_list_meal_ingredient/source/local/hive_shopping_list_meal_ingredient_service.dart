@@ -51,7 +51,8 @@ class HiveShoppingListMealIngredientServiceImpl
     print('🛒 Liczba składników w shopping list: ${allIngredients.length}');
     print('📋 Składniki:');
     for (final item in allIngredients) {
-      print(' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      print(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
     }
   }
 
@@ -81,7 +82,8 @@ class HiveShoppingListMealIngredientServiceImpl
     print('🛒 Liczba składników w shopping list: ${allIngredients.length}');
     print('📋 Składniki:');
     for (final item in allIngredients) {
-      print(' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      print(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
     }
   }
 
@@ -123,7 +125,8 @@ class HiveShoppingListMealIngredientServiceImpl
         ),
       );
 
-      print('✅ Zaznaczono jako zsynchronizowany: ${ingredientId} (z posiłku: ${mealId})');
+      print(
+          '✅ Zaznaczono jako zsynchronizowany: ${ingredientId} (z posiłku: ${mealId})');
     }
   }
 
@@ -133,44 +136,42 @@ class HiveShoppingListMealIngredientServiceImpl
     final key = '${meal.mealId}_${ingredient.ingredientId}';
     final existingModel = _box.get(key);
 
-    if (existingModel != null) {
-      await _box.put(
-        key,
-        ShoppingListMealIngredientModel(
-          meal: existingModel.meal,
-          ingredient: existingModel.ingredient,
-          portionCount: portionCount,
-          isSynced: false,
-          isDeleted: false,
-        ),
-      );
-    } else {
-      await _box.put(
-        key,
-        ShoppingListMealIngredientModel(
-          meal: meal,
-          ingredient: ingredient,
-          portionCount: portionCount,
-          isSynced: false,
-          isDeleted: false,
-        ),
-      );
-    }
+    final modelToSave = existingModel != null
+        ? ShoppingListMealIngredientModel(
+            meal: existingModel.meal,
+            ingredient: existingModel.ingredient,
+            portionCount: portionCount,
+            isSynced: existingModel.isSynced, // Zachowaj stan synchronizacji
+            isDeleted: false,
+          )
+        : ShoppingListMealIngredientModel(
+            meal: meal,
+            ingredient: ingredient,
+            portionCount: portionCount,
+            isSynced: false,
+            isDeleted: false,
+          );
+
+    await _box.put(key, modelToSave);
 
     final allIngredients = await getMealIngredientToShoppingList();
     final allItemsInBox = _box.values.toList();
 
-    print('♻️ Przywrócono składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
+    print(
+        '♻️ Przywrócono składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
     print('🔑 Klucz: $key');
     print('📦 Ilość wpisów w Hive: ${allItemsInBox.length}');
-    print('🛒 Liczba aktywnych składników w shopping list: ${allIngredients.length}');
+    print(
+        '🛒 Liczba aktywnych składników w shopping list: ${allIngredients.length}');
     print('📋 Aktywne składniki:');
     for (final item in allIngredients) {
-      print(' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      print(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
     }
     print('🗑️ Usunięte składniki:');
     for (final item in allItemsInBox.where((m) => m.isDeleted)) {
-      print(' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      print(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
     }
   }
 

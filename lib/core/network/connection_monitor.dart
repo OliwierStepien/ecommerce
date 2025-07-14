@@ -2,10 +2,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
-
-abstract class SyncService {
-  Future<void> syncData();
-}
+import 'package:mealapp/core/sync/sync_service.dart';
 
 class ConnectionMonitor {
   final List<SyncService> syncServices;

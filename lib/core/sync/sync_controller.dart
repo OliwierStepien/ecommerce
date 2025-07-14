@@ -22,7 +22,7 @@ class SyncController {
   Future<void> syncData() async {
     await _syncStrategy.onDataChanged();
     await _executeSyncOperations();
-    await _hiveService.clearSyncedDeletedItems(); // Dodane czyszczenie
+    await _hiveService.clearSyncedDeletedItems();
   }
 
   Future<void> _executeSyncOperations() async {
