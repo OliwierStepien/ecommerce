@@ -17,3 +17,5 @@ class EmailAlreadyInUseException implements Exception {}
 class InvalidEmailException implements Exception {}
 
 class InvalidCredentialException implements Exception {}
+
+class SyncException implements Exception {}

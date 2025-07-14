@@ -3,6 +3,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
+import 'package:mealapp/core/sync/sync_orchestrator.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
 import 'package:mealapp/data/auth/repository/auth_repository_manager.dart';
@@ -347,18 +348,32 @@ Future<void> initializeDependencies() async {
 
   final shoppingListMealIngredientSyncService =
       ShoppingListMealIngredientSyncService(
-    firebaseRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
-    hiveRepo: sl<HiveShoppingListMealIngredientRepositoryImpl>(),
+    remoteRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
     networkInfo: sl<NetworkInfo>(),
   );
 
-  // Shopping List Meal Ingredient
+  // Shopping List Custom Item
 
   final shoppingListCustomItemSyncService = ShoppingListCustomItemSyncService(
     remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
     hiveService: sl<HiveShoppingListCustomItemService>(),
     networkInfo: sl<NetworkInfo>(),
   );
+
+  // SyncStrategy
+
+  sl.registerLazySingleton<SyncStrategy>(() => DebounceSyncStrategy(
+        syncCallback: () => sl<SyncController>().syncData(),
+      ));
+
+  // SyncController
+
+  sl.registerLazySingleton<SyncController>(() => SyncController(
+        syncStrategy: sl<SyncStrategy>(),
+        shoppingListSyncService: sl<ShoppingListMealIngredientSyncService>(),
+        customItemsSyncService: sl<ShoppingListCustomItemSyncService>(),
+        hiveService: sl<HiveShoppingListMealIngredientService>(),
+      ));
 
 // Single ConnectionMonitor for all services
   final connectionMonitor = ConnectionMonitor(
@@ -373,26 +388,17 @@ Future<void> initializeDependencies() async {
 
   connectionMonitor.startMonitoring();
 
+// SyncOrchestrator
+
+  sl.registerLazySingleton<SyncOrchestrator>(() => SyncOrchestrator(
+        connectionMonitor: sl<ConnectionMonitor>(),
+        syncStrategy: sl<SyncStrategy>(),
+      ));
+
 // Register services
   sl.registerSingleton(plannedSyncService);
   sl.registerSingleton(favoriteSyncService);
   sl.registerSingleton(shoppingListMealIngredientSyncService);
   sl.registerSingleton(shoppingListCustomItemSyncService);
   sl.registerSingleton(connectionMonitor);
-
-  // Rejestracja strategii synchronizacji
-  sl.registerLazySingleton<SyncStrategy>(() => DebounceSyncStrategy(
-        syncCallback: () => sl<SyncController>().syncData(),
-      ));
-
-// SyncController
-
-  sl.registerLazySingleton<SyncController>(
-    () => SyncController(
-      syncStrategy: sl<SyncStrategy>(),
-      shoppingListSyncService: sl<ShoppingListMealIngredientSyncService>(),
-      customItemsSyncService: sl<ShoppingListCustomItemSyncService>(),
-      hiveService: sl<HiveShoppingListMealIngredientService>(),
-    ),
-  );
 }

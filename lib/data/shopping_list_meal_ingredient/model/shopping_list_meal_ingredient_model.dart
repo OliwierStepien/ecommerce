@@ -25,6 +25,22 @@ class ShoppingListMealIngredientModel {
     required this.isDeleted,
   });
 
+  ShoppingListMealIngredientModel copyWith({
+    MealModel? meal,
+    IngredientModel? ingredient,
+    int? portionCount,
+    bool? isSynced,
+    bool? isDeleted,
+  }) {
+    return ShoppingListMealIngredientModel(
+      meal: meal ?? this.meal,
+      ingredient: ingredient ?? this.ingredient,
+      portionCount: portionCount ?? this.portionCount,
+      isSynced: isSynced ?? this.isSynced,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'meal': meal.toMap(),

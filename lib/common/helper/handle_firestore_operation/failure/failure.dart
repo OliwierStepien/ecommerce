@@ -19,3 +19,5 @@ class EmailAlreadyInUseFailure extends Failure {}
 class InvalidEmailFailure extends Failure {}
 
 class InvalidCredentialFailure extends Failure {}
+
+class SyncFailure extends Failure {}

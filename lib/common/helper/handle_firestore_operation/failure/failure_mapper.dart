@@ -22,5 +22,7 @@ String mapFailureToMessage(Failure failure) {
       return 'Podano błędne hasło.';
     case GeneralFailure():
       return 'Ups, coś poszło nie tak. Proszę spróbować ponownie!';
+    case SyncFailure():
+      return 'Nieudana synchronizacja!';
   }
 }

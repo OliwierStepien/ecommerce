@@ -30,6 +30,24 @@ class IngredientModel {
       required this.mealId,
       required this.unit});
 
+  IngredientModel copyWith({
+    num? amountPerPortion,
+    String? ingredientCategory,
+    String? ingredientId,
+    String? ingredientName,
+    String? mealId,
+    String? unit,
+  }) {
+    return IngredientModel(
+      amountPerPortion: amountPerPortion ?? this.amountPerPortion,
+      ingredientCategory: ingredientCategory ?? this.ingredientCategory,
+      ingredientId: ingredientId ?? this.ingredientId,
+      ingredientName: ingredientName ?? this.ingredientName,
+      mealId: mealId ?? this.mealId,
+      unit: unit ?? this.unit,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'amountPerPortion': amountPerPortion,

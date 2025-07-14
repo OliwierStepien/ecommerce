@@ -13,7 +13,7 @@ class HiveConfig {
     await Hive.initFlutter();
 
     _registerAdapters();
-    await _clearSpecificBoxes(); // <- DODANO
+    // await _clearSpecificBoxes(); // <- DODANO
     await _openBoxes();
   }
 
@@ -28,13 +28,13 @@ class HiveConfig {
     Hive.registerAdapter(ShoppingListCustomItemModelAdapter());
   }
 
-  /// 🧹 Czyści tylko wybrane boxy (przed otwarciem)
-  static Future<void> _clearSpecificBoxes() async {
-    await Future.wait([
-      Hive.deleteBoxFromDisk('shoppingListMealIngredients'),
-      Hive.deleteBoxFromDisk('shoppingListCustomItems'),
-    ]);
-  }
+  // /// 🧹 Czyści tylko wybrane boxy (przed otwarciem)
+  // static Future<void> _clearSpecificBoxes() async {
+  //   await Future.wait([
+  //     Hive.deleteBoxFromDisk('shoppingListMealIngredients'),
+  //     Hive.deleteBoxFromDisk('shoppingListCustomItems'),
+  //   ]);
+  // }
 
   static Future<void> _openBoxes() async {
     await Future.wait([

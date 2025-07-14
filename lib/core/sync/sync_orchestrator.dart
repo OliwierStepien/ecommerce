@@ -1,8 +1,10 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 
+/// Klasa orkiestrująca logikę synchronizacji.
+/// Integruje `ConnectionMonitor` i `SyncStrategy`, obsługuje synchronizację danych
+/// w zależności od zdarzeń (np. utrata internetu, zmiana danych, wznowienie aplikacji).
 class SyncOrchestrator {
   final ConnectionMonitor _connectionMonitor;
   final SyncStrategy _syncStrategy;
@@ -20,6 +22,7 @@ class SyncOrchestrator {
     triggerSync();
   }
 
+  /// Rejestracja listenerów (np. UI) reagujących na synchronizację
   void addSyncListener(VoidCallback listener) {
     _syncListeners.add(listener);
   }
@@ -28,6 +31,7 @@ class SyncOrchestrator {
     _syncListeners.remove(listener);
   }
 
+  /// Ręczne wyzwolenie synchronizacji
   Future<void> triggerSync() async {
     try {
       await _syncStrategy.onDataChanged();
@@ -43,6 +47,7 @@ class SyncOrchestrator {
     }
   }
 
+  /// Inicjalizacja logiki synchronizacji
   Future<void> initialize() async {
     _connectionMonitor.startMonitoring();
     await triggerSync();

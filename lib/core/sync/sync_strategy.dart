@@ -1,22 +1,18 @@
 import 'dart:async';
 
+/// Interfejs strategii synchronizacji.
+/// Pozwala na stworzenie różnych implementacji obsługi synchronizacji
+/// np. opóźnionej (debounce), natychmiastowej, okresowej itp.
 abstract class SyncStrategy {
-  /// Triggered when data changes
-  Future<void> onDataChanged();
-
-  /// Triggered when app resumes
-  Future<void> onAppResumed();
-
-  /// Triggered when app pauses
-  Future<void> onAppPaused();
-
-  /// Triggered when network connection is restored
-  Future<void> onNetworkRestored();
-
-  /// Clean up resources
-  void dispose();
+  Future<void> onDataChanged();       // dane uległy zmianie
+  Future<void> onAppResumed();        // aplikacja wznowiona
+  Future<void> onAppPaused();         // aplikacja zminimalizowana
+  Future<void> onNetworkRestored();   // przywrócono internet
+  void dispose();                     // czyszczenie zasobów
 }
 
+/// Implementacja strategii debounce:
+/// opóźnia synchronizację, dopóki zmiany nie ustabilizują się na określony czas
 class DebounceSyncStrategy implements SyncStrategy {
   final Future<void> Function() syncCallback;
   final Duration debounceDuration;
@@ -29,7 +25,7 @@ class DebounceSyncStrategy implements SyncStrategy {
 
   @override
   Future<void> onDataChanged() async {
-    _syncTimer?.cancel();
+    _syncTimer?.cancel(); // Anuluj poprzednie wywołanie
     _syncTimer = Timer(debounceDuration, () => syncCallback());
   }
 
