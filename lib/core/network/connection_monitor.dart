@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
+
 abstract class SyncService {
   Future<void> syncData();
 }
@@ -9,12 +10,22 @@ abstract class SyncService {
 class ConnectionMonitor {
   final List<SyncService> syncServices;
   final NetworkInfo _networkInfo;
-  final Connectivity connectivity = Connectivity();
+  final Connectivity connectivity;
   StreamSubscription<List<ConnectivityResult>>? _subscription;
+  VoidCallback? _onConnectionRestored; // Dodane nowe pole
 
-  ConnectionMonitor({required this.syncServices, required NetworkInfo networkInfo})
-      : _networkInfo = networkInfo {
+  ConnectionMonitor({
+    required this.syncServices, 
+    required NetworkInfo networkInfo,
+    Connectivity? connectivity, // Dodany opcjonalny parametr
+  }) : _networkInfo = networkInfo,
+       connectivity = connectivity ?? Connectivity() {
     startMonitoring();
+  }
+
+  // Dodany setter dla callbacka
+  set onConnectionRestored(VoidCallback callback) {
+    _onConnectionRestored = callback;
   }
 
   void startMonitoring() {
@@ -23,6 +34,8 @@ class ConnectionMonitor {
         final isOnline = await _networkInfo.checkInternetConnection();
         if (isOnline) {
           debugPrint('[ConnectionMonitor] Internet connection restored - syncing data');
+          
+          // Wywołanie istniejącej logiki
           for (final service in syncServices) {
             try {
               await service.syncData();
@@ -30,6 +43,9 @@ class ConnectionMonitor {
               debugPrint('[ConnectionMonitor] Error during sync: $e');
             }
           }
+          
+          // Wywołanie nowego callbacka jeśli istnieje
+          _onConnectionRestored?.call();
         }
       }
     });
@@ -37,5 +53,10 @@ class ConnectionMonitor {
 
   void stopMonitoring() {
     _subscription?.cancel();
+  }
+
+  // Zachowaj kompatybilność wsteczną
+  void dispose() {
+    stopMonitoring();
   }
 }

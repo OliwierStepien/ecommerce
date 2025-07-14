@@ -3,7 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/core/configs/theme/app_theme.dart';
+import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/l10n/app_localizations.dart';
 import 'package:mealapp/l10n/l10n.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
@@ -27,7 +31,13 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => SplashCubit()..appStarted()),
         BlocProvider(create: (context) => ButtonStateCubit()),
         BlocProvider(create: (context) => FavoriteMealsCubit()),
-        BlocProvider(create: (context) => ShoppingListMealIngredientCubit()),
+        BlocProvider(
+            create: (context) => ShoppingListMealIngredientCubit(
+                  addUseCase: sl<AddToShoppingListUseCase>(),
+                  removeUseCase: sl<RemoveFromShoppingListUseCase>(),
+                  restoreUseCase: sl<RestoreToShoppingListUseCase>(),
+                  syncStrategy: sl<SyncStrategy>(),
+                )),
         BlocProvider(create: (context) => ShoppingListCustomItemCubit()),
         BlocProvider(
             create: (context) => CategoriesDisplayCubit()..displayCategories()),

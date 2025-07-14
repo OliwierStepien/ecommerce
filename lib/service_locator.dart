@@ -3,6 +3,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
+import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
 import 'package:mealapp/data/auth/repository/auth_repository_manager.dart';
 import 'package:mealapp/data/auth/repository/remote/firebase_auth_repository_impl.dart';
@@ -75,7 +76,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
-import 'package:mealapp/core/network/sync_controller.dart';
+import 'package:mealapp/core/sync/sync_controller.dart';
 
 final sl = GetIt.instance;
 
@@ -379,12 +380,19 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton(shoppingListCustomItemSyncService);
   sl.registerSingleton(connectionMonitor);
 
+  // Rejestracja strategii synchronizacji
+  sl.registerLazySingleton<SyncStrategy>(() => DebounceSyncStrategy(
+        syncCallback: () => sl<SyncController>().syncData(),
+      ));
+
 // SyncController
 
   sl.registerLazySingleton<SyncController>(
-    () => SyncController([
-      sl<ShoppingListMealIngredientSyncService>(),
-      sl<ShoppingListCustomItemSyncService>(),
-    ]),
+    () => SyncController(
+      syncStrategy: sl<SyncStrategy>(),
+      shoppingListSyncService: sl<ShoppingListMealIngredientSyncService>(),
+      customItemsSyncService: sl<ShoppingListCustomItemSyncService>(),
+      hiveService: sl<HiveShoppingListMealIngredientService>(),
+    ),
   );
 }

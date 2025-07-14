@@ -1,21 +1,31 @@
-import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
-import 'package:mealapp/core/network/sync_controller.dart';
-import 'package:mealapp/service_locator.dart';
-
 
 class ShoppingListMealIngredientCubit
     extends Cubit<List<Map<String, dynamic>>> {
-  ShoppingListMealIngredientCubit() : super([]);
+  final AddToShoppingListUseCase _addUseCase;
+  final RemoveFromShoppingListUseCase _removeUseCase;
+  final RestoreToShoppingListUseCase _restoreUseCase;
+  final SyncStrategy _syncStrategy;
 
   Map<String, dynamic>? _lastRemovedItem;
   bool _suppressNotifications = false;
-  Timer? _syncDebounceTimer;
+
+  ShoppingListMealIngredientCubit({
+    required AddToShoppingListUseCase addUseCase,
+    required RemoveFromShoppingListUseCase removeUseCase,
+    required RestoreToShoppingListUseCase restoreUseCase,
+    required SyncStrategy syncStrategy,
+  })  : _addUseCase = addUseCase,
+        _removeUseCase = removeUseCase,
+        _restoreUseCase = restoreUseCase,
+        _syncStrategy = syncStrategy,
+        super([]);
 
   Future<void> addIngredient(
     IngredientEntity ingredient,
@@ -28,33 +38,17 @@ class ShoppingListMealIngredientCubit
     try {
       _suppressNotifications = suppressNotification;
 
-      final scaledAmount = ingredient.amountPerPortion != null
-          ? ingredient.amountPerPortion! * portionCount
-          : null;
-
       final updatedList = List<Map<String, dynamic>>.from(state)
-        ..add({
-          'ingredientId': ingredient.ingredientId,
-          'ingredientName': ingredient.ingredientName,
-          'amountPerPortion': ingredient.amountPerPortion,
-          'scaledAmount': scaledAmount,
-          'unit': ingredient.unit,
-          'ingredientCategory': ingredient.ingredientCategory,
-          'mealId': meal.mealId,
-          'title': meal.title,
-          'mealEntity': meal,
-          'portionCount': portionCount,
-          'isCustom': false,
-        });
+        ..add(_createItemMap(ingredient, meal, portionCount));
 
       emit(updatedList);
-      await sl<AddToShoppingListUseCase>().call(params: {
+      await _addUseCase.call(params: {
         'meal': meal,
         'ingredient': ingredient,
         'portionCount': portionCount,
       });
 
-      _scheduleSync();
+      await _syncStrategy.onDataChanged();
     } catch (e) {
       emit(previousState);
       rethrow;
@@ -87,13 +81,14 @@ class ShoppingListMealIngredientCubit
 
         final updatedList = List<Map<String, dynamic>>.from(state)
           ..removeAt(existingIngredientIndex);
+
         emit(updatedList);
-        await sl<RemoveFromShoppingListUseCase>().call(params: {
+        await _removeUseCase.call(params: {
           'meal': meal,
           'ingredient': ingredient,
         });
 
-        _scheduleSync();
+        await _syncStrategy.onDataChanged();
       }
     } catch (e) {
       emit(previousState);
@@ -123,7 +118,7 @@ class ShoppingListMealIngredientCubit
       try {
         _suppressNotifications = true;
 
-        await sl<RestoreToShoppingListUseCase>().call(params: {
+        await _restoreUseCase.call(params: {
           'meal': meal,
           'ingredient': ingredient,
           'portionCount': portionCount,
@@ -131,10 +126,10 @@ class ShoppingListMealIngredientCubit
 
         final updatedList = List<Map<String, dynamic>>.from(state)
           ..insert(index, item);
+
         emit(updatedList);
         _lastRemovedItem = null;
-
-        _scheduleSync();
+        await _syncStrategy.onDataChanged();
       } catch (e) {
         emit(previousState);
         rethrow;
@@ -144,21 +139,38 @@ class ShoppingListMealIngredientCubit
     }
   }
 
-  bool get shouldShowNotification => !_suppressNotifications;
+  Map<String, dynamic> _createItemMap(
+    IngredientEntity ingredient,
+    MealEntity meal,
+    int portionCount,
+  ) {
+    return {
+      'ingredientId': ingredient.ingredientId,
+      'ingredientName': ingredient.ingredientName,
+      'amountPerPortion': ingredient.amountPerPortion,
+      'scaledAmount': _calculateScaledAmount(ingredient, portionCount),
+      'unit': ingredient.unit,
+      'ingredientCategory': ingredient.ingredientCategory,
+      'mealId': meal.mealId,
+      'title': meal.title,
+      'mealEntity': meal,
+      'portionCount': portionCount,
+      'isCustom': false,
+    };
+  }
 
-void _scheduleSync() {
-  print('[Sync] Oczekuję na synchronizację...');
-  _syncDebounceTimer?.cancel();
-  _syncDebounceTimer = Timer(const Duration(seconds: 2), () async {
-    print('[Sync] Wywołuję syncAll...');
-    await sl<SyncController>().syncAll();
-    print('[Sync] Synchronizacja zakończona.');
-  });
-}
+  double? _calculateScaledAmount(
+      IngredientEntity ingredient, int portionCount) {
+    return ingredient.amountPerPortion != null
+        ? (ingredient.amountPerPortion! * portionCount).toDouble()
+        : null;
+  }
+
+  bool get shouldShowNotification => !_suppressNotifications;
 
   @override
   Future<void> close() {
-    _syncDebounceTimer?.cancel();
+    _syncStrategy.dispose();
     return super.close();
   }
 }
