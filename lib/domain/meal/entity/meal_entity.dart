@@ -20,6 +20,26 @@ class MealEntity extends Equatable {
     required this.isVegetarian,
   });
 
+  MealEntity copyWith({
+    String? title,
+    String? mealId,
+    List<String>? categoryId,
+    String? image,
+    List<IngredientEntity>? ingredients,
+    List<String>? steps,
+    bool? isVegetarian,
+  }) {
+    return MealEntity(
+      title: title ?? this.title,
+      mealId: mealId ?? this.mealId,
+      categoryId: categoryId ?? this.categoryId,
+      image: image ?? this.image,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+      isVegetarian: isVegetarian ?? this.isVegetarian,
+    );
+  }
+
   @override
   List<Object?> get props =>
       [title, mealId, categoryId, image, ingredients, steps, isVegetarian];

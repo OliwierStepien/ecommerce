@@ -12,20 +12,24 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping
 
 class HiveShoppingListMealIngredientRepositoryImpl
     implements ShoppingListMealIngredientRepository {
-  final HiveShoppingListMealIngredientService _hiveShoppingListMealIngredientService;
+  final HiveShoppingListMealIngredientService
+      _hiveShoppingListMealIngredientService;
   final NetworkInfo _networkInfo;
 
   HiveShoppingListMealIngredientRepositoryImpl({
-    required HiveShoppingListMealIngredientService hiveShoppingListMealIngredientService,
+    required HiveShoppingListMealIngredientService
+        hiveShoppingListMealIngredientService,
     required NetworkInfo networkInfo,
-  })  : _hiveShoppingListMealIngredientService = hiveShoppingListMealIngredientService,
+  })  : _hiveShoppingListMealIngredientService =
+            hiveShoppingListMealIngredientService,
         _networkInfo = networkInfo;
 
   @override
   Future<Either<Failure, void>> addMealIngredientToShoppingList(
       MealEntity meal, IngredientEntity ingredient, int portionCount) async {
     return handleHiveFailure(() async {
-      await _hiveShoppingListMealIngredientService.addMealIngredientToShoppingList(
+      await _hiveShoppingListMealIngredientService
+          .addMealIngredientToShoppingList(
         MealMapper.toModel(meal),
         IngredientMapper.toModel(ingredient),
         portionCount,
@@ -38,7 +42,8 @@ class HiveShoppingListMealIngredientRepositoryImpl
       MealEntity meal, IngredientEntity ingredient) async {
     return handleHiveFailure(() async {
       final isOnline = await _networkInfo.checkInternetConnection();
-      await _hiveShoppingListMealIngredientService.removeMealIngredientFromShoppingList(
+      await _hiveShoppingListMealIngredientService
+          .removeMealIngredientFromShoppingList(
         MealMapper.toModel(meal),
         IngredientMapper.toModel(ingredient),
         isOnline: isOnline,
@@ -47,25 +52,31 @@ class HiveShoppingListMealIngredientRepositoryImpl
   }
 
   @override
-  Future<Either<Failure, List<MealEntity>>> getMealIngredientToShoppingList() async {
+  Future<Either<Failure, List<MealEntity>>>
+      getMealIngredientToShoppingList() async {
     return handleHiveFailure(() async {
-      final models = await _hiveShoppingListMealIngredientService.getMealIngredientToShoppingList();
+      final models = await _hiveShoppingListMealIngredientService
+          .getMealIngredientToShoppingList();
       return _groupIngredientsByMeal(models);
     });
   }
 
   @override
-  Future<Either<Failure, List<MealEntity>>> getUnsyncedShoppingListMealIngredient() async {
+  Future<Either<Failure, List<MealEntity>>>
+      getUnsyncedShoppingListMealIngredient() async {
     return handleHiveFailure(() async {
-      final models = await _hiveShoppingListMealIngredientService.getUnsyncedShoppingListMealIngredient();
+      final models = await _hiveShoppingListMealIngredientService
+          .getUnsyncedShoppingListMealIngredient();
       return _groupIngredientsByMeal(models);
     });
   }
 
   @override
-  Future<Either<Failure, List<MealEntity>>> getUnsyncedChangesForShoppingListMealIngredient() async {
+  Future<Either<Failure, List<MealEntity>>>
+      getUnsyncedChangesForShoppingListMealIngredient() async {
     return handleHiveFailure(() async {
-      final models = await _hiveShoppingListMealIngredientService.getUnsyncedChangesForShoppingListMealIngredient();
+      final models = await _hiveShoppingListMealIngredientService
+          .getUnsyncedChangesForShoppingListMealIngredient();
       return _groupIngredientsByMeal(models);
     });
   }
@@ -75,12 +86,14 @@ class HiveShoppingListMealIngredientRepositoryImpl
       String mealId) async {
     return handleHiveFailure(() async {
       // Pobierz wszystkie niesynchronizowane wpisy dla danego mealId
-      final unsyncedItems = (await _hiveShoppingListMealIngredientService.getUnsyncedChangesForShoppingListMealIngredient())
+      final unsyncedItems = (await _hiveShoppingListMealIngredientService
+              .getUnsyncedChangesForShoppingListMealIngredient())
           .where((model) => model.meal.mealId == mealId);
 
       // Oznacz każdy składnik jako zsynchronizowany
       for (final model in unsyncedItems) {
-        await _hiveShoppingListMealIngredientService.markShoppingListMealIngredientAsSynced(
+        await _hiveShoppingListMealIngredientService
+            .markShoppingListMealIngredientAsSynced(
           mealId,
           model.ingredient.ingredientId,
         );
@@ -95,16 +108,29 @@ class HiveShoppingListMealIngredientRepositoryImpl
 
     for (final model in models) {
       final mealId = model.meal.mealId;
-      
+
       if (!mealsMap.containsKey(mealId)) {
         mealsMap[mealId] = MealMapper.toEntity(model.meal);
       }
 
       mealsMap[mealId]!.ingredients.add(
-        IngredientMapper.toEntity(model.ingredient),
-      );
+            IngredientMapper.toEntity(model.ingredient),
+          );
     }
 
     return mealsMap.values.toList();
+  }
+
+  @override
+  Future<Either<Failure, void>> restoreMealIngredientToShoppingList(
+      MealEntity meal, IngredientEntity ingredient, int portionCount) async {
+    return handleHiveFailure(() async {
+      await _hiveShoppingListMealIngredientService
+          .restoreMealIngredientToShoppingList(
+        MealMapper.toModel(meal),
+        IngredientMapper.toModel(ingredient),
+        portionCount,
+      );
+    });
   }
 }

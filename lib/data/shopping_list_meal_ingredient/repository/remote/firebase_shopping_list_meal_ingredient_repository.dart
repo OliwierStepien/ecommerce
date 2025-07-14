@@ -79,4 +79,17 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
       return;
     });
   }
+
+  @override
+  Future<Either<Failure, void>> restoreMealIngredientToShoppingList(
+      MealEntity meal, IngredientEntity ingredient, int portionCount) async {
+    return handleFirestoreFailure(() async {
+      await _firebaseShoppingListMealIngredientService
+          .restoreMealIngredientToShoppingList(
+        MealMapper.toModel(meal),
+        IngredientMapper.toModel(ingredient),
+        portionCount,
+      );
+    });
+  }
 }

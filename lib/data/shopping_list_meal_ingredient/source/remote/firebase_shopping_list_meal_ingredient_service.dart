@@ -10,6 +10,8 @@ abstract class FirebaseShoppingListMealIngredientService {
   Future<void> removeMealIngredientFromShoppingList(
       MealModel meal, IngredientModel ingredient);
   Future<List<MealModel>> getMealIngredientToShoppingList();
+  Future<void> restoreMealIngredientToShoppingList(
+      MealModel meal, IngredientModel ingredient, int portionCount);
 }
 
 class FirebaseShoppingListMealIngredientServiceImpl
@@ -104,6 +106,14 @@ class FirebaseShoppingListMealIngredientServiceImpl
           isVegetarian: false,
         );
       }).toList();
+    });
+  }
+
+  @override
+  Future<void> restoreMealIngredientToShoppingList(
+      MealModel meal, IngredientModel ingredient, int portionCount) async {
+    return handleFirestoreException(() async {
+      await addMealIngredientToShoppingList(meal, ingredient, portionCount);
     });
   }
 }

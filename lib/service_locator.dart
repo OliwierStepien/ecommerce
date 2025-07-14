@@ -74,6 +74,8 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shoppin
 import 'package:get_it/get_it.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
+import 'package:mealapp/core/network/sync_controller.dart';
 
 final sl = GetIt.instance;
 
@@ -308,17 +310,21 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetShoppingListUseCase>(
       () => GetShoppingListUseCase(sl<ShoppingListMealIngredientRepository>()));
 
+  sl.registerLazySingleton<RestoreToShoppingListUseCase>(() =>
+      RestoreToShoppingListUseCase(sl<ShoppingListMealIngredientRepository>()));
+
   // Shopping List Custom Item usecases
 
   sl.registerLazySingleton<AddCustomItemToShoppingListUseCase>(() =>
-      AddCustomItemToShoppingListUseCase(sl<ShoppingListCustomItemRepository>()));
+      AddCustomItemToShoppingListUseCase(
+          sl<ShoppingListCustomItemRepository>()));
 
   sl.registerLazySingleton<RemoveCustomItemFromShoppingListUseCase>(() =>
       RemoveCustomItemFromShoppingListUseCase(
           sl<ShoppingListCustomItemRepository>()));
 
-  sl.registerLazySingleton<GetShoppingListCustomItemUseCase>(
-      () => GetShoppingListCustomItemUseCase(sl<ShoppingListCustomItemRepository>()));
+  sl.registerLazySingleton<GetShoppingListCustomItemUseCase>(() =>
+      GetShoppingListCustomItemUseCase(sl<ShoppingListCustomItemRepository>()));
 
   // SYNC SERVICES & CONNECTION MONITOR
 
@@ -372,4 +378,13 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton(shoppingListMealIngredientSyncService);
   sl.registerSingleton(shoppingListCustomItemSyncService);
   sl.registerSingleton(connectionMonitor);
+
+// SyncController
+
+  sl.registerLazySingleton<SyncController>(
+    () => SyncController([
+      sl<ShoppingListMealIngredientSyncService>(),
+      sl<ShoppingListCustomItemSyncService>(),
+    ]),
+  );
 }

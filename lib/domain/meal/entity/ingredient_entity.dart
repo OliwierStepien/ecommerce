@@ -8,13 +8,32 @@ class IngredientEntity extends Equatable {
   final String mealId;
   final String unit;
 
-  const IngredientEntity(
-      {required this.amountPerPortion,
-      required this.ingredientCategory,
-      required this.ingredientId,
-      required this.ingredientName,
-      required this.mealId,
-      required this.unit});
+  const IngredientEntity({
+    required this.amountPerPortion,
+    required this.ingredientCategory,
+    required this.ingredientId,
+    required this.ingredientName,
+    required this.mealId,
+    required this.unit,
+  });
+
+  IngredientEntity copyWith({
+    num? amountPerPortion,
+    String? ingredientCategory,
+    String? ingredientId,
+    String? ingredientName,
+    String? mealId,
+    String? unit,
+  }) {
+    return IngredientEntity(
+      amountPerPortion: amountPerPortion ?? this.amountPerPortion,
+      ingredientCategory: ingredientCategory ?? this.ingredientCategory,
+      ingredientId: ingredientId ?? this.ingredientId,
+      ingredientName: ingredientName ?? this.ingredientName,
+      mealId: mealId ?? this.mealId,
+      unit: unit ?? this.unit,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -23,6 +42,6 @@ class IngredientEntity extends Equatable {
         ingredientId,
         ingredientName,
         mealId,
-        unit
+        unit,
       ];
 }
