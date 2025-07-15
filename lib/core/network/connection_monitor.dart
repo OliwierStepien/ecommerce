@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/core/network/sync_service.dart';
+import 'package:mealapp/core/sync/sync_service.dart';
 
 /// Klasa odpowiedzialna za monitorowanie stanu połączenia sieciowego
 /// i automatyczne wywoływanie synchronizacji danych w przypadku jego przywrócenia.

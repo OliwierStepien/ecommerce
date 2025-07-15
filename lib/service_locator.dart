@@ -3,7 +3,6 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
-import 'package:mealapp/core/sync/sync_orchestrator.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
 import 'package:mealapp/data/auth/repository/auth_repository_manager.dart';
@@ -387,13 +386,6 @@ Future<void> initializeDependencies() async {
   );
 
   connectionMonitor.startMonitoring();
-
-// SyncOrchestrator
-
-  sl.registerLazySingleton<SyncOrchestrator>(() => SyncOrchestrator(
-        connectionMonitor: sl<ConnectionMonitor>(),
-        syncStrategy: sl<SyncStrategy>(),
-      ));
 
 // Register services
   sl.registerSingleton(plannedSyncService);

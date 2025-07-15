@@ -2,17 +2,18 @@ import 'package:dartz/dartz.dart';
 import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/core/network/sync_service.dart';
+import 'package:mealapp/core/sync/sync_service.dart';
 import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 
-/// Synchronizuje pozycje listy zakupów pomiędzy Hive a Firestore.
-/// 1. Obsługa braku sieci
-/// 2. Usuwa zdalnie elementy oznaczone _isDeleted_
-/// 3. Dodaje/aktualizuje pozostałe elementy
-/// 4. Zaznacza je jako zsynchronizowane w Hive
+/// Synchronizuje pozycje listy zakupów pomiędzy Hive (lokalnie) a Firestore (zdalnie).
+/// Proces obejmuje:
+/// 1. Sprawdzenie połączenia z internetem
+/// 2. Usuwanie z Firestore pozycji oznaczonych jako usunięte (`isDeleted`)
+/// 3. Dodawanie lub aktualizowanie pozostałych pozycji
+/// 4. Oznaczanie ich jako zsynchronizowane (`isSynced`) lokalnie
 class ShoppingListMealIngredientSyncService implements SyncService {
   final ShoppingListMealIngredientRepository _remoteRepo;
   final NetworkInfo _networkInfo;
@@ -25,47 +26,61 @@ class ShoppingListMealIngredientSyncService implements SyncService {
 
   @override
   Future<Either<Failure, void>> syncData() async {
-    // 1) sprawdź dostęp do sieci
+    // 1) Sprawdź, czy urządzenie ma dostęp do internetu
     if (!await _networkInfo.checkInternetConnection()) {
       return Left(NetworkFailure());
     }
 
+    // Otwórz lokalne pudełko Hive z modelami składników listy zakupów
     final box = Hive.box<ShoppingListMealIngredientModel>(
         'shoppingListMealIngredients');
-    final unsynced = box.values.where((m) => !m.isSynced);
 
-    final deletions = unsynced.where((m) => m.isDeleted).toList();
-    final additions = _deduplicate(unsynced.where((m) => !m.isDeleted));
+    // Wybierz wszystkie modele, które nie zostały jeszcze zsynchronizowane
+    final unsyncedModels = box.values.where((m) => !m.isSynced);
 
-    // 2) najpierw usuń elementy oznaczone jako usunięte
-    final deletionFailure = await _syncDeletions(deletions, box);
+    // Podziel dane na:
+    // a) elementy oznaczone jako usunięte (do zdalnego usunięcia)
+    final deletedModels = unsyncedModels.where((m) => m.isDeleted).toList();
+
+    // b) elementy, które nie są oznaczone do usunięcia (do dodania lub aktualizacji)
+    final nonDeletedUnsyncedModels =
+        _deduplicate(unsyncedModels.where((m) => !m.isDeleted));
+
+    // 2) Najpierw usuń z Firestore modele oznaczone jako usunięte
+    final deletionFailure = await _syncDeletedModels(deletedModels, box);
     if (deletionFailure != null) return Left(deletionFailure);
 
-    // 3) następnie dodaj / zaktualizuj resztę
-    final addFailure = await _syncAdditions(additions, box);
+    // 3) Następnie dodaj lub zaktualizuj pozostałe modele w Firestore
+    final addFailure = await _syncAdditions(nonDeletedUnsyncedModels, box);
     if (addFailure != null) return Left(addFailure);
 
+    // Zakończ pomyślnie
     return const Right(null);
   }
 
   /* ---------- PRYWATNE METODY POMOCNICZE ---------- */
 
-  /// Klucz `<mealId>_<ingredientId>` używany zarówno w Hive, jak i w Firestore
+  /// Tworzy unikalny klucz dla modelu w formacie `<mealId>_<ingredientId>`,
+  /// wykorzystywany zarówno w Hive, jak i Firestore jako identyfikator.
   String _modelKey(ShoppingListMealIngredientModel m) =>
       '${m.meal.mealId}_${m.ingredient.ingredientId}';
 
-  /// Wybiera ostatnią wersję każdej pary `[mealId, ingredientId]`
+  /// Spośród wielu wersji tego samego składnika (dla tej samej pary `mealId` + `ingredientId`)
+  /// wybiera tylko najnowszy — nadpisując starsze wpisy.
   List<ShoppingListMealIngredientModel> _deduplicate(
     Iterable<ShoppingListMealIngredientModel> models,
   ) {
     final map = <String, ShoppingListMealIngredientModel>{};
     for (final m in models) {
-      map[_modelKey(m)] = m; // nadpisuje starsze wpisy
+      // Nadpisuje wcześniejsze wpisy dla tego samego klucza
+      map[_modelKey(m)] = m;
     }
     return map.values.toList();
   }
 
-  Future<Failure?> _syncDeletions(
+  /// Usuwa modele zdalnie (z Firestore), jeśli lokalnie oznaczono je jako `isDeleted`.
+  /// Następnie usuwa je również lokalnie z Hive.
+  Future<Failure?> _syncDeletedModels(
     List<ShoppingListMealIngredientModel> models,
     Box<ShoppingListMealIngredientModel> box,
   ) async {
@@ -75,14 +90,17 @@ class ShoppingListMealIngredientSyncService implements SyncService {
         IngredientMapper.toEntity(m.ingredient),
       );
 
+      // Jeśli wystąpił błąd, zakończ synchronizację niepowodzeniem
       final failure = _failureOrNull(result);
       if (failure != null) return failure;
 
+      // Usuń model również lokalnie (z Hive)
       await box.delete(_modelKey(m));
     }
     return null;
   }
 
+  /// Dodaje lub aktualizuje modele w Firestore, a następnie oznacza je jako zsynchronizowane lokalnie.
   Future<Failure?> _syncAdditions(
     List<ShoppingListMealIngredientModel> models,
     Box<ShoppingListMealIngredientModel> box,
@@ -94,9 +112,13 @@ class ShoppingListMealIngredientSyncService implements SyncService {
         m.portionCount,
       );
 
+      // Jeśli wystąpił błąd, zakończ synchronizację niepowodzeniem
       final failure = _failureOrNull(addResult);
       if (failure != null) return failure;
 
+      // Zaktualizuj model lokalnie:
+      // - oznacz jako zsynchronizowany
+      // - upewnij się, że `isDeleted` = false
       await box.put(
         _modelKey(m),
         m.copyWith(isSynced: true, isDeleted: false),
@@ -105,7 +127,12 @@ class ShoppingListMealIngredientSyncService implements SyncService {
     return null;
   }
 
-  /// Zwraca `Failure` jeśli lewa strona, w pp. `null`
-  Failure? _failureOrNull(Either<Failure, void> result) =>
-      result.fold((f) => f, (_) => null);
+  /// Jeśli operacja zakończyła się błędem (`Left`), zwraca obiekt `Failure`.
+  /// W przeciwnym razie zwraca `null`.
+  Failure? _failureOrNull(Either<Failure, void> result) {
+    return result.fold(
+      (failure) => failure,
+      (success) => null,
+    );
+  }
 }
