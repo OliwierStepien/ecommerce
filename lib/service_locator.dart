@@ -69,6 +69,7 @@ import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_lis
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
@@ -327,6 +328,10 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetShoppingListCustomItemUseCase>(() =>
       GetShoppingListCustomItemUseCase(sl<ShoppingListCustomItemRepository>()));
 
+  sl.registerLazySingleton<RestoreCustomItemToShoppingListUseCase>(() =>
+      RestoreCustomItemToShoppingListUseCase(
+          sl<ShoppingListCustomItemRepository>()));
+
   // SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
@@ -355,7 +360,6 @@ Future<void> initializeDependencies() async {
 
   final shoppingListCustomItemSyncService = ShoppingListCustomItemSyncService(
     remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
-    hiveService: sl<HiveShoppingListCustomItemService>(),
     networkInfo: sl<NetworkInfo>(),
   );
 
@@ -368,11 +372,11 @@ Future<void> initializeDependencies() async {
   // SyncController
 
   sl.registerLazySingleton<SyncController>(() => SyncController(
-        syncStrategy: sl<SyncStrategy>(),
-        shoppingListSyncService: sl<ShoppingListMealIngredientSyncService>(),
-        customItemsSyncService: sl<ShoppingListCustomItemSyncService>(),
-        hiveService: sl<HiveShoppingListMealIngredientService>(),
-      ));
+      syncStrategy: sl<SyncStrategy>(),
+      shoppingListSyncService: sl<ShoppingListMealIngredientSyncService>(),
+      customItemsSyncService: sl<ShoppingListCustomItemSyncService>(),
+      hiveService: sl<HiveShoppingListMealIngredientService>(),
+      customItemsHiveService: sl<HiveShoppingListCustomItemService>()));
 
 // Single ConnectionMonitor for all services
   final connectionMonitor = ConnectionMonitor(

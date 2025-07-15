@@ -5,14 +5,13 @@ import 'package:mealapp/common/helper/handle_firestore_operation/exception/handl
 import 'package:mealapp/data/shopping_list_custom_item/model/shopping_list_custom_item_model.dart';
 
 abstract class FirebaseShoppingListCustomItemService {
-  Future<void> addCustomItemToShoppingList(
-      ShoppingListCustomItemModel shoppingListCustomItemModel);
+  Future<void> addCustomItemToShoppingList(ShoppingListCustomItemModel item);
   Future<void> removeCustomItemFromShoppingList(String customItemId);
   Future<List<ShoppingListCustomItemModel>> getCustomItemToShoppingList();
+  Future<void> restoreCustomItemToShoppingList(ShoppingListCustomItemModel item);
 }
 
-class FirebaseShoppingListCustomItemServiceImpl
-    implements FirebaseShoppingListCustomItemService {
+class FirebaseShoppingListCustomItemServiceImpl implements FirebaseShoppingListCustomItemService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
@@ -22,19 +21,18 @@ class FirebaseShoppingListCustomItemServiceImpl
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
-  @override
-  Future<void> addCustomItemToShoppingList(
-      ShoppingListCustomItemModel shoppingListCustomItemModel) async {
-    return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      if (user == null) throw UnauthorizedException();
+  CollectionReference<Map<String, dynamic>> _userCustomItemsCollection() {
+    final user = _auth.currentUser;
+    if (user == null) throw UnauthorizedException();
+    return _firestore.collection('Users').doc(user.uid).collection('CustomItems');
+  }
 
-      await _firestore
-          .collection('Users')
-          .doc(user.uid)
-          .collection('CustomItems')
-          .doc(shoppingListCustomItemModel.customItemId)
-          .set(shoppingListCustomItemModel.toMap())
+  @override
+  Future<void> addCustomItemToShoppingList(ShoppingListCustomItemModel item) async {
+    return handleFirestoreException(() async {
+      await _userCustomItemsCollection()
+          .doc(item.customItemId)
+          .set(item.toMap())
           .timeout(const Duration(seconds: 15));
     });
   }
@@ -42,12 +40,7 @@ class FirebaseShoppingListCustomItemServiceImpl
   @override
   Future<void> removeCustomItemFromShoppingList(String customItemId) async {
     return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      if (user == null) throw UnauthorizedException();
-      await _firestore
-          .collection('Users')
-          .doc(user.uid)
-          .collection('CustomItems')
+      await _userCustomItemsCollection()
           .doc(customItemId)
           .delete()
           .timeout(const Duration(seconds: 15));
@@ -55,21 +48,19 @@ class FirebaseShoppingListCustomItemServiceImpl
   }
 
   @override
-  Future<List<ShoppingListCustomItemModel>>
-      getCustomItemToShoppingList() async {
+  Future<List<ShoppingListCustomItemModel>> getCustomItemToShoppingList() async {
     return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      if (user == null) throw UnauthorizedException();
-      final returnedData = await _firestore
-          .collection('Users')
-          .doc(user.uid)
-          .collection('CustomItems')
+      final result = await _userCustomItemsCollection()
           .where('isDeleted', isEqualTo: false)
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs
-          .map((doc) => ShoppingListCustomItemModel.fromMap(doc.data()))
-          .toList();
+
+      return result.docs.map((doc) => ShoppingListCustomItemModel.fromMap(doc.data())).toList();
     });
+  }
+
+  @override
+  Future<void> restoreCustomItemToShoppingList(ShoppingListCustomItemModel item) async {
+    return addCustomItemToShoppingList(item);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/sync/shopping_list_custom_item_sync_service.dart';
+import 'package:mealapp/data/shopping_list_custom_item/source/local/hive_shopping_list_custom_item_service.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/repository/sync/shopping_list_meal_ingredient_sync_service.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/local/hive_shopping_list_meal_ingredient_service.dart';
 
@@ -11,16 +12,21 @@ class SyncController {
   final ShoppingListMealIngredientSyncService _shoppingListSyncService;
   final ShoppingListCustomItemSyncService _customItemsSyncService;
   final HiveShoppingListMealIngredientService _hiveService;
+  final HiveShoppingListCustomItemService
+      _customItemsHiveService;
 
   SyncController({
     required SyncStrategy syncStrategy,
     required ShoppingListMealIngredientSyncService shoppingListSyncService,
     required ShoppingListCustomItemSyncService customItemsSyncService,
     required HiveShoppingListMealIngredientService hiveService,
+    required HiveShoppingListCustomItemService
+        customItemsHiveService,
   })  : _syncStrategy = syncStrategy,
         _shoppingListSyncService = shoppingListSyncService,
         _customItemsSyncService = customItemsSyncService,
-        _hiveService = hiveService;
+        _hiveService = hiveService,
+        _customItemsHiveService = customItemsHiveService;
 
   /// Główna metoda synchronizacji:
   /// 1. wyzwala strategię (np. debounce),
@@ -30,6 +36,8 @@ class SyncController {
     await _syncStrategy.onDataChanged();
     await _executeSyncOperations();
     await _hiveService.clearSyncedDeletedItems();
+    await _customItemsHiveService.clearSyncedDeletedItems();
+    await _customItemsHiveService.clearSyncedDeletedItems();
   }
 
   /// Uruchamia faktyczną synchronizację danych (równolegle)

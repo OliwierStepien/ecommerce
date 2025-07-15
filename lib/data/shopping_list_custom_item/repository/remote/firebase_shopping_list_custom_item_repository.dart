@@ -73,4 +73,15 @@ class FirebaseShoppingListCustomItemRepositoryImpl
       return;
     });
   }
+
+  @override
+  Future<Either<Failure, void>> restoreCustomItemToShoppingList(
+      ShoppingListCustomItemEntity shoppingListCustomItemEntity) async {
+    return handleFirestoreFailure(() async {
+      await _firebaseShoppingListCustomItemService
+          .restoreCustomItemToShoppingList(
+        ShoppingListCustomItemMapper.toModel(shoppingListCustomItemEntity),
+      );
+    });
+  }
 }

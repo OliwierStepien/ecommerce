@@ -5,6 +5,9 @@ import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/core/configs/theme/app_theme.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
@@ -38,7 +41,13 @@ class MyApp extends StatelessWidget {
                   restoreUseCase: sl<RestoreToShoppingListUseCase>(),
                   syncStrategy: sl<SyncStrategy>(),
                 )),
-        BlocProvider(create: (context) => ShoppingListCustomItemCubit()),
+        BlocProvider(
+            create: (context) => ShoppingListCustomItemCubit(
+                  addUseCase: sl<AddCustomItemToShoppingListUseCase>(),
+                  removeUseCase: sl<RemoveCustomItemFromShoppingListUseCase>(),
+                  restoreUseCase: sl<RestoreCustomItemToShoppingListUseCase>(),
+                  syncStrategy: sl<SyncStrategy>(),
+                )),
         BlocProvider(
             create: (context) => CategoriesDisplayCubit()..displayCategories()),
         BlocProvider(create: (_) => VegetarianFilterCubit()),

@@ -74,4 +74,14 @@ class HiveShoppingListCustomItemRepositoryImpl
           .markShoppingListCustomItemAsSynced(customItemId);
     });
   }
+
+  @override
+  Future<Either<Failure, void>> restoreCustomItemToShoppingList(
+      ShoppingListCustomItemEntity shoppingListCustomItemEntity) async {
+    return handleHiveFailure(() async {
+      await _hiveShoppingListCustomItemService.restoreCustomItemToShoppingList(
+        ShoppingListCustomItemMapper.toModel(shoppingListCustomItemEntity),
+      );
+    });
+  }
 }

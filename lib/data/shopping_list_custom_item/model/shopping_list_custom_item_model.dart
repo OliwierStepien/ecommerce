@@ -23,6 +23,22 @@ class ShoppingListCustomItemModel {
     required this.isDeleted,
   });
 
+  ShoppingListCustomItemModel copyWith({
+    String? customItemId,
+    String? customItemName,
+    String? customItemCategory,
+    bool? isSynced,
+    bool? isDeleted,
+  }) {
+    return ShoppingListCustomItemModel(
+      customItemId: customItemId ?? this.customItemId,
+      customItemName: customItemName ?? this.customItemName,
+      customItemCategory: customItemCategory ?? this.customItemCategory,
+      isSynced: isSynced ?? this.isSynced,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'customItemId': customItemId,

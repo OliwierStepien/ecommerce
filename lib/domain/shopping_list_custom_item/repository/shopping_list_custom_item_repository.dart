@@ -7,10 +7,14 @@ abstract class ShoppingListCustomItemRepository {
       ShoppingListCustomItemEntity shoppingListCustomItemEntity);
   Future<Either<Failure, void>> removeCustomItemFromShoppingList(
       String customItemId);
-  Future<Either<Failure, List<ShoppingListCustomItemEntity>>> getCustomItemToShoppingList();
-  Future<Either<Failure, List<ShoppingListCustomItemEntity>>> getUnsyncedShoppingListCustomItem();
+  Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
+      getCustomItemToShoppingList();
+  Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
+      getUnsyncedShoppingListCustomItem();
   Future<Either<Failure, void>> markShoppingListCustomItemAsSynced(
       String customItemId);
   Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
       getUnsyncedChangesForShoppingListCustomItem();
+  Future<Either<Failure, void>> restoreCustomItemToShoppingList(
+      ShoppingListCustomItemEntity shoppingListCustomItemEntity);
 }

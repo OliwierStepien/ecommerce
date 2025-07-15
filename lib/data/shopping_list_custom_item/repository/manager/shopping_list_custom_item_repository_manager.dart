@@ -4,7 +4,10 @@ import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 
-class ShoppingListCustomItemRepositoryManager 
+/// Manager repozytoriów dla własnych pozycji listy zakupów.
+/// Zapewnia zapis lokalny (Hive) + opcjonalną synchronizację zdalną (Firestore),
+/// dokładnie w ten sam sposób jak dla składników posiłków.
+class ShoppingListCustomItemRepositoryManager
     implements ShoppingListCustomItemRepository {
   final ShoppingListCustomItemRepository _localRepository;
   final ShoppingListCustomItemRepository _remoteRepository;
@@ -18,25 +21,30 @@ class ShoppingListCustomItemRepositoryManager
         _remoteRepository = remoteRepository,
         _networkInfo = networkInfo;
 
+  /* ------------ Operacje CRUD + SYNC ------------ */
+
   @override
   Future<Either<Failure, void>> addCustomItemToShoppingList(
       ShoppingListCustomItemEntity customItem) async {
-    // 1. Najpierw lokalna operacja
-    final localResult = await _localRepository.addCustomItemToShoppingList(customItem);
-    
-    return await localResult.fold(
-      (failure) => Left(failure),
+    // 1) lokalny zapis
+    final localResult =
+        await _localRepository.addCustomItemToShoppingList(customItem);
+
+    return localResult.fold(
+      Left.new,
       (_) async {
-        // 2. Próba synchronizacji jeśli online
+        // 2) próba zdalnej synchronizacji
         final isOnline = await _networkInfo.checkInternetConnection();
         if (!isOnline) return const Right(null);
 
-        final remoteResult = await _remoteRepository.addCustomItemToShoppingList(customItem);
-        
+        final remoteResult =
+            await _remoteRepository.addCustomItemToShoppingList(customItem);
+
         return remoteResult.fold(
           (_) => const Right(null),
           (_) async {
-            await _localRepository.markShoppingListCustomItemAsSynced(customItem.customItemId);
+            await _localRepository
+                .markShoppingListCustomItemAsSynced(customItem.customItemId);
             return const Right(null);
           },
         );
@@ -47,22 +55,27 @@ class ShoppingListCustomItemRepositoryManager
   @override
   Future<Either<Failure, void>> removeCustomItemFromShoppingList(
       String customItemId) async {
-    // 1. Najpierw lokalna operacja
-    final localResult = await _localRepository.removeCustomItemFromShoppingList(customItemId);
-    
-    return await localResult.fold(
-      (failure) => Left(failure),
+    // 1) lokalnie
+    final localResult =
+        await _localRepository.removeCustomItemFromShoppingList(customItemId);
+
+    return localResult.fold(
+      Left.new,
       (_) async {
-        // 2. Próba synchronizacji jeśli online
+        // 2) online?
         final isOnline = await _networkInfo.checkInternetConnection();
         if (!isOnline) return const Right(null);
 
-        final remoteResult = await _remoteRepository.removeCustomItemFromShoppingList(customItemId);
-        
+        final remoteResult =
+            await _remoteRepository.removeCustomItemFromShoppingList(
+          customItemId,
+        );
+
         return remoteResult.fold(
           (_) => const Right(null),
           (_) async {
-            await _localRepository.markShoppingListCustomItemAsSynced(customItemId);
+            await _localRepository
+                .markShoppingListCustomItemAsSynced(customItemId);
             return const Right(null);
           },
         );
@@ -70,25 +83,55 @@ class ShoppingListCustomItemRepositoryManager
     );
   }
 
+  /// 🔄 NOWA METODA – przywracanie usuniętego elementu
   @override
-  Future<Either<Failure, List<ShoppingListCustomItemEntity>>> getCustomItemToShoppingList() async {
-    return await _localRepository.getCustomItemToShoppingList();
+  Future<Either<Failure, void>> restoreCustomItemToShoppingList(
+      ShoppingListCustomItemEntity customItem) async {
+    // 1) lokalny restore
+    final localResult = await _localRepository
+        .restoreCustomItemToShoppingList(customItem);
+
+    return localResult.fold(
+      Left.new,
+      (_) async {
+        // 2) synchronizacja zdalna (jeśli online)
+        final isOnline = await _networkInfo.checkInternetConnection();
+        if (!isOnline) return const Right(null);
+
+        final remoteResult =
+            await _remoteRepository.restoreCustomItemToShoppingList(customItem);
+
+        return remoteResult.fold(
+          (_) => const Right(null),
+          (_) async {
+            await _localRepository
+                .markShoppingListCustomItemAsSynced(customItem.customItemId);
+            return const Right(null);
+          },
+        );
+      },
+    );
   }
 
+  /* ------------ Odczyt i praca na lokalnym cache'u ------------ */
+
   @override
-  Future<Either<Failure, List<ShoppingListCustomItemEntity>>> getUnsyncedShoppingListCustomItem() async {
-    return await _localRepository.getUnsyncedShoppingListCustomItem();
-  }
+  Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
+      getCustomItemToShoppingList() =>
+          _localRepository.getCustomItemToShoppingList();
+
+  @override
+  Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
+      getUnsyncedShoppingListCustomItem() =>
+          _localRepository.getUnsyncedShoppingListCustomItem();
+
+  @override
+  Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
+      getUnsyncedChangesForShoppingListCustomItem() =>
+          _localRepository.getUnsyncedChangesForShoppingListCustomItem();
 
   @override
   Future<Either<Failure, void>> markShoppingListCustomItemAsSynced(
-      String customItemId) async {
-    return await _localRepository.markShoppingListCustomItemAsSynced(customItemId);
-  }
-
-  @override
-  Future<Either<Failure, List<ShoppingListCustomItemEntity>>> 
-      getUnsyncedChangesForShoppingListCustomItem() async {
-    return await _localRepository.getUnsyncedChangesForShoppingListCustomItem();
-  }
+          String customItemId) =>
+      _localRepository.markShoppingListCustomItemAsSynced(customItemId);
 }
