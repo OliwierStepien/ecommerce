@@ -23,6 +23,7 @@ class ShoppingListCustomItemModel {
     required this.isDeleted,
   });
 
+  // Umożliwia kopiowanie obiektu z modyfikacjami
   ShoppingListCustomItemModel copyWith({
     String? customItemId,
     String? customItemName,
@@ -39,6 +40,7 @@ class ShoppingListCustomItemModel {
     );
   }
 
+  // Konwersja do mapy (np. do Firestore)
   Map<String, dynamic> toMap() {
     return {
       'customItemId': customItemId,
@@ -49,6 +51,7 @@ class ShoppingListCustomItemModel {
     };
   }
 
+  // Tworzy obiekt modelu z mapy (np. z Firestore)
   factory ShoppingListCustomItemModel.fromMap(Map<String, dynamic> map) {
     return ShoppingListCustomItemModel(
       customItemId: map['customItemId'] as String,

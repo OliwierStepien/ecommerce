@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+// Klasa reprezentująca encję składnika własnego (czysta struktura domenowa)
 class ShoppingListCustomItemEntity extends Equatable {
   final String customItemId;
   final String customItemName;
@@ -11,6 +12,7 @@ class ShoppingListCustomItemEntity extends Equatable {
     required this.customItemCategory,
   });
 
+  // Equatable pozwala na łatwe porównywanie obiektów po wartości (potrzebne np. w BLoC)
   @override
   List<Object?> get props => [
         customItemId,

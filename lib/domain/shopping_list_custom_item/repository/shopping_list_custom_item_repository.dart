@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 
+// Definiuje kontrakt używany przez warstwę use-case
 abstract class ShoppingListCustomItemRepository {
   Future<Either<Failure, void>> addCustomItemToShoppingList(
       ShoppingListCustomItemEntity shoppingListCustomItemEntity);
