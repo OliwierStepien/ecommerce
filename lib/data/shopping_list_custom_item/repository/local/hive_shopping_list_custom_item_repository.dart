@@ -41,7 +41,7 @@ class HiveShoppingListCustomItemRepositoryImpl
       getCustomItemToShoppingList() async {
     return handleHiveFailure(() async {
       final models = await _hiveShoppingListCustomItemService
-          .getCustomItemToShoppingList();
+          .getCustomItemFromShoppingList();
       return models.map(ShoppingListCustomItemMapper.toEntity).toList();
     });
   }

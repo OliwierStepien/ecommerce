@@ -49,7 +49,7 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
       getMealIngredientToShoppingList() async {
     return handleFirestoreFailure(() async {
       final meals = await _firebaseShoppingListMealIngredientService
-          .getMealIngredientToShoppingList();
+          .getMealIngredientFromShoppingList();
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -66,7 +66,7 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
   Future<Either<Failure, List<MealEntity>>>
       getUnsyncedShoppingListMealIngredient() async {
     final allMeals = await _firebaseShoppingListMealIngredientService
-        .getMealIngredientToShoppingList();
+        .getMealIngredientFromShoppingList();
     return handleFirestoreFailure(() async {
       return allMeals.map(MealMapper.toEntity).toList();
     });
