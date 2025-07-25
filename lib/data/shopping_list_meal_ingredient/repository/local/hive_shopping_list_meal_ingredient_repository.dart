@@ -4,6 +4,7 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/mapper/shopping_list_meal_ingredient_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/local/hive_shopping_list_meal_ingredient_service.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
@@ -14,15 +15,13 @@ class HiveShoppingListMealIngredientRepositoryImpl
     implements ShoppingListMealIngredientRepository {
   final HiveShoppingListMealIngredientService
       _hiveShoppingListMealIngredientService;
-  final NetworkInfo _networkInfo;
 
   HiveShoppingListMealIngredientRepositoryImpl({
     required HiveShoppingListMealIngredientService
         hiveShoppingListMealIngredientService,
     required NetworkInfo networkInfo,
   })  : _hiveShoppingListMealIngredientService =
-            hiveShoppingListMealIngredientService,
-        _networkInfo = networkInfo;
+            hiveShoppingListMealIngredientService;
 
   @override
   Future<Either<Failure, void>> addMealIngredientToShoppingList(
@@ -30,9 +29,8 @@ class HiveShoppingListMealIngredientRepositoryImpl
     return handleHiveFailure(() async {
       await _hiveShoppingListMealIngredientService
           .addMealIngredientToShoppingList(
-        MealMapper.toModel(meal),
-        IngredientMapper.toModel(ingredient),
-        portionCount,
+        ShoppingListMealIngredientMapper.toModel(
+            meal, ingredient, portionCount),
       );
     });
   }
@@ -41,12 +39,9 @@ class HiveShoppingListMealIngredientRepositoryImpl
   Future<Either<Failure, void>> removeMealIngredientFromShoppingList(
       MealEntity meal, IngredientEntity ingredient) async {
     return handleHiveFailure(() async {
-      final isOnline = await _networkInfo.checkInternetConnection();
       await _hiveShoppingListMealIngredientService
           .removeMealIngredientFromShoppingList(
-        MealMapper.toModel(meal),
-        IngredientMapper.toModel(ingredient),
-        isOnline: isOnline,
+        ShoppingListMealIngredientMapper.toModel(meal, ingredient, 1),
       );
     });
   }
@@ -56,7 +51,7 @@ class HiveShoppingListMealIngredientRepositoryImpl
       getMealIngredientToShoppingList() async {
     return handleHiveFailure(() async {
       final models = await _hiveShoppingListMealIngredientService
-          .getMealIngredientToShoppingList();
+          .getMealIngredientFromShoppingList();
       return _groupIngredientsByMeal(models);
     });
   }

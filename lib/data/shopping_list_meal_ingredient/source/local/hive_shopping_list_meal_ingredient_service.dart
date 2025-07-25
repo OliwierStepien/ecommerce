@@ -1,16 +1,18 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/common/helper/debug_log/debug_log.dart';
 import 'package:mealapp/data/meal/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart';
 
 abstract class HiveShoppingListMealIngredientService {
-  Future<void> addMealIngredientToShoppingList(
-      MealModel meal, IngredientModel ingredient, int portionCount);
-  Future<void> removeMealIngredientFromShoppingList(
-      MealModel meal, IngredientModel ingredient,
-      {bool isOnline = false});
   Future<List<ShoppingListMealIngredientModel>>
-      getMealIngredientToShoppingList();
+      getMealIngredientFromShoppingList();
+  Future<void> addMealIngredientToShoppingList(
+      ShoppingListMealIngredientModel item);
+  Future<void> removeMealIngredientFromShoppingList(
+    ShoppingListMealIngredientModel item, {
+    bool isOnline = false,
+  });
   Future<List<ShoppingListMealIngredientModel>>
       getUnsyncedShoppingListMealIngredient();
   Future<void> markShoppingListMealIngredientAsSynced(
@@ -28,69 +30,69 @@ class HiveShoppingListMealIngredientServiceImpl
       Hive.box<ShoppingListMealIngredientModel>('shoppingListMealIngredients');
 
   @override
+  Future<List<ShoppingListMealIngredientModel>>
+      getMealIngredientFromShoppingList() async {
+    return _box.values.where((model) => !model.isDeleted).toList();
+  }
+
+  @override
   Future<void> addMealIngredientToShoppingList(
-      MealModel meal, IngredientModel ingredient, int portionCount) async {
-    final key = '${meal.mealId}_${ingredient.ingredientId}';
+      ShoppingListMealIngredientModel item) async {
+    final key = '${item.meal.mealId}_${item.ingredient.ingredientId}';
 
     final model = _box.get(key);
 
     await _box.put(
       key,
-      ShoppingListMealIngredientModel(
-        meal: meal,
-        ingredient: ingredient,
-        portionCount: portionCount,
+      item.copyWith(
         isSynced: model?.isSynced ?? false,
         isDeleted: false,
       ),
     );
 
-    final allIngredients = await getMealIngredientToShoppingList();
-    print(
-        '✅ Dodano składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
-    print('🛒 Liczba składników w shopping list: ${allIngredients.length}');
-    print('📋 Składniki:');
+    final allIngredients = await getMealIngredientFromShoppingList();
+    debugLog(
+        '✅ Dodano składnik: ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
+        name: 'HiveService');
+    debugLog('🛒 Liczba składników w shopping list: ${allIngredients.length}',
+        name: 'HiveService');
+    debugLog('📋 Składniki:', name: 'HiveService');
     for (final item in allIngredients) {
-      print(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      debugLog(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
+          name: 'HiveService');
     }
   }
 
   @override
   Future<void> removeMealIngredientFromShoppingList(
-      MealModel meal, IngredientModel ingredient,
+      ShoppingListMealIngredientModel item,
       {bool isOnline = false}) async {
-    final key = '${meal.mealId}_${ingredient.ingredientId}';
+    final key = '${item.meal.mealId}_${item.ingredient.ingredientId}';
     final model = _box.get(key);
 
     if (model != null) {
       await _box.put(
         key,
-        ShoppingListMealIngredientModel(
-          meal: model.meal,
-          ingredient: model.ingredient,
-          portionCount: model.portionCount,
-          isSynced: isOnline,
+        model.copyWith(
+          isSynced: false,
           isDeleted: true,
         ),
       );
     }
 
-    final allIngredients = await getMealIngredientToShoppingList();
-    print(
-        '❌ Usunięto składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
-    print('🛒 Liczba składników w shopping list: ${allIngredients.length}');
-    print('📋 Składniki:');
+    final allIngredients = await getMealIngredientFromShoppingList();
+    debugLog(
+        '❌ Usunięto składnik: ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
+        name: 'HiveService');
+    debugLog('🛒 Liczba składników w shopping list: ${allIngredients.length}',
+        name: 'HiveService');
+    debugLog('📋 Składniki:', name: 'HiveService');
     for (final item in allIngredients) {
-      print(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      debugLog(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
+          name: 'HiveService');
     }
-  }
-
-  @override
-  Future<List<ShoppingListMealIngredientModel>>
-      getMealIngredientToShoppingList() async {
-    return _box.values.where((model) => !model.isDeleted).toList();
   }
 
   @override
@@ -110,7 +112,7 @@ class HiveShoppingListMealIngredientServiceImpl
   @override
   Future<void> markShoppingListMealIngredientAsSynced(
       String mealId, String ingredientId) async {
-    final key = '${mealId}_${ingredientId}';
+    final key = '${mealId}_$ingredientId';
     final model = _box.get(key);
 
     if (model != null) {
@@ -125,8 +127,9 @@ class HiveShoppingListMealIngredientServiceImpl
         ),
       );
 
-      print(
-          '✅ Zaznaczono jako zsynchronizowany: ${ingredientId} (z posiłku: ${mealId})');
+      debugLog(
+          '✅ Zaznaczono jako zsynchronizowany: $ingredientId (z posiłku: $mealId)',
+          name: 'HiveService');
     }
   }
 
@@ -154,24 +157,29 @@ class HiveShoppingListMealIngredientServiceImpl
 
     await _box.put(key, modelToSave);
 
-    final allIngredients = await getMealIngredientToShoppingList();
+    final allIngredients = await getMealIngredientFromShoppingList();
     final allItemsInBox = _box.values.toList();
 
-    print(
-        '♻️ Przywrócono składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})');
-    print('🔑 Klucz: $key');
-    print('📦 Ilość wpisów w Hive: ${allItemsInBox.length}');
-    print(
-        '🛒 Liczba aktywnych składników w shopping list: ${allIngredients.length}');
-    print('📋 Aktywne składniki:');
+    debugLog(
+        '♻️ Przywrócono składnik: ${ingredient.ingredientName} (z posiłku: ${meal.title})',
+        name: 'HiveService');
+    debugLog('🔑 Klucz: $key', name: 'HiveService');
+    debugLog('📦 Ilość wpisów w Hive: ${allItemsInBox.length}',
+        name: 'HiveService');
+    debugLog(
+        '🛒 Liczba aktywnych składników w shopping list: ${allIngredients.length}',
+        name: 'HiveService');
+    debugLog('📋 Aktywne składniki:', name: 'HiveService');
     for (final item in allIngredients) {
-      print(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      debugLog(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
+          name: 'HiveService');
     }
-    print('🗑️ Usunięte składniki:');
+    debugLog('🗑️ Usunięte składniki:', name: 'HiveService');
     for (final item in allItemsInBox.where((m) => m.isDeleted)) {
-      print(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})');
+      debugLog(
+          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
+          name: 'HiveService');
     }
   }
 
@@ -184,7 +192,8 @@ class HiveShoppingListMealIngredientServiceImpl
 
     for (final key in keysToDelete) {
       await _box.delete(key);
-      print('🧹 Usunięto trwale zsynchronizowany składnik z kluczem: $key');
+      debugLog('🧹 Usunięto trwale zsynchronizowany składnik z kluczem: $key',
+          name: 'HiveService');
     }
   }
 }
