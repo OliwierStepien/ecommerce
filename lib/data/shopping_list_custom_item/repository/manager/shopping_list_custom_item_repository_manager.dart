@@ -5,8 +5,8 @@ import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_cu
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 
 /// Manager repozytoriów dla własnych pozycji listy zakupów.
-/// Zapewnia zapis lokalny (Hive) + opcjonalną synchronizację zdalną (Firestore),
-/// dokładnie w ten sam sposób jak dla składników posiłków.
+/// Łączy lokalne i zdalne źródło danych.
+/// Zawsze najpierw zapisuje lokalnie (Hive), a jeśli jest internet — synchronizuje z Firestore.
 class ShoppingListCustomItemRepositoryManager
     implements ShoppingListCustomItemRepository {
   final ShoppingListCustomItemRepository _localRepository;
@@ -26,26 +26,34 @@ class ShoppingListCustomItemRepositoryManager
   @override
   Future<Either<Failure, void>> addCustomItemToShoppingList(
       ShoppingListCustomItemEntity customItem) async {
-    // 1) lokalny zapis
+    // 1) Najpierw próbujemy zapisać lokalnie (Hive)
     final localResult =
         await _localRepository.addCustomItemToShoppingList(customItem);
 
     return localResult.fold(
-      Left.new,
-      (_) async {
-        // 2) próba zdalnej synchronizacji
+      // Jeśli lokalnie się nie udało — kończymy od razu, zwracając Left z błędem.
+      (failure) => Left(failure),
+      (success) async {
+        // 2) Jeśli lokalnie się udało — sprawdzamy, czy mamy połączenie z internetem
         final isOnline = await _networkInfo.checkInternetConnection();
-        if (!isOnline) return const Right(null);
+        if (!isOnline) {
+          return const Right(
+              null); // Brak internetu → koniec (zsynchronizujemy później)
+        }
 
+        // 3) Próbujemy zsynchronizować z Firestore
         final remoteResult =
             await _remoteRepository.addCustomItemToShoppingList(customItem);
 
         return remoteResult.fold(
-          (_) => const Right(null),
-          (_) async {
+          // Jeśli Firestore się nie udało — kończymy, ale nie traktujemy tego jako błąd aplikacji
+          // (bo Hive już ma dane, zsynchronizujemy później).
+          (failure) => const Right(null),
+          (success) async {
+            // 4) Jeśli się udało — oznaczamy element jako zsynchronizowany lokalnie
             await _localRepository
                 .markShoppingListCustomItemAsSynced(customItem.customItemId);
-            return const Right(null);
+            return const Right(null); // pełen sukces
           },
         );
       },
@@ -55,25 +63,27 @@ class ShoppingListCustomItemRepositoryManager
   @override
   Future<Either<Failure, void>> removeCustomItemFromShoppingList(
       String customItemId) async {
-    // 1) lokalnie
+    // 1) Najpierw lokalne oznaczenie jako usunięte (lub fizyczne usunięcie z Hive)
     final localResult =
         await _localRepository.removeCustomItemFromShoppingList(customItemId);
 
     return localResult.fold(
-      Left.new,
-      (_) async {
-        // 2) online?
+      (failure) => Left(failure), // Jeśli się nie udało — zwróć błąd
+      (success) async {
+        // 2) Synchronizacja zdalna tylko jeśli jest internet
         final isOnline = await _networkInfo.checkInternetConnection();
         if (!isOnline) return const Right(null);
 
+        // 3) Próbujemy usunąć z Firestore
         final remoteResult =
             await _remoteRepository.removeCustomItemFromShoppingList(
           customItemId,
         );
 
         return remoteResult.fold(
-          (_) => const Right(null),
-          (_) async {
+          (failure) => const Right(null), // brak błędu — zsynchronizujemy później
+          (success) async {
+            // 4) Po sukcesie oznaczamy w Hive jako zsynchronizowane (albo usuwamy z Hive na stałe)
             await _localRepository
                 .markShoppingListCustomItemAsSynced(customItemId);
             return const Right(null);
@@ -83,18 +93,18 @@ class ShoppingListCustomItemRepositoryManager
     );
   }
 
-  /// 🔄 NOWA METODA – przywracanie usuniętego elementu
+  /// 🔄 Przywracanie usuniętego elementu listy zakupów (lokalnie + zdalnie)
   @override
   Future<Either<Failure, void>> restoreCustomItemToShoppingList(
       ShoppingListCustomItemEntity customItem) async {
-    // 1) lokalny restore
-    final localResult = await _localRepository
-        .restoreCustomItemToShoppingList(customItem);
+    // 1) Najpierw przywrócenie lokalnie (ustawienie isDeleted=false w Hive)
+    final localResult =
+        await _localRepository.restoreCustomItemToShoppingList(customItem);
 
     return localResult.fold(
-      Left.new,
-      (_) async {
-        // 2) synchronizacja zdalna (jeśli online)
+      (failure) => Left(failure),
+      (success) async {
+        // 2) Jeśli jest internet — synchronizujemy również do Firestore
         final isOnline = await _networkInfo.checkInternetConnection();
         if (!isOnline) return const Right(null);
 
@@ -102,8 +112,10 @@ class ShoppingListCustomItemRepositoryManager
             await _remoteRepository.restoreCustomItemToShoppingList(customItem);
 
         return remoteResult.fold(
-          (_) => const Right(null),
-          (_) async {
+          (failure) =>
+              const Right(null), // jeśli się nie uda — zsynchronizujemy później
+          (success) async {
+            // 3) Po udanym restore — oznaczamy lokalnie jako zsynchronizowane
             await _localRepository
                 .markShoppingListCustomItemAsSynced(customItem.customItemId);
             return const Right(null);
@@ -118,12 +130,12 @@ class ShoppingListCustomItemRepositoryManager
   @override
   Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
       getCustomItemToShoppingList() =>
-          _localRepository.getCustomItemToShoppingList();
+          _localRepository.getCustomItemToShoppingList(); // tylko lokalny cache
 
   @override
   Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
-      getUnsyncedShoppingListCustomItem() =>
-          _localRepository.getUnsyncedShoppingListCustomItem();
+      getUnsyncedShoppingListCustomItem() => _localRepository
+          .getUnsyncedShoppingListCustomItem(); // do sync service
 
   @override
   Future<Either<Failure, List<ShoppingListCustomItemEntity>>>
@@ -133,5 +145,6 @@ class ShoppingListCustomItemRepositoryManager
   @override
   Future<Either<Failure, void>> markShoppingListCustomItemAsSynced(
           String customItemId) =>
-      _localRepository.markShoppingListCustomItemAsSynced(customItemId);
+      _localRepository
+          .markShoppingListCustomItemAsSynced(customItemId); // do sync service
 }

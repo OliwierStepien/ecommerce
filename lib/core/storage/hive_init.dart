@@ -28,7 +28,7 @@ class HiveConfig {
     Hive.registerAdapter(ShoppingListCustomItemModelAdapter());
   }
 
-  // /// 🧹 Czyści tylko wybrane boxy (przed otwarciem)
+  // / 🧹 Czyści tylko wybrane boxy (przed otwarciem)
   // static Future<void> _clearSpecificBoxes() async {
   //   await Future.wait([
   //     Hive.deleteBoxFromDisk('shoppingListMealIngredients'),

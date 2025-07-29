@@ -46,7 +46,6 @@ class ShoppingListCustomItemModel {
       'customItemId': customItemId,
       'customItemName': customItemName,
       'customItemCategory': customItemCategory,
-      'isSynced': isSynced,
       'isDeleted': isDeleted,
     };
   }
