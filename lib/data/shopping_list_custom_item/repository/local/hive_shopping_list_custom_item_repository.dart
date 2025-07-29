@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_hive_failure.dart';
-import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/data/shopping_list_custom_item/mapper/shopping_list_custom_item_mapper.dart';
 import 'package:mealapp/data/shopping_list_custom_item/source/local/hive_shopping_list_custom_item_service.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
@@ -14,7 +13,6 @@ class HiveShoppingListCustomItemRepositoryImpl
   HiveShoppingListCustomItemRepositoryImpl({
     required HiveShoppingListCustomItemService
         hiveShoppingListCustomItemService,
-    required NetworkInfo networkInfo,
   }) : _hiveShoppingListCustomItemService = hiveShoppingListCustomItemService;
 
   @override

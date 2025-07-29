@@ -230,8 +230,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<HiveShoppingListCustomItemRepositoryImpl>(() =>
       HiveShoppingListCustomItemRepositoryImpl(
           hiveShoppingListCustomItemService:
-              sl<HiveShoppingListCustomItemService>(),
-          networkInfo: sl<NetworkInfo>()));
+              sl<HiveShoppingListCustomItemService>(),));
   sl.registerLazySingleton<ShoppingListCustomItemRepository>(() =>
       ShoppingListCustomItemRepositoryManager(
           localRepository: sl<HiveShoppingListCustomItemRepositoryImpl>(),
