@@ -42,12 +42,16 @@ class ShoppingListMealIngredientModel {
   }
 
   Map<String, dynamic> toMap() {
+    final scaledAmount = ingredient.amountPerPortion != null
+        ? ingredient.amountPerPortion! * portionCount
+        : null;
     return {
       'meal': meal.toMap(),
       'ingredient': ingredient.toMap(),
       'portionCount': portionCount,
       'isSynced': isSynced,
       'isDeleted': isDeleted,
+      'scaledAmount': scaledAmount,
     };
   }
 

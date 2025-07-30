@@ -211,8 +211,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<HiveShoppingListMealIngredientRepositoryImpl>(() =>
       HiveShoppingListMealIngredientRepositoryImpl(
           hiveShoppingListMealIngredientService:
-              sl<HiveShoppingListMealIngredientService>(),
-          networkInfo: sl<NetworkInfo>()));
+              sl<HiveShoppingListMealIngredientService>()));
   sl.registerLazySingleton<ShoppingListMealIngredientRepository>(() =>
       ShoppingListMealIngredientRepositoryManager(
           localRepository: sl<HiveShoppingListMealIngredientRepositoryImpl>(),

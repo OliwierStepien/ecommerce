@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_hive_failure.dart';
-import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/mapper/shopping_list_meal_ingredient_mapper.dart';
@@ -19,7 +18,6 @@ class HiveShoppingListMealIngredientRepositoryImpl
   HiveShoppingListMealIngredientRepositoryImpl({
     required HiveShoppingListMealIngredientService
         hiveShoppingListMealIngredientService,
-    required NetworkInfo networkInfo,
   })  : _hiveShoppingListMealIngredientService =
             hiveShoppingListMealIngredientService;
 
