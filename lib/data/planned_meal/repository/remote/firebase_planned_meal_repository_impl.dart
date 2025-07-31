@@ -23,9 +23,10 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId) async {
+  Future<Either<Failure, void>> removePlannedMeal(PlannedMealEntity plannedMeal) async {
     return handleFirestoreFailure(() async {
-      await _firebasePlannedMealService.removePlannedMeal(date, mealId);
+      final model = PlannedMealMapper.toModel(plannedMeal);
+      await _firebasePlannedMealService.removePlannedMeal(model);
     });
   }
 

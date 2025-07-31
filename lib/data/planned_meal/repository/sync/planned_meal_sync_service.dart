@@ -62,7 +62,7 @@ class PlannedMealSyncService implements SyncService {
           // 5. Obsługa usuniętych pozycji
           if (model.isDeleted) {
             // Wyślij żądanie usunięcia do Firebase
-            final result = await firebaseRepo.removePlannedMeal(entity.date, entity.meal.mealId);
+            final result = await firebaseRepo.removePlannedMeal(entity);
             
             // Jeśli błąd - przerwij i zwróć błąd
             if (result.isLeft()) {

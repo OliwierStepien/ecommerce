@@ -25,6 +25,20 @@ class PlannedMealModel {
     this.isDeleted = false,
   });
 
+    PlannedMealModel copyWith({
+    DateTime? date,
+    MealModel? meal,
+    bool? isSynced,
+    bool? isDeleted,
+  }) {
+    return PlannedMealModel(
+      date: date ?? this.date,
+      meal: meal ?? this.meal,
+      isSynced: isSynced ?? this.isSynced,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'date': date,

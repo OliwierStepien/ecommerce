@@ -109,40 +109,40 @@ Future<void> addPlannedMeal(
   );
 }
 
-  Future<void> removePlannedMeal(
-      DateTime date, String mealId, BuildContext context) async {
-    final result = await sl<RemovePlannedMealUseCase>().call(
-      params: RemovePlannedMealParams(date: date, mealId: mealId),
-    );
+Future<void> removePlannedMeal(
+    PlannedMealEntity plannedMeal, BuildContext context) async {
+  final result = await sl<RemovePlannedMealUseCase>().call(params: plannedMeal);
 
-    result.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapFailureToMessage(failure))),
-        );
-      },
-      (_) {
-        final normalizedDate = _normalizeDate(date);
-        if (_groupedMeals.containsKey(normalizedDate)) {
-          _groupedMeals[normalizedDate] = _groupedMeals[normalizedDate]!
-              .where((meal) => meal.meal.mealId != mealId)
-              .toList();
+  result.fold(
+    (failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mapFailureToMessage(failure))),
+      );
+    },
+    (_) {
+      final normalizedDate = _normalizeDate(plannedMeal.date);
+      final mealId = plannedMeal.meal.mealId;
 
-          if (_groupedMeals[normalizedDate]!.isEmpty) {
-            _groupedMeals.remove(normalizedDate);
-          }
+      if (_groupedMeals.containsKey(normalizedDate)) {
+        _groupedMeals[normalizedDate] = _groupedMeals[normalizedDate]!
+            .where((meal) => meal.meal.mealId != mealId)
+            .toList();
+
+        if (_groupedMeals[normalizedDate]!.isEmpty) {
+          _groupedMeals.remove(normalizedDate);
         }
+      }
 
-        emit(PlannedMealsLoaded(
-          plannedMeals: Map.from(_groupedMeals),
-          selectedDay: _selectedDay,
-          focusedDay: _focusedDay,
-        ));
+      emit(PlannedMealsLoaded(
+        plannedMeals: Map.from(_groupedMeals),
+        selectedDay: _selectedDay,
+        focusedDay: _focusedDay,
+      ));
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meal removed from plan')),
-        );
-      },
-    );
-  }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Meal removed from plan')),
+      );
+    },
+  );
+}
 }

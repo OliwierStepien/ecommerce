@@ -109,8 +109,7 @@ class PlannedMealPage extends StatelessWidget {
                                           padding: EdgeInsets.zero,
                                           icon: const Icon(Icons.close, size: 18),
                                           onPressed: () => cubit.removePlannedMeal(
-                                            plannedMeal.date,
-                                            plannedMeal.meal.mealId,
+                                            plannedMeal,
                                             context,
                                           ),
                                         ),

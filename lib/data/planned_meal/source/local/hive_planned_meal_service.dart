@@ -7,7 +7,7 @@ abstract class HivePlannedMealService {
   Future<List<PlannedMealModel>> getUnsyncedChanges();
   Future<void> addPlannedMeal(PlannedMealModel plannedMeal);
   Future<void> markAsSynced(DateTime date, String mealId);
-  Future<void> removePlannedMeal(DateTime date, String mealId, {bool isOnline});
+  Future<void> removePlannedMeal(PlannedMealModel plannedMeal, {bool isOnline});
 }
 
 class HivePlannedMealServiceImpl implements HivePlannedMealService {
@@ -20,7 +20,9 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
 
   @override
   Future<List<PlannedMealModel>> getUnsyncedPlannedMeals() async {
-    return _box.values.where((model) => !model.isSynced && !model.isDeleted).toList();
+    return _box.values
+        .where((model) => !model.isSynced && !model.isDeleted)
+        .toList();
   }
 
   @override
@@ -30,7 +32,8 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
 
   @override
   Future<void> addPlannedMeal(PlannedMealModel plannedMeal) async {
-    await _box.put('${plannedMeal.date}_${plannedMeal.meal.mealId}', plannedMeal);
+    await _box.put(
+        '${plannedMeal.date}_${plannedMeal.meal.mealId}', plannedMeal);
   }
 
   @override
@@ -38,29 +41,30 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
     final key = '${date}_$mealId';
     final model = _box.get(key);
     if (model != null && !model.isDeleted) {
-      await _box.put(key, PlannedMealModel(
-        date: model.date,
-        meal: model.meal,
-        isSynced: true,
-        isDeleted: false,
-      ));
+      await _box.put(
+          key,
+          PlannedMealModel(
+            date: model.date,
+            meal: model.meal,
+            isSynced: true,
+            isDeleted: false,
+          ));
     }
   }
 
   @override
-  Future<void> removePlannedMeal(DateTime date, String mealId, {bool isOnline = false}) async {
-    final key = '${date}_$mealId';
+  Future<void> removePlannedMeal(PlannedMealModel plannedMeal,
+      {bool isOnline = false}) async {
+    final key = '${plannedMeal.date}_${plannedMeal.meal.mealId}';
     if (isOnline) {
       await _box.delete(key);
     } else {
       final model = _box.get(key);
       if (model != null) {
-        await _box.put(key, PlannedMealModel(
-          date: model.date,
-          meal: model.meal,
-          isSynced: false,
-          isDeleted: true,
-        ));
+        await _box.put(
+          key,
+          model.copyWith(isDeleted: true, isSynced: false),
+        );
       }
     }
   }

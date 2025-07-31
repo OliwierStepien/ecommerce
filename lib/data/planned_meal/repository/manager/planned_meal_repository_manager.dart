@@ -38,20 +38,20 @@ Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) asyn
 }
 
   @override
-Future<Either<Failure, void>> removePlannedMeal(DateTime date, String mealId) async {
+Future<Either<Failure, void>> removePlannedMeal(PlannedMealEntity plannedMeal) async {
   // 1. Najpierw operacja lokalna
-  final localResult = await _localRepository.removePlannedMeal(date, mealId);
+  final localResult = await _localRepository.removePlannedMeal(plannedMeal);
   if (localResult.isLeft()) return localResult;
 
   // 2. Synchronizacja jeśli online
   final isOnline = await _networkInfo.checkInternetConnection();
   if (!isOnline) return const Right(null);
 
-  final remoteResult = await _remoteRepository.removePlannedMeal(date, mealId);
+  final remoteResult = await _remoteRepository.removePlannedMeal(plannedMeal);
   return remoteResult.fold(
     (failure) => const Right(null), // Zachowaj lokalne usunięcie
     (_) async {
-      await _localRepository.removePlannedMeal(date, mealId); // Pełne usunięcie
+      await _localRepository.removePlannedMeal(plannedMeal); // Pełne usunięcie
       return const Right(null);
     },
   );

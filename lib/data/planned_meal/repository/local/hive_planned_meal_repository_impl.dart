@@ -28,10 +28,11 @@ class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
 
   @override
   Future<Either<Failure, void>> removePlannedMeal(
-      DateTime date, String mealId) async {
+      PlannedMealEntity plannedMeal) async {
     return handleHiveFailure(() async {
       final isOnline = await _networkInfo.checkInternetConnection();
-      await _hivePlannedMealService.removePlannedMeal(date, mealId,
+      final model = PlannedMealMapper.toModel(plannedMeal);
+      await _hivePlannedMealService.removePlannedMeal(model,
           isOnline: isOnline);
     });
   }

@@ -1,22 +1,16 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/usecase/usecase.dart';
+import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 
-class RemovePlannedMealUseCase implements UseCase<Either<Failure, void>, RemovePlannedMealParams> {
+class RemovePlannedMealUseCase implements UseCase<Either<Failure, void>, PlannedMealEntity> {
   final PlannedMealRepository repository;
 
   RemovePlannedMealUseCase(this.repository);
 
   @override
-  Future<Either<Failure, void>> call({RemovePlannedMealParams? params}) async {
-    return await repository.removePlannedMeal(params!.date, params.mealId);
+  Future<Either<Failure, void>> call({PlannedMealEntity? params}) async {
+    return await repository.removePlannedMeal(params!);
   }
-}
-
-class RemovePlannedMealParams {
-  final DateTime date;
-  final String mealId;
-
-  RemovePlannedMealParams({required this.date, required this.mealId});
 }
