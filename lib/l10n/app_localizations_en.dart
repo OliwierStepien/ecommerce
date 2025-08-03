@@ -30,7 +30,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backToLoginPage => 'Back to login page';
 
   @override
-  String get emailWithPasswordResetInstructionsHasBeenSent => 'Email with password reset instructions has been sent';
+  String get emailWithPasswordResetInstructionsHasBeenSent =>
+      'Email with password reset instructions has been sent';
 
   @override
   String get doNotHaveAccount => 'Don\'t have an account? ';
@@ -72,7 +73,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoriteMeals => 'Favorite meals';
 
   @override
-  String get sorryWeCouldNotFindAnyMatchingResultsForYourSearch => 'Sorry, we couldn\'t find any matching results for your search';
+  String get sorryWeCouldNotFindAnyMatchingResultsForYourSearch =>
+      'Sorry, we couldn\'t find any matching results for your search';
 
   @override
   String get search => 'Search';
