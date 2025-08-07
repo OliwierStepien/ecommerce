@@ -167,10 +167,4 @@ class ShoppingListMealIngredientCubit
   }
 
   bool get shouldShowNotification => !_suppressNotifications;
-
-  @override
-  Future<void> close() {
-    _syncStrategy.dispose();
-    return super.close();
-  }
 }

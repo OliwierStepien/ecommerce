@@ -3,60 +3,59 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/sync/sync_service.dart';
+import 'package:mealapp/core/sync/sync_strategy.dart';
+import 'package:mealapp/service_locator.dart';
 
-/// Klasa odpowiedzialna za monitorowanie stanu połączenia sieciowego
-/// i automatyczne wywoływanie synchronizacji danych w przypadku jego przywrócenia.
 class ConnectionMonitor {
-  final List<SyncService> syncServices; // Lista serwisów do synchronizacji
-  final NetworkInfo _networkInfo; // Dostawca informacji o połączeniu
-  final Connectivity connectivity; // Dostęp do statusu połączenia sieciowego
+  final List<SyncService> syncServices;
+  final NetworkInfo _networkInfo;
+  final Connectivity connectivity;
   StreamSubscription<List<ConnectivityResult>>? _subscription;
   VoidCallback? _onConnectionRestored;
+  bool _isSyncing = false;
 
   ConnectionMonitor({
-    required this.syncServices, 
+    required this.syncServices,
     required NetworkInfo networkInfo,
     Connectivity? connectivity,
   })  : _networkInfo = networkInfo,
-        connectivity = connectivity ?? Connectivity() {
-    startMonitoring();
-  }
+        connectivity = connectivity ?? Connectivity();
 
-  /// Ustawienie callbacka uruchamianego po przywróceniu połączenia
   set onConnectionRestored(VoidCallback callback) {
     _onConnectionRestored = callback;
   }
 
-  /// Rozpoczyna nasłuchiwanie zmian połączenia sieciowego
   void startMonitoring() {
     _subscription = connectivity.onConnectivityChanged.listen((results) async {
       if (results.any((result) => result != ConnectivityResult.none)) {
+        final netCheckStopwatch = Stopwatch()..start();
         final isOnline = await _networkInfo.checkInternetConnection();
+        netCheckStopwatch.stop();
+        debugPrint(
+            '[ConnectionMonitor] network check took ${netCheckStopwatch.elapsedMilliseconds}ms, online=$isOnline');
+
         if (isOnline) {
-          debugPrint('[ConnectionMonitor] Internet connection restored - syncing data');
-
-          // Wywołaj synchronizację dla wszystkich usług
-          for (final service in syncServices) {
-            try {
-              await service.syncData();
-            } catch (e) {
-              debugPrint('[ConnectionMonitor] Error during sync: $e');
-            }
+          if (_isSyncing) {
+            debugPrint('[ConnectionMonitor] sync already in progress, skipping new trigger');
+            return;
           }
+          _isSyncing = true;
+          debugPrint('[ConnectionMonitor] Internet connection restored - triggering strategy');
 
-          // Wywołanie zarejestrowanego callbacka (jeśli istnieje)
+          // Zamiast manualnego wywoływania wszystkich usług – użyj strategii centralnej
+          await sl<SyncStrategy>().onNetworkRestored();
+
           _onConnectionRestored?.call();
+          _isSyncing = false;
         }
       }
     });
   }
 
-  /// Zatrzymuje nasłuchiwanie zmian sieci
   void stopMonitoring() {
     _subscription?.cancel();
   }
 
-  /// Zwalnia zasoby
   void dispose() {
     stopMonitoring();
   }

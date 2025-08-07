@@ -363,20 +363,21 @@ Future<void> initializeDependencies() async {
 
   // SyncStrategy
 
+  // Najpierw zarejestruj controller (już bez strategii w konstruktorze)
+  sl.registerLazySingleton<SyncController>(() => SyncController(
+        // syncStrategy: removed
+        shoppingListSyncService: shoppingListMealIngredientSyncService,
+        customItemsSyncService: shoppingListCustomItemSyncService,
+        hiveService: sl<HiveShoppingListMealIngredientService>(),
+        customItemsHiveService: sl<HiveShoppingListCustomItemService>(),
+      ));
+
+  // Teraz strategia, która odwołuje się do kontrolera
   sl.registerLazySingleton<SyncStrategy>(() => DebounceSyncStrategy(
         syncCallback: () => sl<SyncController>().syncData(),
       ));
 
-  // SyncController
-
-  sl.registerLazySingleton<SyncController>(() => SyncController(
-      syncStrategy: sl<SyncStrategy>(),
-      shoppingListSyncService: sl<ShoppingListMealIngredientSyncService>(),
-      customItemsSyncService: sl<ShoppingListCustomItemSyncService>(),
-      hiveService: sl<HiveShoppingListMealIngredientService>(),
-      customItemsHiveService: sl<HiveShoppingListCustomItemService>()));
-
-// Single ConnectionMonitor for all services
+  // ConnectionMonitor (używa strategii przy przywróceniu sieci)
   final connectionMonitor = ConnectionMonitor(
     networkInfo: sl<NetworkInfo>(),
     syncServices: [
@@ -387,9 +388,7 @@ Future<void> initializeDependencies() async {
     ],
   );
 
-  connectionMonitor.startMonitoring();
-
-// Register services
+  // Register sync services & monitor
   sl.registerSingleton(plannedSyncService);
   sl.registerSingleton(favoriteSyncService);
   sl.registerSingleton(shoppingListMealIngredientSyncService);
