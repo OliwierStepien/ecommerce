@@ -6,6 +6,7 @@ import 'package:mealapp/core/configs/theme/app_theme.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
                   addUseCase: sl<AddCustomItemToShoppingListUseCase>(),
                   removeUseCase: sl<RemoveCustomItemFromShoppingListUseCase>(),
                   restoreUseCase: sl<RestoreCustomItemToShoppingListUseCase>(),
+                  getUseCase: sl<GetShoppingListCustomItemUseCase>(), // DODAJ
                   syncStrategy: sl<SyncStrategy>(),
                 )),
         BlocProvider(

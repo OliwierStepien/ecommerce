@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
 
@@ -9,21 +11,37 @@ class ShoppingListCustomItemCubit extends Cubit<List<Map<String, dynamic>>> {
   final AddCustomItemToShoppingListUseCase _addUseCase;
   final RemoveCustomItemFromShoppingListUseCase _removeUseCase;
   final RestoreCustomItemToShoppingListUseCase _restoreUseCase;
+  final GetShoppingListCustomItemUseCase _getUseCase;
   final SyncStrategy _syncStrategy;
 
   Map<String, dynamic>? _lastRemovedItem;
   bool _suppressNotifications = false;
 
-  ShoppingListCustomItemCubit({
-    required AddCustomItemToShoppingListUseCase addUseCase,
-    required RemoveCustomItemFromShoppingListUseCase removeUseCase,
-    required RestoreCustomItemToShoppingListUseCase restoreUseCase,
-    required SyncStrategy syncStrategy,
-  })  : _addUseCase = addUseCase,
-        _removeUseCase = removeUseCase,
-        _restoreUseCase = restoreUseCase,
-        _syncStrategy = syncStrategy,
-        super([]);
+ShoppingListCustomItemCubit({
+  required AddCustomItemToShoppingListUseCase addUseCase,
+  required RemoveCustomItemFromShoppingListUseCase removeUseCase,
+  required RestoreCustomItemToShoppingListUseCase restoreUseCase,
+  required GetShoppingListCustomItemUseCase getUseCase, // DODAJ
+  required SyncStrategy syncStrategy,
+})  : _addUseCase = addUseCase,
+      _removeUseCase = removeUseCase,
+      _restoreUseCase = restoreUseCase,
+      _getUseCase = getUseCase, // DODAJ
+      _syncStrategy = syncStrategy,
+      super([]) {
+  _loadCustomItems(); // DODAJ - załaduj dane przy inicjalizacji
+}
+
+Future<void> _loadCustomItems() async {
+  final result = await _getUseCase.call();
+  result.fold(
+    (failure) => debugPrint('❌ Failed to load custom items: $failure'),
+    (customItems) {
+      final mappedItems = customItems.map((item) => _createItemMap(item)).toList();
+      emit(mappedItems);
+    },
+  );
+}
 
   Future<void> addCustomIngredient(
     ShoppingListCustomItemEntity ingredient, {
@@ -135,20 +153,19 @@ class ShoppingListCustomItemCubit extends Cubit<List<Map<String, dynamic>>> {
     }
   }
 
-  Map<String, dynamic> _createItemMap(
-      ShoppingListCustomItemEntity ingredient) {
-    return {
-      'ingredientId': ingredient.customItemId,
-      'ingredientName': ingredient.customItemName,
-      'ingredientCategory': ingredient.customItemCategory,
-      'mealId': null,
-      'title': '',
-      'mealEntity': null,
-      'amountPerPortion': null,
-      'unit': '',
-      'isCustom': true,
-    };
-  }
+Map<String, dynamic> _createItemMap(ShoppingListCustomItemEntity ingredient) {
+  return {
+    'ingredientId': ingredient.customItemId,
+    'ingredientName': ingredient.customItemName,
+    'ingredientCategory': ingredient.customItemCategory,
+    'mealId': null,
+    'title': '',
+    'mealEntity': null,
+    'amountPerPortion': null,
+    'unit': '',
+    'isCustom': true,
+  };
+}
 
   bool get shouldShowNotification => !_suppressNotifications;
 
