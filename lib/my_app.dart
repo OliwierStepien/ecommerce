@@ -10,6 +10,7 @@ import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_li
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/l10n/app_localizations.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
                   addUseCase: sl<AddToShoppingListUseCase>(),
                   removeUseCase: sl<RemoveFromShoppingListUseCase>(),
                   restoreUseCase: sl<RestoreToShoppingListUseCase>(),
+                  getUseCase: sl<GetShoppingListUseCase>(),
                   syncStrategy: sl<SyncStrategy>(),
                 )),
         BlocProvider(

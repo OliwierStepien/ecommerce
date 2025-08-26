@@ -8,6 +8,7 @@ import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_m
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/local/hive_shopping_list_meal_ingredient_service.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/entity/shopping_list_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 
 
@@ -49,15 +50,19 @@ class HiveShoppingListMealIngredientRepositoryImpl
  }
 
 
- @override
- Future<Either<Failure, List<MealEntity>>>
-     getMealIngredientToShoppingList() async {
-   return handleHiveFailure(() async {
-     final models = await _hiveShoppingListMealIngredientService
-         .getMealIngredientFromShoppingList();
-     return _groupIngredientsByMeal(models);
-   });
- }
+@override
+Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppingList() async {
+  return handleHiveFailure(() async {
+    final models = await _hiveShoppingListMealIngredientService
+        .getMealIngredientFromShoppingList();
+    
+    return models.map((model) => ShoppingListItemEntity(
+      meal: MealMapper.toEntity(model.meal),
+      ingredient: IngredientMapper.toEntity(model.ingredient),
+      portionCount: model.portionCount,
+    )).toList();
+  });
+}
 
 
  @override

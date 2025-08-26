@@ -1,16 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 
-class ShoppingListMealIngredientCubit
-    extends Cubit<List<Map<String, dynamic>>> {
+class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> {
   final AddToShoppingListUseCase _addUseCase;
   final RemoveFromShoppingListUseCase _removeUseCase;
   final RestoreToShoppingListUseCase _restoreUseCase;
+  final GetShoppingListUseCase _getUseCase;
   final SyncStrategy _syncStrategy;
 
   Map<String, dynamic>? _lastRemovedItem;
@@ -20,12 +22,36 @@ class ShoppingListMealIngredientCubit
     required AddToShoppingListUseCase addUseCase,
     required RemoveFromShoppingListUseCase removeUseCase,
     required RestoreToShoppingListUseCase restoreUseCase,
+    required GetShoppingListUseCase getUseCase,
     required SyncStrategy syncStrategy,
   })  : _addUseCase = addUseCase,
         _removeUseCase = removeUseCase,
         _restoreUseCase = restoreUseCase,
+        _getUseCase = getUseCase,
         _syncStrategy = syncStrategy,
-        super([]);
+        super([]) {
+    _loadShoppingList(); // <-- kluczowe
+  }
+
+Future<void> _loadShoppingList() async {
+  final result = await _getUseCase.call();
+  result.fold(
+    (failure) => debugPrint('❌ Failed to load shopping list: $failure'),
+    (shoppingListItems) {
+      final List<Map<String, dynamic>> mappedItems = [];
+
+      for (final item in shoppingListItems) {
+        mappedItems.add(_createItemMap(
+          item.ingredient, 
+          item.meal, 
+          item.portionCount
+        ));
+      }
+
+      emit(mappedItems);
+    },
+  );
+}
 
   Future<void> addIngredient(
     IngredientEntity ingredient,

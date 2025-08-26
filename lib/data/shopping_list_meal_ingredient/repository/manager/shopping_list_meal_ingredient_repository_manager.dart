@@ -3,6 +3,7 @@ import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/entity/shopping_list_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 
 class ShoppingListMealIngredientRepositoryManager
@@ -77,11 +78,10 @@ class ShoppingListMealIngredientRepositoryManager
     );
   }
 
-  @override
-  Future<Either<Failure, List<MealEntity>>>
-      getMealIngredientToShoppingList() async {
-    return await _localRepository.getMealIngredientToShoppingList();
-  }
+@override
+Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppingList() async {
+  return await _localRepository.getMealIngredientToShoppingList();
+}
 
   @override
   Future<Either<Failure, List<MealEntity>>>

@@ -21,15 +21,15 @@ ShoppingListCustomItemCubit({
   required AddCustomItemToShoppingListUseCase addUseCase,
   required RemoveCustomItemFromShoppingListUseCase removeUseCase,
   required RestoreCustomItemToShoppingListUseCase restoreUseCase,
-  required GetShoppingListCustomItemUseCase getUseCase, // DODAJ
+  required GetShoppingListCustomItemUseCase getUseCase,
   required SyncStrategy syncStrategy,
 })  : _addUseCase = addUseCase,
       _removeUseCase = removeUseCase,
       _restoreUseCase = restoreUseCase,
-      _getUseCase = getUseCase, // DODAJ
+      _getUseCase = getUseCase,
       _syncStrategy = syncStrategy,
       super([]) {
-  _loadCustomItems(); // DODAJ - załaduj dane przy inicjalizacji
+  _loadCustomItems();
 }
 
 Future<void> _loadCustomItems() async {
