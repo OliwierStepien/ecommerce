@@ -22,13 +22,14 @@ class IngredientModel {
   @HiveField(5)
   final String unit;
 
-  IngredientModel(
-      {required this.amountPerPortion,
-      required this.ingredientCategory,
-      required this.ingredientId,
-      required this.ingredientName,
-      required this.mealId,
-      required this.unit});
+  IngredientModel({
+    required this.amountPerPortion,
+    required this.ingredientCategory,
+    required this.ingredientId,
+    required this.ingredientName,
+    required this.mealId,
+    required this.unit,
+  });
 
   IngredientModel copyWith({
     num? amountPerPortion,
@@ -61,12 +62,18 @@ class IngredientModel {
 
   factory IngredientModel.fromMap(Map<String, dynamic> map) {
     return IngredientModel(
-      amountPerPortion: map['amountPerPortion'] as num,
-      ingredientCategory: map['ingredientCategory'] as String,
-      ingredientId: map['ingredientId'] as String,
-      ingredientName: map['ingredientName'] as String,
-      mealId: map['mealId'] as String,
-      unit: map['unit'] as String,
+      amountPerPortion: _parseNum(map['amountPerPortion']),
+      ingredientCategory: map['ingredientCategory']?.toString() ?? '',
+      ingredientId: map['ingredientId']?.toString() ?? '',
+      ingredientName: map['ingredientName']?.toString() ?? '',
+      mealId: map['mealId']?.toString() ?? '',
+      unit: map['unit']?.toString() ?? '',
     );
+  }
+
+  static num? _parseNum(dynamic value) {
+    if (value is num) return value;
+    if (value is String) return num.tryParse(value);
+    return null;
   }
 }

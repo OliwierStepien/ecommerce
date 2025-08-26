@@ -14,8 +14,8 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
       String mealId) {
     return handleFirestoreFailure(() async {
-      final ingredients =
-          await sl<FirebaseMealService>().getIngredientsForMeal(mealId);
+      final ingredients = 
+          await sl<FirebaseMealService>().getIngredientsForMeals([mealId]);
       return ingredients.map(IngredientMapper.toEntity).toList();
     });
   }

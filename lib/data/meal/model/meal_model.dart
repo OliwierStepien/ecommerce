@@ -7,16 +7,22 @@ part 'meal_model.g.dart';
 class MealModel {
   @HiveField(0)
   final String title;
+
   @HiveField(1)
   final String mealId;
+
   @HiveField(2)
   final List<String> categoryId;
+
   @HiveField(3)
   final String image;
+
   @HiveField(4)
   final List<IngredientModel> ingredients;
+
   @HiveField(5)
   final List<String> steps;
+
   @HiveField(6)
   final bool isVegetarian;
 
@@ -56,27 +62,38 @@ class MealModel {
       'mealId': mealId,
       'categoriesId': categoryId,
       'image': image,
+      'ingredients': ingredients.map((e) => e.toMap()).toList(),
       'steps': steps,
       'isVegetarian': isVegetarian,
     };
   }
 
   factory MealModel.fromMap(Map<String, dynamic> map) {
-    List<IngredientModel> ingredients = [];
-    if (map['ingredients'] != null) {
-      ingredients = (map['ingredients'] as List<dynamic>).map((ingredientMap) {
-        return IngredientModel.fromMap(ingredientMap as Map<String, dynamic>);
-      }).toList();
-    }
-
     return MealModel(
-      title: map['title'] as String,
-      mealId: map['mealId'] as String,
-      categoryId: List<String>.from(map['categoriesId'] as List<dynamic>),
-      image: map['image'] as String,
-      ingredients: ingredients,
-      steps: List<String>.from(map['steps'] as List<dynamic>),
-      isVegetarian: map['isVegetarian'] as bool,
+      title: map['title']?.toString() ?? '',
+      mealId: map['mealId']?.toString() ?? '',
+      categoryId: _parseStringList(map['categoriesId']),
+      image: map['image']?.toString() ?? '',
+      ingredients: _parseIngredientList(map['ingredients']),
+      steps: _parseStringList(map['steps']),
+      isVegetarian: map['isVegetarian'] == true,
     );
   }
+
+  static List<String> _parseStringList(dynamic data) {
+    if (data is List) {
+      return data.map((e) => e?.toString() ?? '').toList();
+    }
+    return [];
+  }
+
+static List<IngredientModel> _parseIngredientList(dynamic data) {
+  if (data is List) {
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(IngredientModel.fromMap)
+        .toList();
+  }
+  return [];
+}
 }
