@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';

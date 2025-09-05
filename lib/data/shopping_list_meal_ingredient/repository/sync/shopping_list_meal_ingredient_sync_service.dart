@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/sync/sync_service.dart';
-import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
+import 'package:mealapp/data/ingredient/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';

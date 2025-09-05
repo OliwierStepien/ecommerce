@@ -2,7 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealapp/data/auth/model/user_model.dart';
 import 'package:mealapp/data/category/model/category_model.dart';
 import 'package:mealapp/data/favorite_meal/model/favorite_meal_model.dart';
-import 'package:mealapp/data/meal/model/ingredient_model.dart';
+import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
 import 'package:mealapp/data/shopping_list_custom_item/model/shopping_list_custom_item_model.dart';

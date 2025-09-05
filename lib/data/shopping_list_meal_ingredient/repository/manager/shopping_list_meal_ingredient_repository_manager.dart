@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/entity/shopping_list_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';

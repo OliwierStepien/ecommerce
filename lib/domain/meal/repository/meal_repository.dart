@@ -1,12 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
 abstract class MealRepository {
-  Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
-      String mealId);
-  Future<Either<Failure, List<IngredientEntity>>> getAllIngredients();
   Future<Either<Failure, List<MealEntity>>> getMeals();
   Future<Either<Failure, List<MealEntity>>> getMealsByCategoryId(
       String categoryId);

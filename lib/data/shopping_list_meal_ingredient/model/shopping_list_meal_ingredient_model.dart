@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:mealapp/data/meal/model/ingredient_model.dart';
+import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 
 part 'shopping_list_meal_ingredient_model.g.dart';

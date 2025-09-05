@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
-import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
+import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_category_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';

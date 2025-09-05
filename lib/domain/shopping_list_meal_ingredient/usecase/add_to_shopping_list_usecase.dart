@@ -1,5 +1,5 @@
 import 'package:mealapp/core/usecase/usecase.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 

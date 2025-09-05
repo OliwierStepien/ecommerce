@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
-import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
+import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 

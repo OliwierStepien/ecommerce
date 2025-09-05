@@ -2,11 +2,8 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
-import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/repository/local/hive_meal_repository_impl.dart';
 import 'package:mealapp/data/meal/repository/remote/firebase_meal_repository_impl.dart';
-import 'package:mealapp/data/meal/source/local/hive_meal_service.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
@@ -56,49 +53,6 @@ class MealRepositoryManager extends MealRepository {
       return result;
     } else {
       return await sl<HiveMealRepositoryImpl>().getMealsByCategoryId(categoryId);
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-    
-    if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>().getAllIngredients();
-      
-      // Zapisz posiłki do Hive dla offline (ingredients są częścią meal)
-      final mealsResult = await sl<FirebaseMealRepositoryImpl>().getMeals();
-      mealsResult.fold(
-        (failure) => debugPrint('Failed to save meals for offline: $failure'),
-        (meals) async => await sl<HiveMealRepositoryImpl>().saveMeals(meals),
-      );
-      
-      return result;
-    } else {
-      return await sl<HiveMealRepositoryImpl>().getAllIngredients();
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(String mealId) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
-    
-    if (isOnline) {
-      final result = await sl<FirebaseMealRepositoryImpl>().getIngredientsForMeal(mealId);
-      
-      // Zapisz posiłek do Hive dla offline
-      final mealResult = await sl<FirebaseMealRepositoryImpl>().getMeals();
-      mealResult.fold(
-        (failure) => debugPrint('Failed to save meal for offline: $failure'),
-        (meals) async {
-          final meal = meals.firstWhere((m) => m.mealId == mealId);
-          await sl<HiveMealService>().saveMeals([MealMapper.toModel(meal)]);
-        },
-      );
-      
-      return result;
-    } else {
-      return await sl<HiveMealRepositoryImpl>().getIngredientsForMeal(mealId);
     }
   }
 

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/add_custom_ingredient_bottom_sheet.dart';
-import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
+import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/service_locator.dart';
 
 class ShoppingListPage extends StatelessWidget {

@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
-import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
+import 'package:mealapp/data/ingredient/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/mapper/shopping_list_meal_ingredient_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/remote/firebase_shopping_list_meal_ingredient_service.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/entity/shopping_list_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';

@@ -1,32 +1,13 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
-import 'package:mealapp/data/meal/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/service_locator.dart';
 
 class FirebaseMealRepositoryImpl implements MealRepository {
-  @override
-  Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
-      String mealId) {
-    return handleFirestoreFailure(() async {
-      final ingredients = 
-          await sl<FirebaseMealService>().getIngredientsForMeals([mealId]);
-      return ingredients.map(IngredientMapper.toEntity).toList();
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
-    return handleFirestoreFailure(() async {
-      final ingredients = await sl<FirebaseMealService>().getAllIngredients();
-      return ingredients.map(IngredientMapper.toEntity).toList();
-    });
-  }
 
   @override
   Future<Either<Failure, List<MealEntity>>> getMeals() async {

@@ -1,19 +1,20 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/usecase/usecase.dart';
-import 'package:mealapp/domain/meal/entity/ingredient_entity.dart';
-import 'package:mealapp/domain/meal/repository/meal_repository.dart';
+import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
+import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
 
-class GetAllIngredientsUseCase
+class GetIngredientsForMealUseCase
     implements
         UseCase<Either<Failure, List<IngredientEntity>>, Map<String, dynamic>> {
-  final MealRepository mealRepository;
+  final IngredientRepository repository;
 
-  GetAllIngredientsUseCase(this.mealRepository);
+  GetIngredientsForMealUseCase(this.repository);
 
   @override
   Future<Either<Failure, List<IngredientEntity>>> call(
       {Map<String, dynamic>? params}) async {
-    return await mealRepository.getAllIngredients();
+    return await repository
+        .getIngredientsForMeal(params!['mealId'] as String);
   }
 }

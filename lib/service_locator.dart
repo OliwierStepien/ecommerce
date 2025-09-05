@@ -20,6 +20,9 @@ import 'package:mealapp/data/favorite_meal/repository/remote/firebase_favorite_m
 import 'package:mealapp/data/favorite_meal/repository/sync/favorite_meal_sync_service.dart';
 import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_service.dart';
 import 'package:mealapp/data/favorite_meal/source/remote/firebase_favorite_meal_service.dart';
+import 'package:mealapp/data/ingredient/repository/ingredient_repository_manager.dart';
+import 'package:mealapp/data/ingredient/repository/remote/firebase_ingredient_repository_impl.dart';
+import 'package:mealapp/data/ingredient/source/firebase_ingredient_service.dart';
 import 'package:mealapp/data/meal/repository/local/hive_meal_repository_impl.dart';
 import 'package:mealapp/data/meal/repository/meal_repository_manager.dart';
 import 'package:mealapp/data/meal/repository/remote/firebase_meal_repository_impl.dart';
@@ -55,9 +58,10 @@ import 'package:mealapp/domain/category/usecase/get_categories.dart';
 import 'package:mealapp/domain/favorite_meal/repository/favorite_meal_repository.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/add_favorite_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
+import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
-import 'package:mealapp/domain/meal/usecase/ingredient/get_all_ingredients.dart';
-import 'package:mealapp/domain/meal/usecase/ingredient/get_ingredients_for_meal.dart';
+import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
+import 'package:mealapp/domain/ingredient/usecase/get_ingredients_for_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_category_id.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal.dart';
@@ -106,9 +110,13 @@ Future<void> initializeDependencies() async {
 
   sl.registerSingleton<HiveCategoryService>(HiveCategoryServiceImpl());
 
+  // Ingredient services
+
+  sl.registerSingleton<FirebaseIngredientService>(FirebaseIngredientServiceImpl());
+
   // Meal services
 
-  sl.registerSingleton<FirebaseMealService>(FirebaseMealServiceImpl());
+  sl.registerSingleton<FirebaseMealService>(FirebaseMealServiceImpl(ingredientService: sl<FirebaseIngredientService>()));
 
   sl.registerSingleton<HiveMealService>(HiveMealServiceImpl());
 
@@ -160,6 +168,13 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<CategoryRepository>(
       () => CategoryRepositoryManager());
+
+  // Ingredient repositories
+
+  sl.registerLazySingleton<FirebaseIngredientRepositoryImpl>(
+      () => FirebaseIngredientRepositoryImpl());
+
+  sl.registerLazySingleton<IngredientRepository>(() => IngredientRepositoryManager());
 
   // Meal repositories
 
@@ -267,10 +282,12 @@ Future<void> initializeDependencies() async {
   // Meal usecases
 
   sl.registerLazySingleton<GetAllIngredientsUseCase>(
-      () => GetAllIngredientsUseCase(sl<MealRepository>()));
+      () => GetAllIngredientsUseCase(sl<IngredientRepository>()));
 
   sl.registerLazySingleton<GetIngredientsForMealUseCase>(
-      () => GetIngredientsForMealUseCase(sl<MealRepository>()));
+      () => GetIngredientsForMealUseCase(sl<IngredientRepository>()));
+
+  // Meal usecases
 
   sl.registerLazySingleton<GetMealUseCase>(
       () => GetMealUseCase(sl<MealRepository>()));
