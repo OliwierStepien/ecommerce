@@ -7,16 +7,16 @@ abstract class HiveCategoryService {
 }
 
 class HiveCategoryServiceImpl extends HiveCategoryService {
+  Box<CategoryModel> get _box => Hive.box<CategoryModel>('categories');
+
   @override
   Future<List<CategoryModel>> getCategories() async {
-    final box = Hive.box<CategoryModel>('categories');
-    return box.values.toList();
+    return _box.values.toList();
   }
 
   @override
   Future<void> saveCategories(List<CategoryModel> categories) async {
-    final box = Hive.box<CategoryModel>('categories');
-    await box.clear();
-    await box.addAll(categories);
+    await _box.clear();
+    await _box.addAll(categories);
   }
 }

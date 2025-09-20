@@ -5,19 +5,28 @@ import 'package:mealapp/data/category/mapper/category_mapper.dart';
 import 'package:mealapp/data/category/source/local/hive_category_service.dart';
 import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:mealapp/domain/category/repository/category_repository.dart';
-import 'package:mealapp/service_locator.dart';
 
 class HiveCategoryRepositoryImpl extends CategoryRepository {
+  final HiveCategoryService _hiveCategoryService;
+
+  HiveCategoryRepositoryImpl({required HiveCategoryService hiveCategoryService})
+      : _hiveCategoryService = hiveCategoryService;
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
     return handleHiveFailure(() async {
-      final categories = await sl<HiveCategoryService>().getCategories();
+      final categories = await _hiveCategoryService.getCategories();
       return categories.map(CategoryMapper.toEntity).toList();
     });
   }
 
-  Future<void> saveCategories(List<CategoryEntity> categories) async {
-    await sl<HiveCategoryService>().saveCategories(categories.map(CategoryMapper.toModel).toList());
+  @override
+  Future<Either<Failure, List<CategoryEntity>>> saveCategories(
+      List<CategoryEntity> categories) async {
+    return handleHiveFailure(() async {
+      await _hiveCategoryService
+          .saveCategories(categories.map(CategoryMapper.toModel).toList());
+      return categories;
+    });
   }
 }

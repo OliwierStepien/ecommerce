@@ -11,7 +11,7 @@ import 'package:mealapp/data/auth/source/local/hive_auth_service.dart';
 import 'package:mealapp/data/auth/source/remote/firebase_auth_service.dart';
 import 'package:mealapp/data/category/repository/remote/firebase_category_repository_impl.dart';
 import 'package:mealapp/data/category/repository/local/hive_category_repository_impl.dart';
-import 'package:mealapp/data/category/repository/category_repository_manager.dart';
+import 'package:mealapp/data/category/repository/manager/category_repository_manager.dart';
 import 'package:mealapp/data/category/source/remote/firebase_category_service.dart';
 import 'package:mealapp/data/category/source/local/hive_category_service.dart';
 import 'package:mealapp/data/favorite_meal/repository/local/hive_favorite_meal_repository_impl.dart';
@@ -163,14 +163,18 @@ Future<void> initializeDependencies() async {
 
   // Category repositories
 
-  sl.registerLazySingleton<FirebaseCategoryRepositoryImpl>(
-      () => FirebaseCategoryRepositoryImpl());
+  sl.registerLazySingleton<FirebaseCategoryRepositoryImpl>(() =>
+      FirebaseCategoryRepositoryImpl(
+          firebaseCategoryService: sl<FirebaseCategoryService>()));
 
-  sl.registerLazySingleton<HiveCategoryRepositoryImpl>(
-      () => HiveCategoryRepositoryImpl());
+  sl.registerLazySingleton<HiveCategoryRepositoryImpl>(() =>
+      HiveCategoryRepositoryImpl(
+          hiveCategoryService: sl<HiveCategoryService>()));
 
-  sl.registerLazySingleton<CategoryRepository>(
-      () => CategoryRepositoryManager());
+  sl.registerLazySingleton<CategoryRepository>(() => CategoryRepositoryManager(
+      localRepository: sl<HiveCategoryRepositoryImpl>(),
+      remoteRepository: sl<FirebaseCategoryRepositoryImpl>(),
+      networkInfo: sl<NetworkInfo>()));
 
   // Ingredient repositories
 

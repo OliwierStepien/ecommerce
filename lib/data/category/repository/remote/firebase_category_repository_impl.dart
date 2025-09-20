@@ -6,18 +6,30 @@ import 'package:mealapp/data/category/source/remote/firebase_category_service.da
 import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:mealapp/domain/category/repository/category_repository.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
-import 'package:mealapp/service_locator.dart';
 
 class FirebaseCategoryRepositoryImpl extends CategoryRepository {
+  final FirebaseCategoryService _firebaseCategoryService;
+
+  FirebaseCategoryRepositoryImpl(
+      {required FirebaseCategoryService firebaseCategoryService})
+      : _firebaseCategoryService = firebaseCategoryService;
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
     return handleFirestoreFailure(() async {
-      final categories = await sl<FirebaseCategoryService>().getCategories();
+      final categories = await _firebaseCategoryService.getCategories();
       final mappedData = categories
           .map((e) => CategoryMapper.toEntity(CategoryModel.fromMap(e)))
           .toList();
       return mappedData;
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<CategoryEntity>>> saveCategories(
+      List<CategoryEntity> categories) async {
+    return handleFirestoreFailure(() async {
+      return [];
     });
   }
 }
