@@ -5,7 +5,7 @@ import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
-import 'package:mealapp/data/auth/repository/auth_repository_manager.dart';
+import 'package:mealapp/data/auth/repository/manager/auth_repository_manager.dart';
 import 'package:mealapp/data/auth/repository/remote/firebase_auth_repository_impl.dart';
 import 'package:mealapp/data/auth/source/local/hive_auth_service.dart';
 import 'package:mealapp/data/auth/source/remote/firebase_auth_service.dart';
@@ -153,13 +153,16 @@ Future<void> initializeDependencies() async {
 
   // Auth repositories
 
-  sl.registerLazySingleton<FirebaseAuthRepositoryImpl>(
-      () => FirebaseAuthRepositoryImpl());
+  sl.registerLazySingleton<FirebaseAuthRepositoryImpl>(() =>
+      FirebaseAuthRepositoryImpl(
+          firebaseAuthService: sl<FirebaseAuthService>()));
 
   sl.registerLazySingleton<HiveAuthRepositoryImpl>(
-      () => HiveAuthRepositoryImpl());
+      () => HiveAuthRepositoryImpl(hiveAuthService: sl<HiveAuthService>()));
 
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryManager());
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryManager(
+      remoteRepository: sl<FirebaseAuthRepositoryImpl>(),
+      networkInfo: sl<NetworkInfo>()));
 
   // Category repositories
 

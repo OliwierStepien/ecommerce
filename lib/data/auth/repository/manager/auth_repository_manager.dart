@@ -4,34 +4,42 @@ import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/data/auth/model/user_creation_req.dart';
 import 'package:mealapp/data/auth/model/user_signin_req.dart';
 import 'package:mealapp/data/auth/repository/local/hive_auth_repository_impl.dart';
-import 'package:mealapp/data/auth/repository/remote/firebase_auth_repository_impl.dart';
 import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/service_locator.dart';
 
 class AuthRepositoryManager extends AuthRepository {
+  final AuthRepository _remoteRepository;
+  final NetworkInfo _networkInfo;
+
+  AuthRepositoryManager({
+    required AuthRepository remoteRepository,
+    required NetworkInfo networkInfo,
+  })  : _remoteRepository = remoteRepository,
+        _networkInfo = networkInfo;
+
   @override
   Future<Either<Failure, String>> signup(UserCreationReq user) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+    final isOnline = await _networkInfo.checkInternetConnection();
 
     if (!isOnline) {
       return left(NetworkFailure());
     }
 
-    return await sl<FirebaseAuthRepositoryImpl>().signup(user);
+    return await _remoteRepository.signup(user);
   }
 
   @override
   Future<Either<Failure, String>> signin(UserSigninReq user) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+    final isOnline = await _networkInfo.checkInternetConnection();
 
     if (isOnline) {
-      final result = await sl<FirebaseAuthRepositoryImpl>().signin(user);
+      final result = await _remoteRepository.signin(user);
 
       result.fold(
         (failure) {},
         (_) async {
-          final userResult = await sl<FirebaseAuthRepositoryImpl>().getUser();
+          final userResult = await _remoteRepository.getUser();
           userResult.fold(
             (failure) {},
             (userEntity) async {
@@ -53,22 +61,22 @@ class AuthRepositoryManager extends AuthRepository {
 
   @override
   Future<Either<Failure, String>> sendPasswordResetEmail(String email) async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+    final isOnline = await _networkInfo.checkInternetConnection();
 
     if (!isOnline) {
       return left(NetworkFailure());
     }
 
-    return await sl<FirebaseAuthRepositoryImpl>().sendPasswordResetEmail(email);
+    return await _remoteRepository.sendPasswordResetEmail(email);
   }
 
   @override
   Future<Either<Failure, String>> signout() async {
     await sl<HiveAuthRepositoryImpl>().logout();
 
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+    final isOnline = await _networkInfo.checkInternetConnection();
     if (isOnline) {
-      return await sl<FirebaseAuthRepositoryImpl>().signout();
+      return await _remoteRepository.signout();
     } else {
       return right('Wylogowano lokalnie');
     }
@@ -76,9 +84,9 @@ class AuthRepositoryManager extends AuthRepository {
 
   @override
   Future<bool> isLoggedIn() async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+    final isOnline = await _networkInfo.checkInternetConnection();
     if (isOnline) {
-      return await sl<FirebaseAuthRepositoryImpl>().isLoggedIn();
+      return await _remoteRepository.isLoggedIn();
     } else {
       final result = await sl<HiveAuthRepositoryImpl>().getLoggedInUser();
       return result.isRight();
@@ -87,10 +95,10 @@ class AuthRepositoryManager extends AuthRepository {
 
   @override
   Future<Either<Failure, UserEntity>> getUser() async {
-    final isOnline = await sl<NetworkInfo>().checkInternetConnection();
+    final isOnline = await _networkInfo.checkInternetConnection();
 
     if (isOnline) {
-      final result = await sl<FirebaseAuthRepositoryImpl>().getUser();
+      final result = await _remoteRepository.getUser();
       result.fold(
         (failure) {},
         (user) async {

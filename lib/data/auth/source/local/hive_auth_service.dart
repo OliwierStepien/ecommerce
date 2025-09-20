@@ -8,23 +8,22 @@ abstract class HiveAuthService {
 }
 
 class HiveAuthServiceImpl extends HiveAuthService {
+  Box<UserModel> get _box => Hive.box<UserModel>('users');
+
   static const String userKey = 'currentUser';
 
   @override
   Future<UserModel?> getLoggedInUser() async {
-    final box = Hive.box<UserModel>('users');
-    return box.get(userKey);
+    return _box.get(userKey);
   }
 
   @override
   Future<void> saveLoggedInUser(UserModel user) async {
-    final box = Hive.box<UserModel>('users');
-    await box.put(userKey, user);
+    await _box.put(userKey, user);
   }
 
   @override
   Future<void> clearUser() async {
-    final box = Hive.box<UserModel>('users');
-    await box.delete(userKey);
+    await _box.delete(userKey);
   }
 }
