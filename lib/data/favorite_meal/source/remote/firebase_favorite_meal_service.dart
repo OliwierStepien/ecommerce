@@ -20,46 +20,42 @@ class FirebaseFavoriteMealServiceImpl implements FirebaseFavoriteMealService {
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
+  CollectionReference<Map<String, dynamic>> _userFavoriteMealCollection() {
+    final user = _auth.currentUser;
+    if (user == null) throw UnauthorizedException();
+
+    return _firestore.collection('Users').doc(user.uid).collection('Favorites');
+  }
+
+  String _generateDocId(FavoriteMealModel meal) {
+    return meal.meal.mealId;
+  }
+
   @override
   Future<void> addFavoriteMeal(FavoriteMealModel meal) async {
     return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      if (user == null) throw UnauthorizedException();
-
-      await _firestore
-          .collection("Users")
-          .doc(user.uid)
-          .collection('Favorites')
-          .doc(meal.meal.mealId)
-          .set(meal.toMap());
+      final docId = _generateDocId(meal);
+      await _userFavoriteMealCollection()
+          .doc(docId)
+          .set(meal.toMap())
+          .timeout(const Duration(seconds: 15));
     });
   }
 
   @override
   Future<void> removeFavoriteMeal(String mealId) async {
     return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      if (user == null) throw UnauthorizedException();
-
-      await _firestore
-          .collection("Users")
-          .doc(user.uid)
-          .collection('Favorites')
+      await _userFavoriteMealCollection()
           .doc(mealId)
-          .delete();
+          .delete()
+          .timeout(const Duration(seconds: 15));
     });
   }
 
   @override
   Future<List<FavoriteMealModel>> getFavoritesMeals() async {
     return handleFirestoreException(() async {
-      final user = _auth.currentUser;
-      if (user == null) throw UnauthorizedException();
-
-      final returnedData = await _firestore
-          .collection("Users")
-          .doc(user.uid)
-          .collection('Favorites')
+      final returnedData = await _userFavoriteMealCollection()
           .get()
           .timeout(const Duration(seconds: 15));
 

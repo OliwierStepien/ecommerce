@@ -218,10 +218,10 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<FirebaseFavoriteMealRepositoryImpl>(() =>
       FirebaseFavoriteMealRepositoryImpl(
           firebaseFavoriteMealService: sl<FirebaseFavoriteMealService>()));
-  sl.registerLazySingleton<HiveFavoriteMealRepositoryImpl>(() =>
-      HiveFavoriteMealRepositoryImpl(
-          hiveFavoriteMealService: sl<HiveFavoriteMealService>(),
-          networkInfo: sl<NetworkInfo>()));
+  sl.registerLazySingleton<HiveFavoriteMealRepositoryImpl>(
+      () => HiveFavoriteMealRepositoryImpl(
+            hiveFavoriteMealService: sl<HiveFavoriteMealService>(),
+          ));
   sl.registerLazySingleton<FavoriteMealRepository>(() =>
       FavoriteMealRepositoryManager(
           localRepository: sl<HiveFavoriteMealRepositoryImpl>(),

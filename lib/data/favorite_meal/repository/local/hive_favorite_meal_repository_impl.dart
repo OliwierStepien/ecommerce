@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_hive_failure.dart';
-import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/data/favorite_meal/mapper/favorite_meal_mapper.dart';
 import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_service.dart';
 import 'package:mealapp/domain/favorite_meal/entity/favorite_meal_entity.dart';
@@ -12,7 +11,6 @@ class HiveFavoriteMealRepositoryImpl implements FavoriteMealRepository {
 
   HiveFavoriteMealRepositoryImpl({
     required HiveFavoriteMealService hiveFavoriteMealService,
-    required NetworkInfo networkInfo,
   })  : _hiveFavoriteMealService = hiveFavoriteMealService;
 
   @override
