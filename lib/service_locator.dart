@@ -185,6 +185,13 @@ Future<void> initializeDependencies() async {
       FirebaseIngredientRepositoryImpl(
           firebaseIngredientService: sl<FirebaseIngredientService>()));
 
+  sl.registerLazySingleton<HiveIngredientRepositoryImpl>(
+    () => HiveIngredientRepositoryImpl(
+      hiveMealService:
+          sl<HiveMealService>(),
+    ),
+  );
+
   sl.registerLazySingleton<IngredientRepository>(() =>
       IngredientRepositoryManager(
           localRepository: sl<HiveIngredientRepositoryImpl>(),
