@@ -20,11 +20,12 @@ import 'package:mealapp/data/favorite_meal/repository/remote/firebase_favorite_m
 import 'package:mealapp/data/favorite_meal/repository/sync/favorite_meal_sync_service.dart';
 import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_service.dart';
 import 'package:mealapp/data/favorite_meal/source/remote/firebase_favorite_meal_service.dart';
-import 'package:mealapp/data/ingredient/repository/ingredient_repository_manager.dart';
+import 'package:mealapp/data/ingredient/repository/local/hive_ingredient_repository_impl.dart';
+import 'package:mealapp/data/ingredient/repository/manager/ingredient_repository_manager.dart';
 import 'package:mealapp/data/ingredient/repository/remote/firebase_ingredient_repository_impl.dart';
 import 'package:mealapp/data/ingredient/source/firebase_ingredient_service.dart';
 import 'package:mealapp/data/meal/repository/local/hive_meal_repository_impl.dart';
-import 'package:mealapp/data/meal/repository/meal_repository_manager.dart';
+import 'package:mealapp/data/meal/repository/manager/meal_repository_manager.dart';
 import 'package:mealapp/data/meal/repository/remote/firebase_meal_repository_impl.dart';
 import 'package:mealapp/data/meal/source/local/hive_meal_service.dart';
 import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
@@ -112,11 +113,13 @@ Future<void> initializeDependencies() async {
 
   // Ingredient services
 
-  sl.registerSingleton<FirebaseIngredientService>(FirebaseIngredientServiceImpl());
+  sl.registerSingleton<FirebaseIngredientService>(
+      FirebaseIngredientServiceImpl());
 
   // Meal services
 
-  sl.registerSingleton<FirebaseMealService>(FirebaseMealServiceImpl(ingredientService: sl<FirebaseIngredientService>()));
+  sl.registerSingleton<FirebaseMealService>(FirebaseMealServiceImpl(
+      ingredientService: sl<FirebaseIngredientService>()));
 
   sl.registerSingleton<HiveMealService>(HiveMealServiceImpl());
 
@@ -171,20 +174,29 @@ Future<void> initializeDependencies() async {
 
   // Ingredient repositories
 
-  sl.registerLazySingleton<FirebaseIngredientRepositoryImpl>(
-      () => FirebaseIngredientRepositoryImpl());
+  sl.registerLazySingleton<FirebaseIngredientRepositoryImpl>(() =>
+      FirebaseIngredientRepositoryImpl(
+          firebaseIngredientService: sl<FirebaseIngredientService>()));
 
-  sl.registerLazySingleton<IngredientRepository>(() => IngredientRepositoryManager());
+  sl.registerLazySingleton<IngredientRepository>(() =>
+      IngredientRepositoryManager(
+          localRepository: sl<HiveIngredientRepositoryImpl>(),
+          remoteRepository: sl<FirebaseIngredientRepositoryImpl>(),
+          networkInfo: sl<NetworkInfo>()));
 
   // Meal repositories
 
-  sl.registerLazySingleton<FirebaseMealRepositoryImpl>(
-      () => FirebaseMealRepositoryImpl());
+  sl.registerLazySingleton<FirebaseMealRepositoryImpl>(() =>
+      FirebaseMealRepositoryImpl(
+          firebaseMealService: sl<FirebaseMealService>()));
 
   sl.registerLazySingleton<HiveMealRepositoryImpl>(
-      () => HiveMealRepositoryImpl());
+      () => HiveMealRepositoryImpl(hiveMealService: sl<HiveMealService>()));
 
-  sl.registerLazySingleton<MealRepository>(() => MealRepositoryManager());
+  sl.registerLazySingleton<MealRepository>(() => MealRepositoryManager(
+      localRepository: sl<HiveMealRepositoryImpl>(),
+      remoteRepository: sl<FirebaseMealRepositoryImpl>(),
+      networkInfo: sl<NetworkInfo>()));
 
   // Planned Meal repositories
 
@@ -241,10 +253,11 @@ Future<void> initializeDependencies() async {
             firebaseShoppingListCustomItemService:
                 sl<FirebaseShoppingListCustomItemService>(),
           ));
-  sl.registerLazySingleton<HiveShoppingListCustomItemRepositoryImpl>(() =>
-      HiveShoppingListCustomItemRepositoryImpl(
-          hiveShoppingListCustomItemService:
-              sl<HiveShoppingListCustomItemService>(),));
+  sl.registerLazySingleton<HiveShoppingListCustomItemRepositoryImpl>(
+      () => HiveShoppingListCustomItemRepositoryImpl(
+            hiveShoppingListCustomItemService:
+                sl<HiveShoppingListCustomItemService>(),
+          ));
   sl.registerLazySingleton<ShoppingListCustomItemRepository>(() =>
       ShoppingListCustomItemRepositoryManager(
           localRepository: sl<HiveShoppingListCustomItemRepositoryImpl>(),

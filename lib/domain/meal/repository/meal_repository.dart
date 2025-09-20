@@ -12,4 +12,5 @@ abstract class MealRepository {
       String categoryId);
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(
       String title);
+ Future<Either<Failure, List<MealEntity>>> saveMeals(List<MealEntity> meals);
 }

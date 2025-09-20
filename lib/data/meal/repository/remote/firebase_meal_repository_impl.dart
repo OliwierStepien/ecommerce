@@ -5,14 +5,17 @@ import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/meal/source/remote/firebase_meal_service.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
-import 'package:mealapp/service_locator.dart';
 
 class FirebaseMealRepositoryImpl implements MealRepository {
+  final FirebaseMealService _firebaseMealService;
+
+  FirebaseMealRepositoryImpl({required FirebaseMealService firebaseMealService})
+      : _firebaseMealService = firebaseMealService;
 
   @override
   Future<Either<Failure, List<MealEntity>>> getMeals() async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getMeals();
+      final meals = await _firebaseMealService.getMeals();
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -21,8 +24,7 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<MealEntity>>> getMealsByCategoryId(
       String categoryId) async {
     return handleFirestoreFailure(() async {
-      final meals =
-          await sl<FirebaseMealService>().getMealsByCategoryId(categoryId);
+      final meals = await _firebaseMealService.getMealsByCategoryId(categoryId);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -31,7 +33,7 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<MealEntity>>> getMealsByTitle(
       String title) async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>().getMealsByTitle(title);
+      final meals = await _firebaseMealService.getMealsByTitle(title);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -41,7 +43,7 @@ class FirebaseMealRepositoryImpl implements MealRepository {
       bool isVegetarian) async {
     return handleFirestoreFailure(() async {
       final meals =
-          await sl<FirebaseMealService>().getMealsByIsVegetarian(isVegetarian);
+          await _firebaseMealService.getMealsByIsVegetarian(isVegetarian);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -50,8 +52,8 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByCategoryId(
       String categoryId) async {
     return handleFirestoreFailure(() async {
-      final meals = await sl<FirebaseMealService>()
-          .getVegetarianMealsByCategoryId(categoryId);
+      final meals =
+          await _firebaseMealService.getVegetarianMealsByCategoryId(categoryId);
       return meals.map(MealMapper.toEntity).toList();
     });
   }
@@ -60,9 +62,16 @@ class FirebaseMealRepositoryImpl implements MealRepository {
   Future<Either<Failure, List<MealEntity>>> getVegetarianMealsByTitle(
       String title) async {
     return handleFirestoreFailure(() async {
-      final meals =
-          await sl<FirebaseMealService>().getVegetarianMealsByTitle(title);
+      final meals = await _firebaseMealService.getVegetarianMealsByTitle(title);
       return meals.map(MealMapper.toEntity).toList();
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<MealEntity>>> saveMeals(
+      List<MealEntity> meals) async {
+    return handleFirestoreFailure(() async {
+      return [];
     });
   }
 }

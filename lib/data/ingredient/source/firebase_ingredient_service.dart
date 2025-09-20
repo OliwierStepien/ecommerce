@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
 import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 
@@ -14,7 +13,6 @@ class FirebaseIngredientServiceImpl implements FirebaseIngredientService {
 
   FirebaseIngredientServiceImpl({
     FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
   }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override

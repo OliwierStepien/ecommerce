@@ -5,15 +5,20 @@ import 'package:mealapp/data/ingredient/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/ingredient/source/firebase_ingredient_service.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
-import 'package:mealapp/service_locator.dart';
 
 class FirebaseIngredientRepositoryImpl implements IngredientRepository {
+  final FirebaseIngredientService _firebaseIngredientService;
+
+  FirebaseIngredientRepositoryImpl(
+      {required FirebaseIngredientService firebaseIngredientService})
+      : _firebaseIngredientService = firebaseIngredientService;
+
   @override
   Future<Either<Failure, List<IngredientEntity>>> getIngredientsForMeal(
       String mealId) {
     return handleFirestoreFailure(() async {
-      final ingredients = 
-          await sl<FirebaseIngredientService>().getIngredientsForMeals([mealId]);
+      final ingredients =
+          await _firebaseIngredientService.getIngredientsForMeals([mealId]);
       return ingredients.map(IngredientMapper.toEntity).toList();
     });
   }
@@ -21,7 +26,7 @@ class FirebaseIngredientRepositoryImpl implements IngredientRepository {
   @override
   Future<Either<Failure, List<IngredientEntity>>> getAllIngredients() {
     return handleFirestoreFailure(() async {
-      final ingredients = await sl<FirebaseIngredientService>().getAllIngredients();
+      final ingredients = await _firebaseIngredientService.getAllIngredients();
       return ingredients.map(IngredientMapper.toEntity).toList();
     });
   }

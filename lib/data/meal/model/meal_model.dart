@@ -80,6 +80,9 @@ class MealModel {
     );
   }
 
+  /// Pomocnicza metoda do parsowania listy dynamicznych danych na `List<String>`.
+  /// - Jeśli `data` jest listą → każdy element konwertuje na stringa.
+  /// - Jeśli `data` jest null lub nie jest listą → zwraca pustą listę.
   static List<String> _parseStringList(dynamic data) {
     if (data is List) {
       return data.map((e) => e?.toString() ?? '').toList();
@@ -87,13 +90,20 @@ class MealModel {
     return [];
   }
 
-static List<IngredientModel> _parseIngredientList(dynamic data) {
-  if (data is List) {
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map(IngredientModel.fromMap)
-        .toList();
+  /// Pomocnicza metoda do parsowania listy dynamicznych danych na `List<IngredientModel>`.
+  /// - Oczekuje listy map (`List<Map<String, dynamic>>`).
+  /// - Każdy element mapuje przy pomocy `IngredientModel.fromMap`.
+  /// - Jeśli `data` jest null lub nie jest listą → zwraca pustą listę.
+  static List<IngredientModel> _parseIngredientList(dynamic data) {
+    if (data is List) {
+      return data
+          .whereType<
+              Map<String,
+                  dynamic>>() // bierzemy tylko elementy, które są Map<String, dynamic>
+          .map(IngredientModel
+              .fromMap) // konwertujemy każdą mapę na IngredientModel
+          .toList();
+    }
+    return [];
   }
-  return [];
-}
 }

@@ -7,16 +7,17 @@ abstract class HiveMealService {
 }
 
 class HiveMealServiceImpl implements HiveMealService {
+  Box<MealModel> get _box => Hive.box<MealModel>('meals');
+
+
   @override
   Future<List<MealModel>> getMeals() async {
-    final box = Hive.box<MealModel>('meals');
-    return box.values.toList();
+    return _box.values.toList();
   }
 
   @override
   Future<void> saveMeals(List<MealModel> meals) async {
-    final box = Hive.box<MealModel>('meals');
-    await box.clear();
-    await box.addAll(meals);
+    await _box.clear();
+    await _box.addAll(meals);
   }
 }
