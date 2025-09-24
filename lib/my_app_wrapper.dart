@@ -30,7 +30,7 @@ class MyAppWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => SplashCubit()),
+        BlocProvider(create: (context) => sl<SplashCubit>()),
         BlocProvider(create: (context) => ButtonStateCubit()),
         BlocProvider(create: (context) => FavoriteMealsCubit()),
         BlocProvider(

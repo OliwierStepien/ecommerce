@@ -1,7 +1,20 @@
-abstract class SplashState {}
+import 'package:equatable/equatable.dart';
 
-class DisplaySplash extends SplashState {}
+sealed class SplashState extends Equatable {
+  const SplashState();
 
-class Authenticated extends SplashState {}
+  @override
+  List<Object?> get props => [];
+}
 
-class UnAuthenticated extends SplashState {}
+class DisplaySplash extends SplashState {
+  const DisplaySplash();
+}
+
+class Authenticated extends SplashState {
+  const Authenticated();
+}
+
+class UnAuthenticated extends SplashState {
+  const UnAuthenticated();
+}

@@ -83,6 +83,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
+import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -187,8 +188,7 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<HiveIngredientRepositoryImpl>(
     () => HiveIngredientRepositoryImpl(
-      hiveMealService:
-          sl<HiveMealService>(),
+      hiveMealService: sl<HiveMealService>(),
     ),
   );
 
@@ -373,6 +373,16 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<RestoreCustomItemToShoppingListUseCase>(() =>
       RestoreCustomItemToShoppingListUseCase(
           sl<ShoppingListCustomItemRepository>()));
+
+  // BLOC
+
+  // Splash bloc
+  sl.registerFactory(
+    () => SplashCubit(
+      connectionMonitor: sl<ConnectionMonitor>(),
+      isLoggedInUseCase: sl<IsLoggedInUseCase>(),
+    ),
+  );
 
   // SYNC SERVICES & CONNECTION MONITOR
 
