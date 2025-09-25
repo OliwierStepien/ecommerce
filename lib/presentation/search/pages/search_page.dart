@@ -16,28 +16,20 @@ class SearchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: BlocProvider(
-        create: (context) =>
-            MealsDisplayCubit(useCase: sl<GetMealByTitleUseCase>()),
+    return BlocProvider(
+      create: (context) => MealsDisplayCubit(useCase: sl<GetMealByTitleUseCase>())
+        ..requestFocusOnce(), // ustawiamy focus przy wejściu
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(), // klik poza TextField
         child: Scaffold(
-          appBar: BasicAppbar(height: 80, title: SearchField()),
+          appBar: const BasicAppbar(height: 80, title: SearchField()),
           body: BlocListener<VegetarianFilterCubit, bool>(
             listener: (context, isVegetarian) {
-              final currentText =
-                  context.read<MealsDisplayCubit>().state is MealsLoadingSuccess
-                      ? (context.read<MealsDisplayCubit>().state
-                              as MealsLoadingSuccess)
-                          .meals
-                          .firstOrNull
-                          ?.title
-                      : '';
-              if (currentText!.isNotEmpty) {
-                context.read<MealsDisplayCubit>().displayMeals(
+              final cubit = context.read<MealsDisplayCubit>();
+              final currentText = cubit.controller.text;
+              if (currentText.isNotEmpty) {
+                cubit.displayMeals(
                   params: {
                     'title': currentText,
                     'isVegetarian': isVegetarian,

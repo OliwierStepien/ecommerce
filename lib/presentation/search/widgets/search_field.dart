@@ -7,22 +7,23 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 
 class SearchField extends StatelessWidget {
-  SearchField({super.key});
-
-  final TextEditingController textEditingController = TextEditingController();
+  const SearchField({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<MealsDisplayCubit>();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: TextField(
-        controller: textEditingController,
+        controller: cubit.controller,
+        focusNode: cubit.focusNode,
         onChanged: (value) {
           final isVegetarian = context.read<VegetarianFilterCubit>().state;
           if (value.isEmpty) {
-            context.read<MealsDisplayCubit>().displayInitial();
+            cubit.displayInitial();
           } else {
-            context.read<MealsDisplayCubit>().displayMeals(
+            cubit.displayMeals(
               params: {
                 'title': value,
                 'isVegetarian': isVegetarian,
