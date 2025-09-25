@@ -22,19 +22,16 @@ class FavoriteButton extends StatelessWidget {
           onPressed: () async {
             await mealsCubit.toggleFavorite(mealEntity, context);
           },
-          icon: Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: Theme.of(context).inputDecorationTheme.fillColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_outline,
-              size: 15,
-              color: Colors.white,
-            ),
+          icon: Icon(
+            isFavorite ? Icons.favorite : Icons.favorite_outline,
+            size: 24, // większa, łatwiej klikalna
+            color: isFavorite
+                ? const Color(0xff8E6CEF)
+                : Colors.white.withAlpha((0.8 * 255).round()),
           ),
+          splashRadius: 20, // mniejszy efekt nacisku
+          padding: EdgeInsets.zero, // usuwa dodatkowe paddingi
+          constraints: const BoxConstraints(), // usuwa domyślne ograniczenia
         );
       },
     );

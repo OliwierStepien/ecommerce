@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
+import 'package:mealapp/presentation/meal_details/widgets/favorite_button.dart';
 import 'package:mealapp/routes/routes.dart';
 import '../../helper/images/image_display.dart';
 
@@ -31,22 +32,32 @@ class MealCard extends StatelessWidget {
           children: [
             Expanded(
               flex: 4,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: AssetImage(
-                      ImageDisplayHelper.generateMealImagePath(
-                        mealEntity.image,
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: AssetImage(
+                          ImageDisplayHelper.generateMealImagePath(
+                            mealEntity.image,
+                          ),
+                        ),
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
                       ),
                     ),
                   ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
+                  // 🧡 Dodanie przycisku ulubionych w rogu
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: FavoriteButton(mealEntity: mealEntity),
                   ),
-                ),
+                ],
               ),
             ),
             Container(
