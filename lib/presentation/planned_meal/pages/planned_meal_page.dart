@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_state.dart';
+import 'package:mealapp/presentation/planned_meal/widgets/meal_list_item.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class PlannedMealPage extends StatelessWidget {
@@ -18,15 +18,12 @@ class PlannedMealPage extends StatelessWidget {
     return BlocBuilder<PlannedMealsCubit, PlannedMealsState>(
       builder: (context, state) {
         final cubit = context.read<PlannedMealsCubit>();
-        final plannedMeals = (state is PlannedMealsLoaded) 
-            ? state.plannedMeals 
-            : {};
-        final selectedDay = (state is PlannedMealsLoaded)
-            ? state.selectedDay
-            : DateTime.now();
-        final focusedDay = (state is PlannedMealsLoaded)
-            ? state.focusedDay
-            : DateTime.now();
+        final plannedMeals =
+            (state is PlannedMealsLoaded) ? state.plannedMeals : {};
+        final selectedDay =
+            (state is PlannedMealsLoaded) ? state.selectedDay : DateTime.now();
+        final focusedDay =
+            (state is PlannedMealsLoaded) ? state.focusedDay : DateTime.now();
 
         return Scaffold(
           appBar: AppBar(
@@ -48,7 +45,8 @@ class PlannedMealPage extends StatelessWidget {
                       firstDay: DateTime.utc(2025, 1, 1),
                       lastDay: DateTime.utc(2035, 12, 31),
                       focusedDay: focusedDay,
-                      selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+                      selectedDayPredicate: (day) =>
+                          isSameDay(selectedDay, day),
                       calendarFormat: CalendarFormat.month,
                       startingDayOfWeek: StartingDayOfWeek.monday,
                       onDaySelected: (selected, focused) {
@@ -87,38 +85,25 @@ class PlannedMealPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          SizedBox(
-                            height: 300,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              scrollDirection: Axis.horizontal,
-                              itemCount: plannedMeals[selectedDay]!.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: 10),
-                              itemBuilder: (context, index) {
-                                final plannedMeal = plannedMeals[selectedDay]![index];
-                                return Stack(
-                                  children: [
-                                    MealCard(mealEntity: plannedMeal.meal),
-                                    Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: CircleAvatar(
-                                        radius: 16,
-                                        backgroundColor: Colors.white,
-                                        child: IconButton(
-                                          padding: EdgeInsets.zero,
-                                          icon: const Icon(Icons.close, size: 18),
-                                          onPressed: () => cubit.removePlannedMeal(
-                                            plannedMeal,
-                                            context,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
+                          ListView.separated(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            shrinkWrap:
+                                true, // ważne, żeby działało wewnątrz scrolla
+                            physics:
+                                const NeverScrollableScrollPhysics(), // przewija się cały ekran
+                            itemCount: plannedMeals[selectedDay]!.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final plannedMeal =
+                                  plannedMeals[selectedDay]![index];
+                              return MealListItem(
+                                mealEntity: plannedMeal.meal,
+                                onRemove: () => cubit.removePlannedMeal(
+                                    plannedMeal, context),
+                              );
+                            },
                           ),
                         ],
                       ),
