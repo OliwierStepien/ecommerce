@@ -1,20 +1,21 @@
 import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:equatable/equatable.dart';
 
-abstract class CategoriesDisplayState extends Equatable {
+sealed class CategoriesDisplayState extends Equatable {
+  const CategoriesDisplayState();
+
   @override
   List<Object?> get props => [];
 }
 
 class CategoriesLoading extends CategoriesDisplayState {
-  @override
-  List<Object?> get props => [];
+  const CategoriesLoading();
 }
 
 class CategoriesLoadingSuccess extends CategoriesDisplayState {
   final List<CategoryEntity> categories;
 
-  CategoriesLoadingSuccess({required this.categories});
+  const CategoriesLoadingSuccess({required this.categories});
 
   @override
   List<Object?> get props => [categories];
@@ -23,7 +24,7 @@ class CategoriesLoadingSuccess extends CategoriesDisplayState {
 class CategoriesLoadingFailure extends CategoriesDisplayState {
   final String message;
 
-  CategoriesLoadingFailure({required this.message});
+  const CategoriesLoadingFailure({required this.message});
 
   @override
   List<Object?> get props => [message];

@@ -52,8 +52,7 @@ class MyAppWrapper extends StatelessWidget {
           ),
         ),
         BlocProvider(
-          create: (context) => CategoriesDisplayCubit()..displayCategories(),
-        ),
+            create: (_) => sl<CategoriesDisplayCubit>()..displayCategories()),
         BlocProvider(create: (_) => VegetarianFilterCubit()),
         BlocProvider(
           create: (context) => MealsDisplayCubit(useCase: sl<GetMealUseCase>()),

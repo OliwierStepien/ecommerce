@@ -83,6 +83,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
+import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
@@ -381,6 +382,13 @@ Future<void> initializeDependencies() async {
     () => SplashCubit(
       connectionMonitor: sl<ConnectionMonitor>(),
       isLoggedInUseCase: sl<IsLoggedInUseCase>(),
+    ),
+  );
+
+  // Category Bloc
+  sl.registerFactory(
+    () => CategoriesDisplayCubit(
+      getCategoriesUseCase: sl<GetCategoriesUseCase>(),
     ),
   );
 

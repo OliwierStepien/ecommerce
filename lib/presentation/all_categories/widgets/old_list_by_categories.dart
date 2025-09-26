@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
-import 'package:mealapp/presentation/all_categories/widgets/category_card.dart';
+import 'package:mealapp/presentation/all_categories/widgets/old_category_item.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_state.dart';
 
@@ -16,19 +16,14 @@ class ListByCategories extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (state is CategoriesLoadingSuccess) {
-          return GridView.builder(
+          return ListView.separated(
             physics: const BouncingScrollPhysics(),
-            itemCount: state.categories.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // 2 kategorie w rzędzie
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 0.8, // proporcje karty
-            ),
             itemBuilder: (context, index) {
               final category = state.categories[index];
-              return CategoryCard(category: category);
+              return CategoryItem(category: category);
             },
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
+            itemCount: state.categories.length,
           );
         }
         if (state is CategoriesLoadingFailure) {
