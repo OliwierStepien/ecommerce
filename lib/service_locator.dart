@@ -84,6 +84,7 @@ import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.d
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
+import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
@@ -375,9 +376,9 @@ Future<void> initializeDependencies() async {
       RestoreCustomItemToShoppingListUseCase(
           sl<ShoppingListCustomItemRepository>()));
 
-  // BLOC
+  // CUBIT
 
-  // Splash bloc
+  // Splash cubit
   sl.registerFactory(
     () => SplashCubit(
       connectionMonitor: sl<ConnectionMonitor>(),
@@ -385,10 +386,18 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // Category Bloc
+  // Category cubit
   sl.registerFactory(
     () => CategoriesDisplayCubit(
       getCategoriesUseCase: sl<GetCategoriesUseCase>(),
+    ),
+  );
+
+  // User Info Display Cubit
+
+  sl.registerFactory(
+    () => UserInfoDisplayCubit(
+      getUserUsecase: sl<GetUserUsecase>(),
     ),
   );
 

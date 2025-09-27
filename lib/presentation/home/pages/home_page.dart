@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mealapp/common/bloc/button/button_state.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/extensions/context_extension.dart';
-import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/widgets/header.dart';
 import 'package:mealapp/presentation/home/widgets/main_drawer.dart';
 import 'package:mealapp/presentation/home/widgets/meals_grid_view.dart';
@@ -23,9 +22,7 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       drawer: const MainDrawer(),
-      body: BlocProvider(
-        create: (context) => UserInfoDisplayCubit()..displayUserInfo(),
-        child: BlocListener<VegetarianFilterCubit, bool>(
+      body: BlocListener<VegetarianFilterCubit, bool>(
           listener: (context, isVegetarian) {
             _handleFilterChange(context, isVegetarian);
           },
@@ -49,8 +46,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   void _initializeData(BuildContext context) {
@@ -60,15 +56,16 @@ class HomePage extends StatelessWidget {
 
   void _handleFilterChange(BuildContext context, bool isVegetarian) {
     context.read<MealsDisplayCubit>().displayMeals(params: isVegetarian);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(isVegetarian 
-          ? context.l10n.vegetarianMealsSelected 
-          : context.l10n.allMealsSelected),
+        content: Text(isVegetarian
+            ? context.l10n.vegetarianMealsSelected
+            : context.l10n.allMealsSelected),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 1),
-      ),);
+      ),
+    );
   }
 
   void _handleButtonState(BuildContext context, ButtonState state) {
