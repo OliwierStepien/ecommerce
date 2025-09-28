@@ -11,8 +11,6 @@ class FavoriteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mealsCubit = context.read<FavoriteMealsCubit>();
-
     return BlocBuilder<FavoriteMealsCubit, MealsDisplayState>(
       builder: (context, state) {
         final isFavorite = state is MealsLoadingSuccess &&
@@ -20,18 +18,33 @@ class FavoriteButton extends StatelessWidget {
 
         return IconButton(
           onPressed: () async {
-            await mealsCubit.toggleFavorite(mealEntity, context);
+            final cubit = context.read<FavoriteMealsCubit>();
+            final wasFavorite = isFavorite;
+            
+            await cubit.toggleFavorite(mealEntity);
+            
+            // Pokazuj SnackBar tylko jeśli akcja się powiodła
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(wasFavorite
+                      ? 'Usunięto z ulubionych'
+                      : 'Dodano do ulubionych'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            }
           },
           icon: Icon(
             isFavorite ? Icons.favorite : Icons.favorite_outline,
-            size: 24, // większa, łatwiej klikalna
+            size: 24,
             color: isFavorite
                 ? const Color(0xff8E6CEF)
                 : Colors.white.withAlpha((0.8 * 255).round()),
           ),
-          splashRadius: 20, // mniejszy efekt nacisku
-          padding: EdgeInsets.zero, // usuwa dodatkowe paddingi
-          constraints: const BoxConstraints(), // usuwa domyślne ograniczenia
+          splashRadius: 20,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
         );
       },
     );

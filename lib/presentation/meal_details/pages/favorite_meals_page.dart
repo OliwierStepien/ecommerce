@@ -17,7 +17,18 @@ class FavoriteMealsPage extends StatelessWidget {
         hideBack: true,
         title: Text(context.l10n.favoriteMeals),
       ),
-      body: BlocBuilder<FavoriteMealsCubit, MealsDisplayState>(
+      body: BlocConsumer<FavoriteMealsCubit, MealsDisplayState>(
+        listener: (context, state) {
+          // Globalna obsługa błędów
+          if (state is MealsLoadingFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is MealsLoading) {
             return const Center(child: CircularProgressIndicator());
