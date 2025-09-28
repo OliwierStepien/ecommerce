@@ -13,7 +13,7 @@ class MealsDisplayCubit extends Cubit<MealsDisplayState> {
   /// kontrola focusu tylko raz
   bool _hasRequestedFocus = false;
 
-  MealsDisplayCubit({required this.useCase}) : super(MealsInitialState());
+  MealsDisplayCubit({required this.useCase}) : super(const MealsInitialState());
 
   void requestFocusOnce() {
     if (!_hasRequestedFocus) {
@@ -24,7 +24,7 @@ class MealsDisplayCubit extends Cubit<MealsDisplayState> {
 
   Future<void> displayMeals({dynamic params}) async {
     if (isClosed) return;
-    emit(MealsLoading());
+    emit(const MealsLoading());
     final returnedData = await useCase.call(params: params);
     if (isClosed) return;
 
@@ -34,7 +34,7 @@ class MealsDisplayCubit extends Cubit<MealsDisplayState> {
     );
   }
 
-  void displayInitial() => emit(MealsInitialState());
+  void displayInitial() => emit(const MealsInitialState());
 
   @override
   Future<void> close() {

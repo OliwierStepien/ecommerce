@@ -85,6 +85,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_
 import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
@@ -394,10 +395,18 @@ Future<void> initializeDependencies() async {
   );
 
   // User Info Display Cubit
-
   sl.registerFactory(
     () => UserInfoDisplayCubit(
       getUserUsecase: sl<GetUserUsecase>(),
+    ),
+  );
+
+  // Favorite Meals Cubit
+  sl.registerFactory(
+    () => FavoriteMealsCubit(
+      getFavoritesMealUseCase: sl<GetFavoritesMealUseCase>(),
+      addFavoriteMealUseCase: sl<AddFavoriteMealUseCase>(),
+      removeFavoriteMealUseCase: sl<RemoveFavoriteMealUseCase>(),
     ),
   );
 

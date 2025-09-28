@@ -8,16 +8,23 @@ import 'package:mealapp/domain/favorite_meal/usecase/get_favorites_meal.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/service_locator.dart';
 
 class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
-  FavoriteMealsCubit() : super(MealsInitialState()) {
+  final GetFavoritesMealUseCase getFavoritesMealUseCase;
+  final AddFavoriteMealUseCase addFavoriteMealUseCase;
+  final RemoveFavoriteMealUseCase removeFavoriteMealUseCase;
+
+  FavoriteMealsCubit(
+      {required this.getFavoritesMealUseCase,
+      required this.addFavoriteMealUseCase,
+      required this.removeFavoriteMealUseCase})
+      : super(const MealsInitialState()) {
     displayFavoriteMeals();
   }
 
   Future<void> displayFavoriteMeals() async {
-    emit(MealsLoading());
-    final returnedData = await sl<GetFavoritesMealUseCase>().call();
+    emit(const MealsLoading());
+    final returnedData = await getFavoritesMealUseCase.call();
     returnedData.fold(
       (error) => emit(MealsLoadingFailure(message: mapFailureToMessage(error))),
       (data) => emit(MealsLoadingSuccess(
@@ -34,10 +41,10 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
 
       if (isFavorite) {
         updatedMeals.removeWhere((m) => m.mealId == meal.mealId);
-        await sl<RemoveFavoriteMealUseCase>().call(params: meal.mealId);
+        await removeFavoriteMealUseCase.call(params: meal.mealId);
       } else {
         updatedMeals.add(meal);
-        await sl<AddFavoriteMealUseCase>().call(
+        await addFavoriteMealUseCase.call(
           params: FavoriteMealEntity(meal: meal),
         );
       }
