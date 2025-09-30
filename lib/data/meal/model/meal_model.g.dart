@@ -24,13 +24,14 @@ class MealModelAdapter extends TypeAdapter<MealModel> {
       ingredients: (fields[4] as List).cast<IngredientModel>(),
       steps: (fields[5] as List).cast<String>(),
       isVegetarian: fields[6] as bool,
+      portion: fields[7] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, MealModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class MealModelAdapter extends TypeAdapter<MealModel> {
       ..writeByte(5)
       ..write(obj.steps)
       ..writeByte(6)
-      ..write(obj.isVegetarian);
+      ..write(obj.isVegetarian)
+      ..writeByte(7)
+      ..write(obj.portion);
   }
 
   @override

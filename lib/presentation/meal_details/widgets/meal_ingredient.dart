@@ -8,95 +8,91 @@ import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingre
 
 class MealIngredient extends StatelessWidget {
   final MealEntity mealEntity;
+  final int currentPortion;
+
   const MealIngredient({
     super.key,
     required this.mealEntity,
+    required this.currentPortion,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PortionCubit, int>(
-      builder: (context, portionCount) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  context.l10n.ingredients,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
                   children: [
                     Text(
-                      context.l10n.ingredients,
+                      context.l10n.addToShoppingList,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          fontSize: 18, fontWeight: FontWeight.w500),
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          context.l10n.addToShoppingList,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(Icons.shopping_cart, color: Colors.green.shade700),
-                      ],
-                    ),
+                    const SizedBox(width: 6),
+                    Icon(Icons.shopping_cart, color: Colors.green.shade700),
                   ],
                 ),
-              ),
-              Column(
-                children: mealEntity.ingredients
-                    .map(
-                      (ingredient) => Column(
-                        children: [
-                          _buildIngredientItem(
-                            context,
-                            ingredient,
-                            mealEntity,
-                            portionCount,
-                          ),
-                          const Divider(height: 10, thickness: 0.5),
-                        ],
-                      ),
-                    )
-                    .toList(),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+          Column(
+            children: mealEntity.ingredients.map(
+              (ingredient) {
+                // Wyświetlamy początkowo "bazową" ilość z bazy
+                final baseAmount = ingredient.amountPerPortion!.toDouble();
+
+                return Column(
+                  children: [
+                    _buildIngredientItem(context, ingredient, baseAmount),
+                    const Divider(height: 10, thickness: 0.5),
+                  ],
+                );
+              },
+            ).toList(),
+          )
+        ],
+      ),
     );
   }
 
   Widget _buildIngredientItem(
-    BuildContext context,
-    IngredientEntity ingredient,
-    MealEntity mealEntity,
-    int portionCount,
-  ) {
-    final scaledAmount = ingredient.amountPerPortion! * portionCount;
-
+      BuildContext context, IngredientEntity ingredient, double baseAmount) {
     return BlocListener<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
+      // ✅ DODANO: BlocListener dla SnackBar
       listenWhen: (previous, current) {
+        final portionCubit = context.read<PortionCubit>();
         final wasAdded = previous.any((item) =>
             item['ingredientId'] == ingredient.ingredientId &&
-            item['mealId'] == mealEntity.mealId);
+            item['mealId'] == portionCubit.meal.mealId);
         final isNowAdded = current.any((item) =>
             item['ingredientId'] == ingredient.ingredientId &&
-            item['mealId'] == mealEntity.mealId);
+            item['mealId'] == portionCubit.meal.mealId);
         return wasAdded != isNowAdded;
       },
       listener: (context, state) {
+        final portionCubit = context.read<PortionCubit>();
         final cubit = context.read<ShoppingListMealIngredientCubit>();
+        
+        // Sprawdzamy czy powinniśmy pokazać notyfikację
         if (!cubit.shouldShowNotification) return;
 
         final isNowAdded = state.any((item) =>
             item['ingredientId'] == ingredient.ingredientId &&
-            item['mealId'] == mealEntity.mealId);
+            item['mealId'] == portionCubit.meal.mealId);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -111,11 +107,16 @@ class MealIngredient extends StatelessWidget {
           ),
         );
       },
-      child: BlocBuilder<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
+      child: BlocBuilder<ShoppingListMealIngredientCubit,
+          List<Map<String, dynamic>>>(
         builder: (context, state) {
+          final portionCubit = context.read<PortionCubit>();
+          final currentAmount =
+              baseAmount * portionCubit.state; // skalowanie dynamiczne
+
           final isAdded = state.any((item) =>
               item['ingredientId'] == ingredient.ingredientId &&
-              item['mealId'] == mealEntity.mealId);
+              item['mealId'] == portionCubit.meal.mealId);
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -124,22 +125,20 @@ class MealIngredient extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '• ${ingredient.ingredientName} ${scaledAmount.toStringAsFixed(0)} ${ingredient.unit}',
+                    '• ${ingredient.ingredientName} ${currentAmount.toStringAsFixed(0)} ${ingredient.unit}',
                   ),
                 ),
                 IconButton(
                   onPressed: () {
+                    final cubit = context.read<ShoppingListMealIngredientCubit>();
                     if (isAdded) {
-                      context.read<ShoppingListMealIngredientCubit>().removeIngredient(
-                            ingredient,
-                            mealEntity,
-                          );
+                      cubit.removeIngredient(ingredient, portionCubit.meal);
                     } else {
-                      context.read<ShoppingListMealIngredientCubit>().addIngredient(
-                            ingredient,
-                            mealEntity,
-                            portionCount: portionCount,
-                          );
+                      cubit.addIngredient(
+                        ingredient,
+                        portionCubit.meal,
+                        portionCount: portionCubit.state,
+                      );
                     }
                   },
                   icon: Icon(

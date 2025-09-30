@@ -9,6 +9,7 @@ class MealEntity extends Equatable {
   final List<IngredientEntity> ingredients;
   final List<String> steps;
   final bool isVegetarian;
+  final int portion;
 
   const MealEntity({
     required this.title,
@@ -18,6 +19,7 @@ class MealEntity extends Equatable {
     required this.ingredients,
     required this.steps,
     required this.isVegetarian,
+    required this.portion,
   });
 
   MealEntity copyWith({
@@ -28,6 +30,7 @@ class MealEntity extends Equatable {
     List<IngredientEntity>? ingredients,
     List<String>? steps,
     bool? isVegetarian,
+    int? portion,
   }) {
     return MealEntity(
       title: title ?? this.title,
@@ -37,10 +40,11 @@ class MealEntity extends Equatable {
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
       isVegetarian: isVegetarian ?? this.isVegetarian,
+      portion: portion ?? this.portion,
     );
   }
 
   @override
   List<Object?> get props =>
-      [title, mealId, categoryId, image, ingredients, steps, isVegetarian];
+      [title, mealId, categoryId, image, ingredients, steps, isVegetarian, portion];
 }

@@ -15,6 +15,7 @@ class MealMapper {
           .toList(),
       steps: model.steps,
       isVegetarian: model.isVegetarian,
+      portion: model.portion,
     );
   }
 
@@ -29,6 +30,7 @@ class MealMapper {
           .toList(),
       steps: entity.steps,
       isVegetarian: entity.isVegetarian,
+      portion: entity.portion,
     );
   }
 }

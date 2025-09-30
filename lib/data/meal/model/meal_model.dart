@@ -26,6 +26,9 @@ class MealModel {
   @HiveField(6)
   final bool isVegetarian;
 
+  @HiveField(7)
+  final int portion;
+
   MealModel({
     required this.title,
     required this.mealId,
@@ -34,6 +37,7 @@ class MealModel {
     required this.ingredients,
     required this.steps,
     required this.isVegetarian,
+    required this.portion,
   });
 
   MealModel copyWith({
@@ -44,6 +48,7 @@ class MealModel {
     List<IngredientModel>? ingredients,
     List<String>? steps,
     bool? isVegetarian,
+    int? portion,
   }) {
     return MealModel(
       title: title ?? this.title,
@@ -53,6 +58,7 @@ class MealModel {
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
       isVegetarian: isVegetarian ?? this.isVegetarian,
+      portion: portion ?? this.portion,
     );
   }
 
@@ -65,6 +71,7 @@ class MealModel {
       'ingredients': ingredients.map((e) => e.toMap()).toList(),
       'steps': steps,
       'isVegetarian': isVegetarian,
+      'portion': portion,
     };
   }
 
@@ -77,6 +84,7 @@ class MealModel {
       ingredients: _parseIngredientList(map['ingredients']),
       steps: _parseStringList(map['steps']),
       isVegetarian: map['isVegetarian'] == true,
+      portion: map['portion']?.toInt() ?? 1,
     );
   }
 
