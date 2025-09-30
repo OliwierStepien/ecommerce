@@ -55,6 +55,33 @@ class PlannedMealPage extends StatelessWidget {
                       onPageChanged: (focused) {
                         cubit.changeDay(selectedDay, focused);
                       },
+
+                      // 🔹 Ładowanie eventów dla danego dnia
+                      eventLoader: (day) {
+                        final normalized =
+                            DateTime(day.year, day.month, day.day);
+                        return plannedMeals[normalized] ?? [];
+                      },
+
+                      // 🔹 Custom marker (jedna kropka jeśli są eventy)
+                      calendarBuilders: CalendarBuilders(
+                        markerBuilder: (context, date, events) {
+                          if (events.isNotEmpty) {
+                            return Positioned(
+                              top: 1,
+                              child: Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Colors.deepPurple, // kolor kropki
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            );
+                          }
+                          return null;
+                        },
+                      ),
                     ),
                     if (mealToAdd != null)
                       Center(
