@@ -52,7 +52,6 @@ class MealIngredient extends StatelessWidget {
           Column(
             children: mealEntity.ingredients.map(
               (ingredient) {
-                // Wyświetlamy początkowo "bazową" ilość z bazy
                 final baseAmount = ingredient.amountPerPortion!.toDouble();
 
                 return Column(
@@ -72,7 +71,6 @@ class MealIngredient extends StatelessWidget {
   Widget _buildIngredientItem(
       BuildContext context, IngredientEntity ingredient, double baseAmount) {
     return BlocListener<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
-      // ✅ DODANO: BlocListener dla SnackBar
       listenWhen: (previous, current) {
         final portionCubit = context.read<PortionCubit>();
         final wasAdded = previous.any((item) =>
@@ -87,7 +85,6 @@ class MealIngredient extends StatelessWidget {
         final portionCubit = context.read<PortionCubit>();
         final cubit = context.read<ShoppingListMealIngredientCubit>();
         
-        // Sprawdzamy czy powinniśmy pokazać notyfikację
         if (!cubit.shouldShowNotification) return;
 
         final isNowAdded = state.any((item) =>
@@ -111,12 +108,32 @@ class MealIngredient extends StatelessWidget {
           List<Map<String, dynamic>>>(
         builder: (context, state) {
           final portionCubit = context.read<PortionCubit>();
-          final currentAmount =
-              baseAmount * portionCubit.state; // skalowanie dynamiczne
+          final currentAmount = baseAmount * portionCubit.state;
 
           final isAdded = state.any((item) =>
               item['ingredientId'] == ingredient.ingredientId &&
               item['mealId'] == portionCubit.meal.mealId);
+
+          // ✅ AUTOMATYCZNA AKTUALIZACJA gdy zmienia się liczba porcji
+          if (isAdded) {
+            final existingItem = state.firstWhere((item) =>
+                item['ingredientId'] == ingredient.ingredientId &&
+                item['mealId'] == portionCubit.meal.mealId);
+            
+            final savedPortionCount = existingItem['portionCount'] as int? ?? 1;
+            
+            // Jeśli liczba porcji się zmieniła, zaktualizuj składnik
+            if (savedPortionCount != portionCubit.state) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                context.read<ShoppingListMealIngredientCubit>().updateIngredientPortion(
+                  ingredient,
+                  portionCubit.meal,
+                  newPortionCount: portionCubit.state,
+                  suppressNotification: true,
+                );
+              });
+            }
+          }
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),

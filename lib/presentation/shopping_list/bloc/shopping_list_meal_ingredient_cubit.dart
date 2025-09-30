@@ -30,28 +30,28 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
         _getUseCase = getUseCase,
         _syncStrategy = syncStrategy,
         super([]) {
-    _loadShoppingList(); // <-- kluczowe
+    _loadShoppingList();
   }
 
-Future<void> _loadShoppingList() async {
-  final result = await _getUseCase.call();
-  result.fold(
-    (failure) => debugPrint('❌ Failed to load shopping list: $failure'),
-    (shoppingListItems) {
-      final List<Map<String, dynamic>> mappedItems = [];
+  Future<void> _loadShoppingList() async {
+    final result = await _getUseCase.call();
+    result.fold(
+      (failure) => debugPrint('❌ Failed to load shopping list: $failure'),
+      (shoppingListItems) {
+        final List<Map<String, dynamic>> mappedItems = [];
 
-      for (final item in shoppingListItems) {
-        mappedItems.add(_createItemMap(
-          item.ingredient, 
-          item.meal, 
-          item.portionCount
-        ));
-      }
+        for (final item in shoppingListItems) {
+          mappedItems.add(_createItemMap(
+            item.ingredient, 
+            item.meal, 
+            item.portionCount
+          ));
+        }
 
-      emit(mappedItems);
-    },
-  );
-}
+        emit(mappedItems);
+      },
+    );
+  }
 
   Future<void> addIngredient(
     IngredientEntity ingredient,
@@ -124,6 +124,57 @@ Future<void> _loadShoppingList() async {
     }
   }
 
+  // ✅ DODANA METODA: Aktualizacja liczby porcji
+  Future<void> updateIngredientPortion(
+    IngredientEntity ingredient,
+    MealEntity meal, {
+    required int newPortionCount,
+    bool suppressNotification = false,
+  }) async {
+    final previousState = List<Map<String, dynamic>>.from(state);
+
+    try {
+      _suppressNotifications = suppressNotification;
+
+      final existingIngredientIndex = state.indexWhere(
+        (item) =>
+            item['ingredientId'] == ingredient.ingredientId &&
+            item['mealId'] == meal.mealId,
+      );
+
+      if (existingIngredientIndex != -1) {
+        // Usuń stary wpis
+        await _removeUseCase.call(params: {
+          'meal': meal,
+          'ingredient': ingredient,
+        });
+
+        // Dodaj z nową liczbą porcji
+        await _addUseCase.call(params: {
+          'meal': meal,
+          'ingredient': ingredient,
+          'portionCount': newPortionCount,
+        });
+
+        // Zaktualizuj stan lokalny
+        final updatedList = List<Map<String, dynamic>>.from(state);
+        updatedList[existingIngredientIndex] = _createItemMap(
+          ingredient, 
+          meal, 
+          newPortionCount
+        );
+
+        emit(updatedList);
+        await _syncStrategy.onDataChanged();
+      }
+    } catch (e) {
+      emit(previousState);
+      rethrow;
+    } finally {
+      _suppressNotifications = false;
+    }
+  }
+
   Future<void> restoreLastRemovedIngredient() async {
     if (_lastRemovedItem != null && !_lastRemovedItem!['item']['isCustom']) {
       final item = _lastRemovedItem!['item'];
@@ -180,7 +231,7 @@ Future<void> _loadShoppingList() async {
       'mealId': meal.mealId,
       'title': meal.title,
       'mealEntity': meal,
-      'portionCount': portionCount,
+      'portionCount': portionCount, // ✅ ZAPISUJEMY portionCount
       'isCustom': false,
     };
   }
