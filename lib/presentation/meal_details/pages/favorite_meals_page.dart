@@ -24,7 +24,7 @@ class FavoriteMealsPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                duration: const Duration(seconds: 3),
+                duration: const Duration(seconds: 1),
               ),
             );
           }

@@ -44,9 +44,11 @@ class FirebaseShoppingListMealIngredientServiceImpl
       ShoppingListMealIngredientModel item) async {
     return handleFirestoreException(() async {
       final docId = _generateDocId(item);
+
+      // 🔹 zapisujemy tylko uproszczony model do Firestore
       await _userShoppingMealItemsCollection()
           .doc(docId)
-          .set(item.toMap())
+          .set(item.toFirestoreMap())
           .timeout(const Duration(seconds: 15));
     });
   }
@@ -56,6 +58,8 @@ class FirebaseShoppingListMealIngredientServiceImpl
       ShoppingListMealIngredientModel item) async {
     return handleFirestoreException(() async {
       final docId = _generateDocId(item);
+
+      // 🔹 usuwamy dokument zamiast oznaczać flagą
       await _userShoppingMealItemsCollection()
           .doc(docId)
           .delete()
@@ -73,6 +77,7 @@ class FirebaseShoppingListMealIngredientServiceImpl
           .timeout(const Duration(seconds: 15));
 
       return result.docs.map((doc) {
+        // 🔹 Teraz dane mają format uproszczony (Firestore)
         return ShoppingListMealIngredientModel.fromMap(doc.data());
       }).toList();
     });
@@ -81,6 +86,7 @@ class FirebaseShoppingListMealIngredientServiceImpl
   @override
   Future<void> restoreMealIngredientToShoppingList(
       ShoppingListMealIngredientModel item) async {
+    // 🔹 przywracamy tak samo jak dodawanie
     return addMealIngredientToShoppingList(item);
   }
 }
