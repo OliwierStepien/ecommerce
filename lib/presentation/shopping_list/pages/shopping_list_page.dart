@@ -5,6 +5,7 @@ import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_state.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/add_custom_ingredient_bottom_sheet.dart';
@@ -42,55 +43,88 @@ class ShoppingListPage extends StatelessWidget {
             Expanded(
               child: BlocBuilder<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
                 builder: (context, mealState) {
-                  return BlocBuilder<ShoppingListCustomItemCubit, List<Map<String, dynamic>>>(
+                  return BlocBuilder<ShoppingListCustomItemCubit, ShoppingListCustomItemState>(
                     builder: (context, customState) {
-                      final combinedItems = [...mealState, ...customState];
-                      final groupedItems = _groupItemsByCategory(combinedItems);
+                      if (customState is ShoppingListCustomItemLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                      return ListView.builder(
-                        itemCount: groupedItems.length,
-                        itemBuilder: (context, index) {
-                          final category = groupedItems.keys.elementAt(index);
-                          final items = groupedItems[category]!;
+                      if (customState is ShoppingListCustomItemError) {
+                        return Center(
+                          child: Text(
+                            customState.message,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        );
+                      }
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text(
-                                  category,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor,
+                      if (customState is ShoppingListCustomItemLoaded) {
+                        // 🔹 Połącz dane z posiłków i niestandardowe składniki
+                        final customItems = customState.items
+                            .map((item) => {
+                                  'ingredientId': item.customItemId,
+                                  'ingredientName': item.customItemName,
+                                  'ingredientCategory': item.customItemCategory,
+                                  'mealId': null,
+                                  'title': '',
+                                  'mealEntity': null,
+                                  'amountPerPortion': null,
+                                  'unit': '',
+                                  'isCustom': true,
+                                })
+                            .toList();
+
+                        final combinedItems = [...mealState, ...customItems];
+                        final groupedItems = _groupItemsByCategory(combinedItems);
+
+                        return ListView.builder(
+                          itemCount: groupedItems.length,
+                          itemBuilder: (context, index) {
+                            final category = groupedItems.keys.elementAt(index);
+                            final items = groupedItems[category]!;
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              ...items.map((item) {
-                                final mealEntity = item['mealEntity'] as MealEntity?;
-                                final scaledAmount = item['scaledAmount'] as num?;
+                                ...items.map((item) {
+                                  final mealEntity = item['mealEntity'] as MealEntity?;
+                                  final scaledAmount = item['scaledAmount'] as num?;
 
-                                final ingredient = IngredientEntity(
-                                  ingredientId: item['ingredientId'] ?? '',
-                                  ingredientName: item['ingredientName'] ?? '',
-                                  amountPerPortion: item['amountPerPortion'] as num?,
-                                  unit: item['unit'] ?? '',
-                                  ingredientCategory: item['ingredientCategory'] ?? 'Inne',
-                                  mealId: mealEntity?.mealId ?? '',
-                                );
+                                  final ingredient = IngredientEntity(
+                                    ingredientId: item['ingredientId'] ?? '',
+                                    ingredientName: item['ingredientName'] ?? '',
+                                    amountPerPortion: item['amountPerPortion'] as num?,
+                                    unit: item['unit'] ?? '',
+                                    ingredientCategory: item['ingredientCategory'] ?? 'Inne',
+                                    mealId: mealEntity?.mealId ?? '',
+                                  );
 
-                                return ShoppingListItem(
-                                  ingredient: ingredient,
-                                  meal: mealEntity,
-                                  scaledAmount: scaledAmount,
-                                );
-                              }).toList(),
-                              const SizedBox(height: 16),
-                            ],
-                          );
-                        },
-                      );
+                                  return ShoppingListItem(
+                                    ingredient: ingredient,
+                                    meal: mealEntity,
+                                    scaledAmount: scaledAmount,
+                                  );
+                                }).toList(),
+                                const SizedBox(height: 16),
+                              ],
+                            );
+                          },
+                        );
+                      }
+
+                      // 🟢 Stan początkowy
+                      return const Center(child: CircularProgressIndicator());
                     },
                   );
                 },
