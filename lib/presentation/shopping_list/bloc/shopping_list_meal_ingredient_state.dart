@@ -1,32 +1,47 @@
 import 'package:equatable/equatable.dart';
-import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
-abstract class ShoppingListMealIngredientState extends Equatable {
+/// 💾 Stan dla ShoppingListMealIngredientCubit
+sealed class ShoppingListMealIngredientState extends Equatable {
   const ShoppingListMealIngredientState();
 
   @override
   List<Object?> get props => [];
 }
 
-class ShoppingListInitial extends ShoppingListMealIngredientState {}
-
-class ShoppingListLoading extends ShoppingListMealIngredientState {}
-
-class ShoppingListLoaded extends ShoppingListMealIngredientState {
-  final List<MealEntity> meals;
-
-  const ShoppingListLoaded(this.meals);
-
-  @override
-  List<Object?> get props => [meals];
+/// 🟡 Stan początkowy – dane jeszcze niezaładowane
+class ShoppingListMealIngredientInitial extends ShoppingListMealIngredientState {
+  const ShoppingListMealIngredientInitial();
 }
 
-class ShoppingListError extends ShoppingListMealIngredientState {
+/// 🔄 Trwa ładowanie listy składników z posiłków
+class ShoppingListMealIngredientLoading extends ShoppingListMealIngredientState {
+  const ShoppingListMealIngredientLoading();
+}
+
+/// ✅ Załadowano listę składników z posiłków
+class ShoppingListMealIngredientLoaded extends ShoppingListMealIngredientState {
+  final List<Map<String, dynamic>> items;
+
+  const ShoppingListMealIngredientLoaded({required this.items});
+
+  ShoppingListMealIngredientLoaded copyWith({
+    List<Map<String, dynamic>>? items,
+  }) {
+    return ShoppingListMealIngredientLoaded(
+      items: items ?? this.items,
+    );
+  }
+
+  @override
+  List<Object?> get props => [items];
+}
+
+/// ❌ Wystąpił błąd
+class ShoppingListMealIngredientError extends ShoppingListMealIngredientState {
   final String message;
 
-  const ShoppingListError(this.message);
+  const ShoppingListMealIngredientError({required this.message});
 
   @override
   List<Object?> get props => [message];
 }
-

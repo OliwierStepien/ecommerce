@@ -7,8 +7,9 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shop
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_state.dart';
 
-class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> {
+class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientState> {
   final AddToShoppingListUseCase _addUseCase;
   final RemoveFromShoppingListUseCase _removeUseCase;
   final RestoreToShoppingListUseCase _restoreUseCase;
@@ -29,14 +30,18 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
         _restoreUseCase = restoreUseCase,
         _getUseCase = getUseCase,
         _syncStrategy = syncStrategy,
-        super([]) {
+        super(const ShoppingListMealIngredientInitial()) {
     _loadShoppingList();
   }
 
   Future<void> _loadShoppingList() async {
+    emit(const ShoppingListMealIngredientLoading());
     final result = await _getUseCase.call();
     result.fold(
-      (failure) => debugPrint('❌ Failed to load shopping list: $failure'),
+      (failure) {
+        debugPrint('❌ Failed to load shopping list: $failure');
+        emit(ShoppingListMealIngredientError(message: failure.toString()));
+      },
       (shoppingListItems) {
         final List<Map<String, dynamic>> mappedItems = [];
 
@@ -48,7 +53,7 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
           ));
         }
 
-        emit(mappedItems);
+        emit(ShoppingListMealIngredientLoaded(items: mappedItems));
       },
     );
   }
@@ -59,15 +64,19 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
     required int portionCount,
     bool suppressNotification = false,
   }) async {
-    final previousState = List<Map<String, dynamic>>.from(state);
+    if (state is! ShoppingListMealIngredientLoaded) return;
+    final currentState = state as ShoppingListMealIngredientLoaded;
+    final previousItems = currentState.items;
 
     try {
       _suppressNotifications = suppressNotification;
 
-      final updatedList = List<Map<String, dynamic>>.from(state)
+      final updatedList = List<Map<String, dynamic>>.from(previousItems)
         ..add(_createItemMap(ingredient, meal, portionCount));
 
-      emit(updatedList);
+      emit(currentState.copyWith(items: updatedList));
+
+      // Use case zwraca void, więc nie używamy result.fold
       await _addUseCase.call(params: {
         'meal': meal,
         'ingredient': ingredient,
@@ -76,7 +85,9 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
 
       await _syncStrategy.onDataChanged();
     } catch (e) {
-      emit(previousState);
+      // W przypadku błędu przywróć poprzedni stan
+      emit(currentState.copyWith(items: previousItems));
+      debugPrint('❌ Failed to add ingredient: $e');
       rethrow;
     } finally {
       _suppressNotifications = false;
@@ -88,12 +99,14 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
     MealEntity meal, {
     bool suppressNotification = false,
   }) async {
-    final previousState = List<Map<String, dynamic>>.from(state);
+    if (state is! ShoppingListMealIngredientLoaded) return;
+    final currentState = state as ShoppingListMealIngredientLoaded;
+    final previousItems = currentState.items;
 
     try {
       _suppressNotifications = suppressNotification;
 
-      final existingIngredientIndex = state.indexWhere(
+      final existingIngredientIndex = previousItems.indexWhere(
         (item) =>
             item['ingredientId'] == ingredient.ingredientId &&
             item['mealId'] == meal.mealId,
@@ -101,14 +114,16 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
 
       if (existingIngredientIndex != -1) {
         _lastRemovedItem = {
-          'item': state[existingIngredientIndex],
+          'item': previousItems[existingIngredientIndex],
           'index': existingIngredientIndex,
         };
 
-        final updatedList = List<Map<String, dynamic>>.from(state)
+        final updatedList = List<Map<String, dynamic>>.from(previousItems)
           ..removeAt(existingIngredientIndex);
 
-        emit(updatedList);
+        emit(currentState.copyWith(items: updatedList));
+
+        // Use case zwraca void, więc nie używamy result.fold
         await _removeUseCase.call(params: {
           'meal': meal,
           'ingredient': ingredient,
@@ -117,26 +132,29 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
         await _syncStrategy.onDataChanged();
       }
     } catch (e) {
-      emit(previousState);
+      // W przypadku błędu przywróć poprzedni stan
+      emit(currentState.copyWith(items: previousItems));
+      debugPrint('❌ Failed to remove ingredient: $e');
       rethrow;
     } finally {
       _suppressNotifications = false;
     }
   }
 
-  // ✅ DODANA METODA: Aktualizacja liczby porcji
   Future<void> updateIngredientPortion(
     IngredientEntity ingredient,
     MealEntity meal, {
     required int newPortionCount,
     bool suppressNotification = false,
   }) async {
-    final previousState = List<Map<String, dynamic>>.from(state);
+    if (state is! ShoppingListMealIngredientLoaded) return;
+    final currentState = state as ShoppingListMealIngredientLoaded;
+    final previousItems = currentState.items;
 
     try {
       _suppressNotifications = suppressNotification;
 
-      final existingIngredientIndex = state.indexWhere(
+      final existingIngredientIndex = previousItems.indexWhere(
         (item) =>
             item['ingredientId'] == ingredient.ingredientId &&
             item['mealId'] == meal.mealId,
@@ -144,31 +162,54 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
 
       if (existingIngredientIndex != -1) {
         // Usuń stary wpis
-        await _removeUseCase.call(params: {
-          'meal': meal,
-          'ingredient': ingredient,
-        });
+        try {
+          await _removeUseCase.call(params: {
+            'meal': meal,
+            'ingredient': ingredient,
+          });
+        } catch (e) {
+          emit(currentState.copyWith(items: previousItems));
+          debugPrint('❌ Failed to remove ingredient during update: $e');
+          return;
+        }
 
         // Dodaj z nową liczbą porcji
-        await _addUseCase.call(params: {
-          'meal': meal,
-          'ingredient': ingredient,
-          'portionCount': newPortionCount,
-        });
+        try {
+          await _addUseCase.call(params: {
+            'meal': meal,
+            'ingredient': ingredient,
+            'portionCount': newPortionCount,
+          });
+        } catch (e) {
+          // Jeśli dodanie się nie udało, spróbuj przywrócić usunięty element
+          try {
+            await _addUseCase.call(params: {
+              'meal': meal,
+              'ingredient': ingredient,
+              'portionCount': previousItems[existingIngredientIndex]['portionCount'],
+            });
+          } catch (restoreError) {
+            debugPrint('❌ Failed to restore ingredient after update error: $restoreError');
+          }
+          emit(currentState.copyWith(items: previousItems));
+          debugPrint('❌ Failed to add ingredient during update: $e');
+          return;
+        }
 
         // Zaktualizuj stan lokalny
-        final updatedList = List<Map<String, dynamic>>.from(state);
+        final updatedList = List<Map<String, dynamic>>.from(previousItems);
         updatedList[existingIngredientIndex] = _createItemMap(
           ingredient, 
           meal, 
           newPortionCount
         );
 
-        emit(updatedList);
+        emit(currentState.copyWith(items: updatedList));
         await _syncStrategy.onDataChanged();
       }
     } catch (e) {
-      emit(previousState);
+      emit(currentState.copyWith(items: previousItems));
+      debugPrint('❌ Failed to update ingredient portion: $e');
       rethrow;
     } finally {
       _suppressNotifications = false;
@@ -177,6 +218,11 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
 
   Future<void> restoreLastRemovedIngredient() async {
     if (_lastRemovedItem != null && !_lastRemovedItem!['item']['isCustom']) {
+      if (state is! ShoppingListMealIngredientLoaded) return;
+      
+      final currentState = state as ShoppingListMealIngredientLoaded;
+      final previousItems = currentState.items;
+
       final item = _lastRemovedItem!['item'];
       final index = _lastRemovedItem!['index'];
       final meal = item['mealEntity'] as MealEntity;
@@ -190,25 +236,25 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
       );
       final portionCount = item['portionCount'] as int;
 
-      final previousState = List<Map<String, dynamic>>.from(state);
-
       try {
         _suppressNotifications = true;
 
+        // Use case zwraca void, więc nie używamy result.fold
         await _restoreUseCase.call(params: {
           'meal': meal,
           'ingredient': ingredient,
           'portionCount': portionCount,
         });
 
-        final updatedList = List<Map<String, dynamic>>.from(state)
+        final updatedList = List<Map<String, dynamic>>.from(previousItems)
           ..insert(index, item);
-
-        emit(updatedList);
+        emit(currentState.copyWith(items: updatedList));
         _lastRemovedItem = null;
+
         await _syncStrategy.onDataChanged();
       } catch (e) {
-        emit(previousState);
+        emit(currentState.copyWith(items: previousItems));
+        debugPrint('❌ Failed to restore ingredient: $e');
         rethrow;
       } finally {
         _suppressNotifications = false;
@@ -231,7 +277,7 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
       'mealId': meal.mealId,
       'title': meal.title,
       'mealEntity': meal,
-      'portionCount': portionCount, // ✅ ZAPISUJEMY portionCount
+      'portionCount': portionCount,
       'isCustom': false,
     };
   }
@@ -244,4 +290,10 @@ class ShoppingListMealIngredientCubit extends Cubit<List<Map<String, dynamic>>> 
   }
 
   bool get shouldShowNotification => !_suppressNotifications;
+
+  @override
+  Future<void> close() {
+    _syncStrategy.dispose();
+    return super.close();
+  }
 }

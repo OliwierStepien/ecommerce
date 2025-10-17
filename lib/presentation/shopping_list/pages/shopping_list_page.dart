@@ -7,6 +7,7 @@ import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_state.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_state.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/shopping_list_item.dart';
 import 'package:mealapp/presentation/shopping_list/widgets/add_custom_ingredient_bottom_sheet.dart';
 import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
@@ -41,41 +42,62 @@ class ShoppingListPage extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: BlocBuilder<ShoppingListMealIngredientCubit, List<Map<String, dynamic>>>(
+              child: BlocBuilder<ShoppingListMealIngredientCubit,
+                  ShoppingListMealIngredientState>(
                 builder: (context, mealState) {
-                  return BlocBuilder<ShoppingListCustomItemCubit, ShoppingListCustomItemState>(
-                    builder: (context, customState) {
-                      if (customState is ShoppingListCustomItemLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                  if (mealState is ShoppingListMealIngredientLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                      if (customState is ShoppingListCustomItemError) {
-                        return Center(
-                          child: Text(
-                            customState.message,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        );
-                      }
+                  if (mealState is ShoppingListMealIngredientError) {
+                    return Center(child: Text(mealState.message));
+                  }
 
-                      if (customState is ShoppingListCustomItemLoaded) {
-                        // 🔹 Połącz dane z posiłków i niestandardowe składniki
-                        final customItems = customState.items
-                            .map((item) => {
-                                  'ingredientId': item.customItemId,
-                                  'ingredientName': item.customItemName,
-                                  'ingredientCategory': item.customItemCategory,
-                                  'mealId': null,
-                                  'title': '',
-                                  'mealEntity': null,
-                                  'amountPerPortion': null,
-                                  'unit': '',
-                                  'isCustom': true,
-                                })
-                            .toList();
+                  if (mealState is ShoppingListMealIngredientLoaded) {
+                    // ✅ lista składników z posiłków
+                    final mealItems = mealState.items;
 
-                        final combinedItems = [...mealState, ...customItems];
-                        final groupedItems = _groupItemsByCategory(combinedItems);
+                    return BlocBuilder<ShoppingListCustomItemCubit,
+                        ShoppingListCustomItemState>(
+                      builder: (context, customState) {
+                        if (customState is ShoppingListCustomItemLoading) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
+                        if (customState is ShoppingListCustomItemError) {
+                          return Center(
+                            child: Text(
+                              customState.message,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          );
+                        }
+
+                        // ✅ lista składników niestandardowych
+                        final customItems =
+                            customState is ShoppingListCustomItemLoaded
+                                ? customState.items.map((item) {
+                                    return {
+                                      'ingredientId': item.customItemId,
+                                      'ingredientName': item.customItemName,
+                                      'ingredientCategory':
+                                          item.customItemCategory,
+                                      'mealId': null,
+                                      'title': '',
+                                      'mealEntity': null,
+                                      'amountPerPortion': null,
+                                      'unit': '',
+                                      'scaledAmount': null,
+                                      'isCustom': true,
+                                    };
+                                  }).toList()
+                                : <Map<String, dynamic>>[];
+
+                        // ✅ scalone dane: posiłki + customy
+                        final combinedItems = [...mealItems, ...customItems];
+                        final groupedItems =
+                            _groupItemsByCategory(combinedItems);
 
                         return ListView.builder(
                           itemCount: groupedItems.length,
@@ -87,7 +109,8 @@ class ShoppingListPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Text(
                                     category,
                                     style: TextStyle(
@@ -98,15 +121,20 @@ class ShoppingListPage extends StatelessWidget {
                                   ),
                                 ),
                                 ...items.map((item) {
-                                  final mealEntity = item['mealEntity'] as MealEntity?;
-                                  final scaledAmount = item['scaledAmount'] as num?;
+                                  final mealEntity =
+                                      item['mealEntity'] as MealEntity?;
+                                  final scaledAmount =
+                                      item['scaledAmount'] as num?;
 
                                   final ingredient = IngredientEntity(
                                     ingredientId: item['ingredientId'] ?? '',
-                                    ingredientName: item['ingredientName'] ?? '',
-                                    amountPerPortion: item['amountPerPortion'] as num?,
+                                    ingredientName:
+                                        item['ingredientName'] ?? '',
+                                    amountPerPortion:
+                                        item['amountPerPortion'] as num?,
                                     unit: item['unit'] ?? '',
-                                    ingredientCategory: item['ingredientCategory'] ?? 'Inne',
+                                    ingredientCategory:
+                                        item['ingredientCategory'] ?? 'Inne',
                                     mealId: mealEntity?.mealId ?? '',
                                   );
 
@@ -121,12 +149,11 @@ class ShoppingListPage extends StatelessWidget {
                             );
                           },
                         );
-                      }
+                      },
+                    );
+                  }
 
-                      // 🟢 Stan początkowy
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 },
               ),
             ),
@@ -145,12 +172,19 @@ class ShoppingListPage extends StatelessWidget {
     );
   }
 
-  Map<String, List<Map<String, dynamic>>> _groupItemsByCategory(List<Map<String, dynamic>> items) {
+  /// 📦 Grupowanie elementów po kategorii składnika
+  Map<String, List<Map<String, dynamic>>> _groupItemsByCategory(
+      List<Map<String, dynamic>> items) {
     final Map<String, List<Map<String, dynamic>>> groupedItems = {};
     for (var item in items) {
       final category = item['ingredientCategory'] ?? 'Inne';
       groupedItems.putIfAbsent(category, () => []).add(item);
     }
-    return groupedItems;
+
+    // ✅ SORTOWANIE kluczy kategorii alfabetycznie
+    final sortedKeys = groupedItems.keys.toList()..sort();
+    final sortedMap = {for (var key in sortedKeys) key: groupedItems[key]!};
+
+    return sortedMap;
   }
 }
