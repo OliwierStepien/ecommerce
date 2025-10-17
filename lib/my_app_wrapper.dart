@@ -12,6 +12,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shoppin
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/my_app.dart';
+import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
@@ -34,7 +35,7 @@ class MyAppWrapper extends StatelessWidget {
         BlocProvider(create: (context) => sl<SplashCubit>()),
         BlocProvider(create: (context) => ButtonStateCubit()),
         BlocProvider(
-        create: (context) => sl<UserInfoDisplayCubit>()..displayUserInfo(),
+          create: (context) => sl<UserInfoDisplayCubit>()..displayUserInfo(),
         ),
         BlocProvider(create: (context) => sl<FavoriteMealsCubit>()),
         BlocProvider(
@@ -57,6 +58,7 @@ class MyAppWrapper extends StatelessWidget {
         ),
         BlocProvider(
             create: (_) => sl<CategoriesDisplayCubit>()..displayCategories()),
+        BlocProvider(create: (_) => sl<CategorySelectionCubit>()),
         BlocProvider(create: (_) => VegetarianFilterCubit()),
         BlocProvider(
           create: (context) => MealsDisplayCubit(useCase: sl<GetMealUseCase>()),

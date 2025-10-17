@@ -60,6 +60,7 @@ import 'package:mealapp/domain/favorite_meal/repository/favorite_meal_repository
 import 'package:mealapp/domain/favorite_meal/usecase/add_favorite_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
 import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/domain/ingredient/usecase/get_ingredients_for_meal.dart';
@@ -84,8 +85,11 @@ import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.d
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
+import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
+import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
@@ -379,7 +383,7 @@ Future<void> initializeDependencies() async {
 
   // CUBIT
 
-  // Splash cubit
+  // ✅ Splash cubit
   sl.registerFactory(
     () => SplashCubit(
       connectionMonitor: sl<ConnectionMonitor>(),
@@ -387,26 +391,45 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // Category cubit
+  // ✅ Category display cubit
   sl.registerFactory(
     () => CategoriesDisplayCubit(
       getCategoriesUseCase: sl<GetCategoriesUseCase>(),
     ),
   );
 
-  // User Info Display Cubit
+  // ✅ Category selection cubit (dla filtrowania po kategoriach)
+  sl.registerFactory(
+    () => CategorySelectionCubit(),
+  );
+
+  // ✅ Meals filter cubit — inicjalizowany dynamicznie w MealsGridView
+// param1: przekazuje listę wszystkich posiłków (List<MealEntity>) do filtrowania
+// param2: niewykorzystywany (void), wymagany tylko przez sygnaturę registerFactoryParam
+  sl.registerFactoryParam<MealsFilterCubit, List<MealEntity>, void>(
+    (allMeals, _) => MealsFilterCubit(allMeals: allMeals),
+  );
+
+  // ✅ User Info Display Cubit
   sl.registerFactory(
     () => UserInfoDisplayCubit(
       getUserUsecase: sl<GetUserUsecase>(),
     ),
   );
 
-  // Favorite Meals Cubit
+  // ✅ Favorite Meals Cubit
   sl.registerFactory(
     () => FavoriteMealsCubit(
       getFavoritesMealUseCase: sl<GetFavoritesMealUseCase>(),
       addFavoriteMealUseCase: sl<AddFavoriteMealUseCase>(),
       removeFavoriteMealUseCase: sl<RemoveFavoriteMealUseCase>(),
+    ),
+  );
+
+  // ✅ Meals Display Cubit
+  sl.registerFactory(
+    () => MealsDisplayCubit(
+      useCase: sl<GetMealUseCase>(),
     ),
   );
 

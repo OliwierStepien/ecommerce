@@ -1,12 +1,14 @@
-import 'package:mealapp/common/widgets/error_message/error_message.dart';
-import 'package:mealapp/extensions/context_extension.dart';
-import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
-import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
-import 'package:mealapp/common/widgets/meal/meal_card.dart';
-import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
+import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/extensions/context_extension.dart';
+import 'package:mealapp/common/widgets/meal/meal_card.dart';
+import 'package:mealapp/domain/meal/entity/meal_entity.dart';
+import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
+import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
+import 'package:mealapp/service_locator.dart';
 
 class MealsGridView extends StatelessWidget {
   const MealsGridView({super.key});
@@ -18,26 +20,45 @@ class MealsGridView extends StatelessWidget {
         if (state is MealsInitialState || state is MealsLoading) {
           return const Center(child: CircularProgressIndicator());
         }
+
         if (state is MealsLoadingSuccess) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _MealSectionTitle(),
-              const SizedBox(height: 20),
-              _MealsList(meals: state.meals),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => sl<MealsFilterCubit>(param1: state.meals),
+              ),
             ],
+            child: BlocListener<CategorySelectionCubit, Set<String>>(
+              listener: (context, selectedIds) {
+                context
+                    .read<MealsFilterCubit>()
+                    .filterByCategories(selectedIds);
+              },
+              child: BlocBuilder<MealsFilterCubit, List<MealEntity>>(
+                builder: (context, filteredMeals) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _MealSectionTitle(),
+                      const SizedBox(height: 20),
+                      _MealsList(meals: filteredMeals),
+                    ],
+                  );
+                },
+              ),
+            ),
           );
         }
+
         if (state is MealsLoadingFailure) {
           return ErrorMessage(
             message: state.message,
             onRetry: () {
-              context.read<MealsDisplayCubit>().displayMeals(
-                params: context.read<VegetarianFilterCubit>().state,
-              );
+              context.read<MealsDisplayCubit>().displayMeals();
             },
           );
         }
+
         return const SizedBox.shrink();
       },
     );
@@ -49,14 +70,32 @@ class _MealSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
-      child: Text(
-        context.l10n.meals,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-      ),
+    return BlocBuilder<MealsFilterCubit, List<MealEntity>>(
+      builder: (context, filteredMeals) {
+        final count = filteredMeals.length;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text(
+                context.l10n.meals,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '($count)',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -70,20 +109,15 @@ class _MealsList extends StatelessWidget {
     return SizedBox(
       height: 300,
       child: ListView.separated(
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ),
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            return MealCard(
-              mealEntity: meals[index],
-            );
-          },
-          separatorBuilder: (context, index) => const SizedBox(
-                width: 10,
-              ),
-          itemCount: meals.length),
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: meals.length,
+        itemBuilder: (context, index) {
+          return MealCard(mealEntity: meals[index]);
+        },
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+      ),
     );
   }
 }

@@ -20,10 +20,10 @@ class ListByCategories extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             itemCount: state.categories.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // 2 kategorie w rzędzie
+              crossAxisCount: 2,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              childAspectRatio: 0.8, // proporcje karty
+              childAspectRatio: 0.8,
             ),
             itemBuilder: (context, index) {
               final category = state.categories[index];
