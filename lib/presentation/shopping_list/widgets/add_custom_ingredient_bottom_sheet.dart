@@ -4,7 +4,7 @@ import 'package:mealapp/common/widgets/error_message/error_message.dart';
 import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_category_cubit.dart';
-import 'package:mealapp/presentation/shopping_list/bloc/custom_ingredient_state.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/custom_category_state.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 
 class AddCustomIngredientBottomSheet extends StatelessWidget {
@@ -54,7 +54,7 @@ class AddCustomIngredientBottomSheet extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                BlocBuilder<CustomCategoryCubit, CustomIngredientState>(
+                BlocBuilder<CustomCategoryCubit, CustomCategoryState>(
                   builder: (context, state) {
                     return TextField(
                       controller: cubit.nameController,
@@ -67,7 +67,7 @@ class AddCustomIngredientBottomSheet extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 12),
-                BlocBuilder<CustomCategoryCubit, CustomIngredientState>(
+                BlocBuilder<CustomCategoryCubit, CustomCategoryState>(
                   builder: (context, state) {
                     if (state is CustomIngredientLoading) {
                       return const CircularProgressIndicator();
@@ -98,7 +98,7 @@ class AddCustomIngredientBottomSheet extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 16),
-                BlocBuilder<CustomCategoryCubit, CustomIngredientState>(
+                BlocBuilder<CustomCategoryCubit, CustomCategoryState>(
                   builder: (context, state) {
                     final isDisabled = state is! CustomIngredientLoaded ||
                         state.inputText.trim().isEmpty;

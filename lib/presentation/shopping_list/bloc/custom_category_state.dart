@@ -1,21 +1,21 @@
 import 'package:equatable/equatable.dart';
 
-abstract class CustomIngredientState extends Equatable {
-  const CustomIngredientState();
+abstract class CustomCategoryState extends Equatable {
+  const CustomCategoryState();
 
   @override
   List<Object?> get props => [];
 }
 
-class CustomIngredientInitial extends CustomIngredientState {
+class CustomIngredientInitial extends CustomCategoryState {
   const CustomIngredientInitial();
 }
 
-class CustomIngredientLoading extends CustomIngredientState {
+class CustomIngredientLoading extends CustomCategoryState {
   const CustomIngredientLoading();
 }
 
-class CustomIngredientLoaded extends CustomIngredientState {
+class CustomIngredientLoaded extends CustomCategoryState {
   final List<String> categories;
   final String inputText;
 
@@ -38,7 +38,7 @@ class CustomIngredientLoaded extends CustomIngredientState {
   List<Object?> get props => [categories, inputText];
 }
 
-class CustomIngredientError extends CustomIngredientState {
+class CustomIngredientError extends CustomCategoryState {
   final String message;
 
   const CustomIngredientError({required this.message});
