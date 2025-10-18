@@ -15,17 +15,27 @@ class AddCustomIngredientBottomSheet extends StatelessWidget {
     required this.getAllIngredientsUseCase,
   });
 
-  void _submit(BuildContext context) {
-    final categoryCubit = context.read<CustomCategoryCubit>();
-    final customCubit = context.read<ShoppingListCustomItemCubit>();
-    final ingredient = categoryCubit.getCustomIngredient();
+void _submit(BuildContext context) {
+  final categoryCubit = context.read<CustomCategoryCubit>();
+  final customCubit = context.read<ShoppingListCustomItemCubit>();
+  final ingredient = categoryCubit.getCustomIngredient();
 
-    if (ingredient == null) return;
+  if (ingredient == null) return;
 
-    customCubit.addCustomIngredient(ingredient);
-    Navigator.of(context).pop();
-    categoryCubit.clearForm();
-  }
+  customCubit.addCustomIngredient(ingredient);
+  Navigator.of(context).pop();
+  categoryCubit.clearForm();
+
+  // ✅ POKAŻ SNACKBAR po dodaniu składnika
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        context.l10n.addedIngredientToShoppingList(ingredient.customItemName),
+      ),
+      duration: const Duration(seconds: 1),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

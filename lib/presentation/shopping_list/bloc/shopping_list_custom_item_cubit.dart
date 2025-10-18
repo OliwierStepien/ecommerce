@@ -1,4 +1,3 @@
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
@@ -15,7 +14,8 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
   final GetShoppingListCustomItemUseCase _getUseCase;
   final SyncStrategy _syncStrategy;
 
-  ShoppingListCustomItemEntity? _lastRemovedItem;
+  /// 📦 Ostatnio usunięty element + jego oryginalna pozycja
+  Map<String, dynamic>? _lastRemovedItem;
   bool _suppressNotifications = false;
 
   ShoppingListCustomItemCubit({
@@ -37,12 +37,8 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     emit(const ShoppingListCustomItemLoading());
     final result = await _getUseCase.call();
     result.fold(
-      (failure) {
-        emit(ShoppingListCustomItemError(message: failure.toString()));
-      },
-      (customItems) {
-        emit(ShoppingListCustomItemLoaded(items: customItems));
-      },
+      (failure) => emit(ShoppingListCustomItemError(message: failure.toString())),
+      (customItems) => emit(ShoppingListCustomItemLoaded(items: customItems)),
     );
   }
 
@@ -56,6 +52,7 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
 
     try {
       _suppressNotifications = suppressNotification;
+
       final updatedList = List<ShoppingListCustomItemEntity>.from(previousItems)
         ..add(ingredient);
 
@@ -84,11 +81,15 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     try {
       _suppressNotifications = suppressNotification;
 
-      final index = previousItems
-          .indexWhere((item) => item.customItemId == ingredientId);
+      final index =
+          previousItems.indexWhere((item) => item.customItemId == ingredientId);
 
       if (index != -1) {
-        _lastRemovedItem = previousItems[index];
+        _lastRemovedItem = {
+          'item': previousItems[index],
+          'index': index,
+        };
+
         final updatedList = List<ShoppingListCustomItemEntity>.from(previousItems)
           ..removeAt(index);
 
@@ -107,6 +108,8 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     }
   }
 
+  /// ♻️ Przywraca ostatnio usunięty składnik niestandardowy
+  ///     na jego oryginalne miejsce w liście.
   Future<void> restoreLastRemovedIngredient() async {
     if (_lastRemovedItem == null) return;
     if (state is! ShoppingListCustomItemLoaded) return;
@@ -114,15 +117,18 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     final currentState = state as ShoppingListCustomItemLoaded;
     final previousItems = currentState.items;
 
+    final item = _lastRemovedItem!['item'] as ShoppingListCustomItemEntity;
+    final index = _lastRemovedItem!['index'] as int;
+
     try {
       _suppressNotifications = true;
-      final result = await _restoreUseCase.call(params: _lastRemovedItem!);
 
+      final result = await _restoreUseCase.call(params: item);
       result.fold(
         (_) => emit(currentState.copyWith(items: previousItems)),
         (_) {
           final updatedList = List<ShoppingListCustomItemEntity>.from(previousItems)
-            ..insert(0, _lastRemovedItem!);
+            ..insert(index, item);
           emit(currentState.copyWith(items: updatedList));
           _lastRemovedItem = null;
         },
