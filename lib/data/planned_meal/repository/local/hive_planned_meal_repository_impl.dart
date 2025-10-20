@@ -70,4 +70,14 @@ class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
       await _hivePlannedMealService.markAsSynced(date, mealId);
     });
   }
+
+  @override
+  Future<Either<Failure, void>> removePlannedMealsInDateRange(
+      DateTime start, DateTime end) async {
+    return handleHiveFailure(() async {
+      final isOnline = await _networkInfo.checkInternetConnection();
+      await _hivePlannedMealService.removePlannedMealsInDateRange(start, end,
+          isOnline: isOnline);
+    });
+  }
 }

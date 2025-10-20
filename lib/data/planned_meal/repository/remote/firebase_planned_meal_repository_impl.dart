@@ -14,7 +14,8 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }) : _firebasePlannedMealService = firebasePlannedMealService;
 
   @override
-  Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal) async {
+  Future<Either<Failure, void>> addPlannedMeal(
+      PlannedMealEntity plannedMeal) async {
     return handleFirestoreFailure(() async {
       // Konwersja Entity na Model przed wysłaniem do Firebase
       final model = PlannedMealMapper.toModel(plannedMeal);
@@ -23,7 +24,8 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, void>> removePlannedMeal(PlannedMealEntity plannedMeal) async {
+  Future<Either<Failure, void>> removePlannedMeal(
+      PlannedMealEntity plannedMeal) async {
     return handleFirestoreFailure(() async {
       final model = PlannedMealMapper.toModel(plannedMeal);
       await _firebasePlannedMealService.removePlannedMeal(model);
@@ -39,7 +41,8 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedPlannedMeals() async {
+  Future<Either<Failure, List<PlannedMealEntity>>>
+      getUnsyncedPlannedMeals() async {
     return handleFirestoreFailure(() async {
       // W Firebase wszystkie dane są traktowane jako zsynchronizowane
       final allMeals = await _firebasePlannedMealService.getPlannedMeals();
@@ -48,7 +51,8 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChangesForPlannedMeals() async {
+  Future<Either<Failure, List<PlannedMealEntity>>>
+      getUnsyncedChangesForPlannedMeals() async {
     return handleFirestoreFailure(() async {
       // Firebase nie przechowuje niezsynchronizowanych zmian
       return [];
@@ -56,10 +60,20 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
-  Future<Either<Failure, void>> markPlannedMealAsSynced(DateTime date, String mealId) async {
+  Future<Either<Failure, void>> markPlannedMealAsSynced(
+      DateTime date, String mealId) async {
     return handleFirestoreFailure(() async {
       // W Firebase nie ma potrzeby oznaczania jako zsynchronizowane
       return;
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> removePlannedMealsInDateRange(
+      DateTime start, DateTime end) async {
+    return handleFirestoreFailure(() async {
+      await _firebasePlannedMealService.removePlannedMealsInDateRange(
+          start, end);
     });
   }
 }

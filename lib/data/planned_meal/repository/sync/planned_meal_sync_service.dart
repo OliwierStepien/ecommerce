@@ -97,4 +97,23 @@ class PlannedMealSyncService implements SyncService {
       },
     );
   }
+    Future<Either<Failure, void>> removePlannedMealsInDateRange(
+      DateTime start, DateTime end) async {
+    // Usuń z Hive
+    final localResult =
+        await hiveRepo.removePlannedMealsInDateRange(start, end);
+    if (localResult.isLeft()) return localResult;
+
+    // Jeśli brak internetu — zakończ tutaj
+    final isOnline = await networkInfo.checkInternetConnection();
+    if (!isOnline) return const Right(null);
+
+    // Usuń także z Firebase
+    final remoteResult =
+        await firebaseRepo.removePlannedMealsInDateRange(start, end);
+    return remoteResult.fold(
+      (failure) => Left(failure),
+      (_) => const Right(null),
+    );
+  }
 }

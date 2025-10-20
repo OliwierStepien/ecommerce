@@ -8,6 +8,8 @@ abstract class HivePlannedMealService {
   Future<void> addPlannedMeal(PlannedMealModel plannedMeal);
   Future<void> markAsSynced(DateTime date, String mealId);
   Future<void> removePlannedMeal(PlannedMealModel plannedMeal, {bool isOnline});
+  Future<void> removePlannedMealsInDateRange(DateTime start, DateTime end,
+      {bool isOnline});
 }
 
 class HivePlannedMealServiceImpl implements HivePlannedMealService {
@@ -66,6 +68,24 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
           model.copyWith(isDeleted: true, isSynced: false),
         );
       }
+    }
+  }
+
+  @override
+  Future<void> removePlannedMealsInDateRange(DateTime start, DateTime end,
+      {bool isOnline = false}) async {
+    // Pobieramy wszystkie posiłki
+    final allMeals = _box.values.toList();
+
+    // Filtrowanie tylko tych z wybranego zakresu
+    final mealsInRange = allMeals.where((meal) {
+      final date = DateTime(meal.date.year, meal.date.month, meal.date.day);
+      return date.isAfter(start.subtract(const Duration(days: 1))) &&
+          date.isBefore(end.add(const Duration(days: 1)));
+    });
+
+    for (final meal in mealsInRange) {
+      await removePlannedMeal(meal, isOnline: isOnline);
     }
   }
 }

@@ -28,6 +28,39 @@ class PlannedMealPage extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(context.l10n.calendar),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.delete_sweep),
+                tooltip: 'Remove meals in date range',
+                onPressed: () async {
+                  final pickedRange = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime.utc(2025, 1, 1),
+                    lastDate: DateTime.utc(2035, 12, 31),
+                    initialDateRange: DateTimeRange(
+                      start: DateTime.now().isBefore(DateTime.utc(2025, 1, 1))
+                          ? DateTime.utc(2025, 1, 1)
+                          : DateTime.now(),
+                      end: DateTime.now().add(const Duration(days: 1)),
+                    ),
+                    helpText: 'Wybierz zakres dat do usunięcia',
+                  );
+                  if (pickedRange != null) {
+                    await cubit.removePlannedMealsInDateRange(
+                      pickedRange.start,
+                      pickedRange.end,
+                      (message) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(message)),
+                          );
+                        }
+                      },
+                    );
+                  }
+                },
+              ),
+            ],
           ),
           body: SafeArea(
             child: SingleChildScrollView(

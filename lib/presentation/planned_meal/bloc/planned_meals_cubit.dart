@@ -5,6 +5,7 @@ import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/usecase/add_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.dart';
+import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meals_in_date_range_usecase.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_state.dart';
 import 'package:mealapp/service_locator.dart';
 
@@ -68,74 +69,107 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     }
   }
 
-Future<void> addPlannedMeal(
-    PlannedMealEntity plannedMeal, BuildContext context) async {
-  final date = _normalizeDate(plannedMeal.date);
-  final existingMeals = _groupedMeals[date] ?? [];
+  Future<void> addPlannedMeal(
+      PlannedMealEntity plannedMeal, BuildContext context) async {
+    final date = _normalizeDate(plannedMeal.date);
+    final existingMeals = _groupedMeals[date] ?? [];
 
-  // 🛑 Sprawdzenie duplikatu na podstawie mealId
-  final alreadyAdded = existingMeals.any(
-    (meal) => meal.meal.mealId == plannedMeal.meal.mealId,
-  );
-
-  if (alreadyAdded) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('This meal is already planned for that day.')),
+    // 🛑 Sprawdzenie duplikatu na podstawie mealId
+    final alreadyAdded = existingMeals.any(
+      (meal) => meal.meal.mealId == plannedMeal.meal.mealId,
     );
-    return;
+
+    if (alreadyAdded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('This meal is already planned for that day.')),
+      );
+      return;
+    }
+
+    final result = await sl<AddPlannedMealUseCase>().call(params: plannedMeal);
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapFailureToMessage(failure))),
+        );
+      },
+      (_) {
+        _groupedMeals[date] = [...existingMeals, plannedMeal];
+
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+        ));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Meal added to plan')),
+        );
+      },
+    );
   }
 
-  final result = await sl<AddPlannedMealUseCase>().call(params: plannedMeal);
+  Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
+    final result =
+        await sl<RemovePlannedMealUseCase>().call(params: plannedMeal);
 
-  result.fold(
-    (failure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mapFailureToMessage(failure))),
-      );
-    },
-    (_) {
-      _groupedMeals[date] = [...existingMeals, plannedMeal];
+    return result.fold(
+      (failure) => false,
+      (_) {
+        final normalizedDate = _normalizeDate(plannedMeal.date);
+        final mealId = plannedMeal.meal.mealId;
 
-      emit(PlannedMealsLoaded(
-        plannedMeals: Map.from(_groupedMeals),
-        selectedDay: _selectedDay,
-        focusedDay: _focusedDay,
-      ));
+        if (_groupedMeals.containsKey(normalizedDate)) {
+          _groupedMeals[normalizedDate] = _groupedMeals[normalizedDate]!
+              .where((meal) => meal.meal.mealId != mealId)
+              .toList();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meal added to plan')),
-      );
-    },
-  );
-}
-
-Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
-  final result = await sl<RemovePlannedMealUseCase>().call(params: plannedMeal);
-
-  return result.fold(
-    (failure) => false,
-    (_) {
-      final normalizedDate = _normalizeDate(plannedMeal.date);
-      final mealId = plannedMeal.meal.mealId;
-
-      if (_groupedMeals.containsKey(normalizedDate)) {
-        _groupedMeals[normalizedDate] = _groupedMeals[normalizedDate]!
-            .where((meal) => meal.meal.mealId != mealId)
-            .toList();
-
-        if (_groupedMeals[normalizedDate]!.isEmpty) {
-          _groupedMeals.remove(normalizedDate);
+          if (_groupedMeals[normalizedDate]!.isEmpty) {
+            _groupedMeals.remove(normalizedDate);
+          }
         }
-      }
 
-      emit(PlannedMealsLoaded(
-        plannedMeals: Map.from(_groupedMeals),
-        selectedDay: _selectedDay,
-        focusedDay: _focusedDay,
-      ));
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+        ));
 
-      return true;
-    },
-  );
-}
+        return true;
+      },
+    );
+  }
+
+  Future<void> removePlannedMealsInDateRange(
+    DateTime start,
+    DateTime end,
+    void Function(String message) showMessage,
+  ) async {
+    emit(PlannedMealsLoading());
+
+    final params = DateRangeParams(start: start, end: end);
+    final result =
+        await sl<RemovePlannedMealsInDateRangeUseCase>().call(params: params);
+
+    result.fold(
+      (failure) {
+        showMessage(mapFailureToMessage(failure));
+        emit(PlannedMealsError(mapFailureToMessage(failure)));
+      },
+      (_) {
+        _groupedMeals.removeWhere(
+            (date, _) => !date.isBefore(start) && !date.isAfter(end));
+
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+        ));
+
+        showMessage('Meals removed successfully in selected range');
+      },
+    );
+  }
 }
