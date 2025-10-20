@@ -52,7 +52,10 @@ class PlannedMealPage extends StatelessWidget {
                       (message) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(message)),
+                            SnackBar(
+                              content: Text(message),
+                              duration: const Duration(seconds: 1),
+                            ),
                           );
                         }
                       },
@@ -172,6 +175,7 @@ class PlannedMealPage extends StatelessWidget {
                                             ? 'Meal removed from plan successfully.'
                                             : 'Error removing meal.',
                                       ),
+                                      duration: const Duration(seconds: 1),
                                     ),
                                   );
                                 },

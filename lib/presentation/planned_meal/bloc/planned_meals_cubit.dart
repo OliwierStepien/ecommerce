@@ -82,7 +82,8 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     if (alreadyAdded) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('This meal is already planned for that day.')),
+            content: Text('This meal is already planned for that day.'),
+            duration: Duration(seconds: 1),),
       );
       return;
     }
@@ -92,7 +93,8 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapFailureToMessage(failure))),
+          SnackBar(content: Text(mapFailureToMessage(failure)),
+          duration: const Duration(seconds: 1),),
         );
       },
       (_) {
@@ -105,7 +107,8 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
         ));
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meal added to plan')),
+          const SnackBar(content: Text('Meal added to plan'),
+          duration: Duration(seconds: 1),),
         );
       },
     );
