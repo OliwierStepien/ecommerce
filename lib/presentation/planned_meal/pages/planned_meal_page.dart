@@ -127,8 +127,21 @@ class PlannedMealPage extends StatelessWidget {
                                   plannedMeals[selectedDay]![index];
                               return MealListItem(
                                 mealEntity: plannedMeal.meal,
-                                onRemove: () => cubit.removePlannedMeal(
-                                    plannedMeal, context),
+                                onRemove: () async {
+                                  final success = await cubit
+                                      .removePlannedMeal(plannedMeal);
+                                  if (!context.mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        success
+                                            ? 'Meal removed from plan successfully.'
+                                            : 'Error removing meal.',
+                                      ),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           ),

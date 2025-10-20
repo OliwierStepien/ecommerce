@@ -109,16 +109,11 @@ Future<void> addPlannedMeal(
   );
 }
 
-Future<void> removePlannedMeal(
-    PlannedMealEntity plannedMeal, BuildContext context) async {
+Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
   final result = await sl<RemovePlannedMealUseCase>().call(params: plannedMeal);
 
-  result.fold(
-    (failure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mapFailureToMessage(failure))),
-      );
-    },
+  return result.fold(
+    (failure) => false,
     (_) {
       final normalizedDate = _normalizeDate(plannedMeal.date);
       final mealId = plannedMeal.meal.mealId;
@@ -139,9 +134,7 @@ Future<void> removePlannedMeal(
         focusedDay: _focusedDay,
       ));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meal removed from plan')),
-      );
+      return true;
     },
   );
 }
