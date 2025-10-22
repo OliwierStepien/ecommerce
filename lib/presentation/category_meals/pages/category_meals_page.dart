@@ -27,10 +27,12 @@ class CategoryMealsPage extends StatelessWidget {
           return BlocProvider(
             create: (context) =>
                 MealsDisplayCubit(useCase: sl<GetMealByCategoryIdUseCase>())
-                  ..displayMeals(params: {
-                    'categoryId': categoryEntity.categoryId,
-                    'isVegetarian': isVegetarian,
-                  }),
+                  ..displayMeals(
+                    params: GetMealsByCategoryParams(
+                      categoryId: categoryEntity.categoryId,
+                      isVegetarian: isVegetarian,
+                    ),
+                  ),
             child: BlocBuilder<MealsDisplayCubit, MealsDisplayState>(
               builder: (context, state) {
                 if (state is MealsLoading) {
@@ -54,11 +56,13 @@ class CategoryMealsPage extends StatelessWidget {
                   return ErrorMessage(
                     message: state.message,
                     onRetry: () {
-                      context.read<MealsDisplayCubit>().displayMeals(params: {
-                        'categoryId': categoryEntity.categoryId,
-                        'isVegetarian':
-                            context.read<VegetarianFilterCubit>().state,
-                      });
+                      context.read<MealsDisplayCubit>().displayMeals(
+                            params: GetMealsByCategoryParams(
+                              categoryId: categoryEntity.categoryId,
+                              isVegetarian:
+                                  context.read<VegetarianFilterCubit>().state,
+                            ),
+                          );
                     },
                   );
                 }

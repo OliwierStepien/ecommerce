@@ -1,3 +1,4 @@
+import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/core/configs/assets/app_vectors.dart';
@@ -24,10 +25,10 @@ class SearchField extends StatelessWidget {
             cubit.displayInitial();
           } else {
             cubit.displayMeals(
-              params: {
-                'title': value,
-                'isVegetarian': isVegetarian,
-              },
+              params: GetMealByTitleParams(
+                title: value,
+                isVegetarian: isVegetarian,
+              ),
             );
           }
         },

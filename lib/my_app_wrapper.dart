@@ -1,16 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
-import 'package:mealapp/core/sync/sync_strategy.dart';
-import 'package:mealapp/domain/meal/usecase/get_meal.dart';
-import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
-import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
-import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
-import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
-import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
-import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
-import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
-import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/my_app.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
@@ -33,37 +23,21 @@ class MyAppWrapper extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => sl<SplashCubit>()),
-        BlocProvider(create: (context) => ButtonStateCubit()),
+        BlocProvider(create: (context) => sl<ButtonStateCubit>()),
         BlocProvider(
-          create: (context) => sl<UserInfoDisplayCubit>()..displayUserInfo(),
-        ),
+            create: (context) => sl<UserInfoDisplayCubit>()..displayUserInfo()),
         BlocProvider(create: (context) => sl<FavoriteMealsCubit>()),
         BlocProvider(
-          create: (context) => ShoppingListMealIngredientCubit(
-            addUseCase: sl<AddToShoppingListUseCase>(),
-            removeUseCase: sl<RemoveFromShoppingListUseCase>(),
-            restoreUseCase: sl<RestoreToShoppingListUseCase>(),
-            getUseCase: sl<GetShoppingListUseCase>(),
-            syncStrategy: sl<SyncStrategy>(),
-          ),
-        ),
-        BlocProvider(
-          create: (context) => ShoppingListCustomItemCubit(
-            addUseCase: sl<AddCustomItemToShoppingListUseCase>(),
-            removeUseCase: sl<RemoveCustomItemFromShoppingListUseCase>(),
-            restoreUseCase: sl<RestoreCustomItemToShoppingListUseCase>(),
-            getUseCase: sl<GetShoppingListCustomItemUseCase>(),
-            syncStrategy: sl<SyncStrategy>(),
-          ),
-        ),
+            create: (context) => sl<ShoppingListMealIngredientCubit>()),
+        BlocProvider(create: (context) => sl<ShoppingListCustomItemCubit>()),
         BlocProvider(
             create: (_) => sl<CategoriesDisplayCubit>()..displayCategories()),
         BlocProvider(create: (_) => sl<CategorySelectionCubit>()),
-        BlocProvider(create: (_) => VegetarianFilterCubit()),
+        BlocProvider(create: (_) => sl<VegetarianFilterCubit>()),
         BlocProvider(
-          create: (context) => MealsDisplayCubit(useCase: sl<GetMealUseCase>()),
+          create: (context) => sl<MealsDisplayCubit>(),
         ),
-        BlocProvider(create: (_) => PlannedMealsCubit()),
+        BlocProvider(create: (_) => sl<PlannedMealsCubit>()),
       ],
       child: const MyApp(),
     );

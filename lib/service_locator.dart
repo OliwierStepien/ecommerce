@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/core/network/connection_monitor.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/network/network_info_impl.dart';
@@ -91,6 +92,10 @@ import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
+import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
+import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
@@ -386,6 +391,11 @@ Future<void> initializeDependencies() async {
 
   // CUBIT
 
+  // ✅ Button state cubit
+  sl.registerFactory(
+    () => ButtonStateCubit(),
+  );
+
   // ✅ Splash cubit
   sl.registerFactory(
     () => SplashCubit(
@@ -434,6 +444,34 @@ Future<void> initializeDependencies() async {
     () => MealsDisplayCubit(
       useCase: sl<GetMealUseCase>(),
     ),
+  );
+
+  // ✅ Shopping List Meal Ingredient Cubit
+  sl.registerFactory(() => ShoppingListMealIngredientCubit(
+        addUseCase: sl<AddToShoppingListUseCase>(),
+        removeUseCase: sl<RemoveFromShoppingListUseCase>(),
+        restoreUseCase: sl<RestoreToShoppingListUseCase>(),
+        getUseCase: sl<GetShoppingListUseCase>(),
+        syncStrategy: sl<SyncStrategy>(),
+      ));
+
+  // ✅ Shopping List Custom Item Cubit
+  sl.registerFactory(() => ShoppingListCustomItemCubit(
+        addUseCase: sl<AddCustomItemToShoppingListUseCase>(),
+        removeUseCase: sl<RemoveCustomItemFromShoppingListUseCase>(),
+        restoreUseCase: sl<RestoreCustomItemToShoppingListUseCase>(),
+        getUseCase: sl<GetShoppingListCustomItemUseCase>(),
+        syncStrategy: sl<SyncStrategy>(),
+      ));
+
+  // ✅ Vegetarian filter cubit
+  sl.registerFactory(
+    () => VegetarianFilterCubit(),
+  );
+
+  // ✅ Planned meals cubit
+  sl.registerFactory(
+    () => PlannedMealsCubit(),
   );
 
   // SYNC SERVICES & CONNECTION MONITOR
