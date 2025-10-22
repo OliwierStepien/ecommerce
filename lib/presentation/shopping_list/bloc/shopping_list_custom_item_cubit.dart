@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
@@ -35,7 +36,7 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
 
   Future<void> _loadCustomItems() async {
     emit(const ShoppingListCustomItemLoading());
-    final result = await _getUseCase.call();
+    final result = await _getUseCase.call(NoParams());
     result.fold(
       (failure) => emit(ShoppingListCustomItemError(message: failure.toString())),
       (customItems) => emit(ShoppingListCustomItemLoaded(items: customItems)),
@@ -58,7 +59,7 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
 
       emit(currentState.copyWith(items: updatedList));
 
-      final result = await _addUseCase.call(params: ingredient);
+      final result = await _addUseCase.call(ingredient);
       result.fold(
         (_) => emit(currentState.copyWith(items: previousItems)),
         (_) {},
@@ -95,7 +96,7 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
 
         emit(currentState.copyWith(items: updatedList));
 
-        final result = await _removeUseCase.call(params: ingredientId);
+        final result = await _removeUseCase.call(ingredientId);
         result.fold(
           (_) => emit(currentState.copyWith(items: previousItems)),
           (_) {},
@@ -123,7 +124,7 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     try {
       _suppressNotifications = true;
 
-      final result = await _restoreUseCase.call(params: item);
+      final result = await _restoreUseCase.call(item);
       result.fold(
         (_) => emit(currentState.copyWith(items: previousItems)),
         (_) {

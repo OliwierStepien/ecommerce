@@ -10,10 +10,7 @@ class RemoveCustomItemFromShoppingListUseCase
   RemoveCustomItemFromShoppingListUseCase(this.repository);
 
   @override
-  Future<Either<Failure, void>> call({String? params}) async {
-    if (params == null) {
-      return Left(GeneralFailure());
-    }
+  Future<Either<Failure, void>> call(String params) async {
     return await repository.removeCustomItemFromShoppingList(params);
   }
 }

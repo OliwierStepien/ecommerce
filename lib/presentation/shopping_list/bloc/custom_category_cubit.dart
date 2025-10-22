@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/custom_category_state.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
@@ -18,7 +19,7 @@ class CustomCategoryCubit extends Cubit<CustomCategoryState> {
 
   Future<void> loadCategories() async {
     emit(const CustomIngredientLoading());
-    final result = await getAllIngredientsUseCase();
+    final result = await getAllIngredientsUseCase(NoParams());
 
     result.fold(
       (failure) => emit(CustomIngredientError(message: mapFailureToMessage(failure))),

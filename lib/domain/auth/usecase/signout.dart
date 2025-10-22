@@ -2,13 +2,13 @@ import 'package:dartz/dartz.dart';
 import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 
-class SignoutUsecase implements UseCase<Either, void> {
+class SignoutUsecase implements UseCase<Either, NoParams> {
   final AuthRepository authRepository;
 
   SignoutUsecase(this.authRepository);
 
   @override
-  Future<Either> call({void params}) async {
+  Future<Either> call(NoParams params) async {
     return await authRepository.signout();
   }
 }

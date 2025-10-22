@@ -11,7 +11,7 @@ class AddFavoriteMealUseCase
   AddFavoriteMealUseCase(this.favoriteMealRepository);
 
   @override
-  Future<Either<Failure, void>> call({FavoriteMealEntity? params}) async {
-    return await favoriteMealRepository.addFavoriteMeal(params!);
+  Future<Either<Failure, void>> call(FavoriteMealEntity params) async {
+    return await favoriteMealRepository.addFavoriteMeal(params);
   }
 }

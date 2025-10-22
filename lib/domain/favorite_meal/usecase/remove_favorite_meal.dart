@@ -10,7 +10,7 @@ class RemoveFavoriteMealUseCase
   RemoveFavoriteMealUseCase(this.favoriteMealRepository);
 
   @override
-  Future<Either<Failure, void>> call({String? params}) async {
-    return await favoriteMealRepository.removeFavoriteMeal(params!);
+  Future<Either<Failure, void>> call(String params) async {
+    return await favoriteMealRepository.removeFavoriteMeal(params);
   }
 }

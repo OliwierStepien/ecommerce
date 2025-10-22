@@ -9,7 +9,7 @@ class SigninUsecase implements UseCase<Either, UserSigninReq> {
   SigninUsecase(this.authRepository);
 
   @override
-  Future<Either> call({UserSigninReq? params}) async {
-    return await authRepository.signin(params!);
+  Future<Either> call(UserSigninReq params) async {
+    return await authRepository.signin(params);
   }
 }

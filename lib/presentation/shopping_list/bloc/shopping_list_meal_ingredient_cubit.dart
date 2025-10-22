@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
@@ -9,7 +10,8 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_state.dart';
 
-class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientState> {
+class ShoppingListMealIngredientCubit
+    extends Cubit<ShoppingListMealIngredientState> {
   final AddToShoppingListUseCase _addUseCase;
   final RemoveFromShoppingListUseCase _removeUseCase;
   final RestoreToShoppingListUseCase _restoreUseCase;
@@ -36,7 +38,7 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
 
   Future<void> _loadShoppingList() async {
     emit(const ShoppingListMealIngredientLoading());
-    final result = await _getUseCase.call();
+    final result = await _getUseCase.call(NoParams());
     result.fold(
       (failure) {
         debugPrint('❌ Failed to load shopping list: $failure');
@@ -46,11 +48,8 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
         final List<Map<String, dynamic>> mappedItems = [];
 
         for (final item in shoppingListItems) {
-          mappedItems.add(_createItemMap(
-            item.ingredient, 
-            item.meal, 
-            item.portionCount
-          ));
+          mappedItems.add(
+              _createItemMap(item.ingredient, item.meal, item.portionCount));
         }
 
         emit(ShoppingListMealIngredientLoaded(items: mappedItems));
@@ -77,11 +76,13 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
       emit(currentState.copyWith(items: updatedList));
 
       // Use case zwraca void, więc nie używamy result.fold
-      await _addUseCase.call(params: {
-        'meal': meal,
-        'ingredient': ingredient,
-        'portionCount': portionCount,
-      });
+      await _addUseCase.call(
+        AddToShoppingListParams(
+          meal: meal,
+          ingredient: ingredient,
+          portionCount: portionCount,
+        ),
+      );
 
       await _syncStrategy.onDataChanged();
     } catch (e) {
@@ -124,10 +125,12 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
         emit(currentState.copyWith(items: updatedList));
 
         // Use case zwraca void, więc nie używamy result.fold
-        await _removeUseCase.call(params: {
-          'meal': meal,
-          'ingredient': ingredient,
-        });
+        await _removeUseCase.call(
+          RemoveFromShoppingListParams(
+            meal: meal,
+            ingredient: ingredient,
+          ),
+        );
 
         await _syncStrategy.onDataChanged();
       }
@@ -163,10 +166,12 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
       if (existingIngredientIndex != -1) {
         // Usuń stary wpis
         try {
-          await _removeUseCase.call(params: {
-            'meal': meal,
-            'ingredient': ingredient,
-          });
+          await _removeUseCase.call(
+            RemoveFromShoppingListParams(
+              meal: meal,
+              ingredient: ingredient,
+            ),
+          );
         } catch (e) {
           emit(currentState.copyWith(items: previousItems));
           debugPrint('❌ Failed to remove ingredient during update: $e');
@@ -175,21 +180,27 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
 
         // Dodaj z nową liczbą porcji
         try {
-          await _addUseCase.call(params: {
-            'meal': meal,
-            'ingredient': ingredient,
-            'portionCount': newPortionCount,
-          });
+          await _addUseCase.call(
+            AddToShoppingListParams(
+              meal: meal,
+              ingredient: ingredient,
+              portionCount: newPortionCount,
+            ),
+          );
         } catch (e) {
           // Jeśli dodanie się nie udało, spróbuj przywrócić usunięty element
           try {
-            await _addUseCase.call(params: {
-              'meal': meal,
-              'ingredient': ingredient,
-              'portionCount': previousItems[existingIngredientIndex]['portionCount'],
-            });
+            await _addUseCase.call(
+              AddToShoppingListParams(
+                meal: meal,
+                ingredient: ingredient,
+                portionCount: previousItems[existingIngredientIndex]
+                    ['portionCount'],
+              ),
+            );
           } catch (restoreError) {
-            debugPrint('❌ Failed to restore ingredient after update error: $restoreError');
+            debugPrint(
+                '❌ Failed to restore ingredient after update error: $restoreError');
           }
           emit(currentState.copyWith(items: previousItems));
           debugPrint('❌ Failed to add ingredient during update: $e');
@@ -198,11 +209,8 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
 
         // Zaktualizuj stan lokalny
         final updatedList = List<Map<String, dynamic>>.from(previousItems);
-        updatedList[existingIngredientIndex] = _createItemMap(
-          ingredient, 
-          meal, 
-          newPortionCount
-        );
+        updatedList[existingIngredientIndex] =
+            _createItemMap(ingredient, meal, newPortionCount);
 
         emit(currentState.copyWith(items: updatedList));
         await _syncStrategy.onDataChanged();
@@ -219,7 +227,7 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
   Future<void> restoreLastRemovedIngredient() async {
     if (_lastRemovedItem != null && !_lastRemovedItem!['item']['isCustom']) {
       if (state is! ShoppingListMealIngredientLoaded) return;
-      
+
       final currentState = state as ShoppingListMealIngredientLoaded;
       final previousItems = currentState.items;
 
@@ -240,11 +248,13 @@ class ShoppingListMealIngredientCubit extends Cubit<ShoppingListMealIngredientSt
         _suppressNotifications = true;
 
         // Use case zwraca void, więc nie używamy result.fold
-        await _restoreUseCase.call(params: {
-          'meal': meal,
-          'ingredient': ingredient,
-          'portionCount': portionCount,
-        });
+        await _restoreUseCase.call(
+          RestoreToShoppingListParams(
+            meal: meal,
+            ingredient: ingredient,
+            portionCount: portionCount,
+          ),
+        );
 
         final updatedList = List<Map<String, dynamic>>.from(previousItems)
           ..insert(index, item);

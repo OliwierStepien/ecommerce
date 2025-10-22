@@ -5,13 +5,13 @@ import 'package:mealapp/domain/category/repository/category_repository.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 
 class GetCategoriesUseCase
-    implements UseCase<Either<Failure, List<CategoryEntity>>, void> {
+    implements UseCase<Either<Failure, List<CategoryEntity>>, NoParams> {
   final CategoryRepository categoryRepository;
 
   GetCategoriesUseCase(this.categoryRepository);
 
   @override
-  Future<Either<Failure, List<CategoryEntity>>> call({void params}) async {
+  Future<Either<Failure, List<CategoryEntity>>> call(NoParams params) async {
     return await categoryRepository.getCategories();
   }
 }

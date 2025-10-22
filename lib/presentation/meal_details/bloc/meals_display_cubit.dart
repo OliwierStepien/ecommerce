@@ -25,7 +25,7 @@ class MealsDisplayCubit extends Cubit<MealsDisplayState> {
   Future<void> displayMeals({dynamic params}) async {
     if (isClosed) return;
     emit(const MealsLoading());
-    final returnedData = await useCase.call(params: params);
+    final returnedData = await useCase.call(params);
     if (isClosed) return;
 
     returnedData.fold(

@@ -11,8 +11,8 @@ class GetMealUseCase
   GetMealUseCase(this.mealRepository);
 
   @override
-  Future<Either<Failure, List<MealEntity>>> call({bool? params}) async {
-    if (params == true) {
+  Future<Either<Failure, List<MealEntity>>> call(bool params) async {
+    if (params) {
       return await mealRepository.isMealVegetarian(true);
     } else {
       return await mealRepository.getMeals();

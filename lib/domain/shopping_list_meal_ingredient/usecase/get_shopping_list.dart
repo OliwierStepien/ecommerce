@@ -5,13 +5,17 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/entity/shopping_lis
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 
 class GetShoppingListUseCase
-    implements UseCase<Either<Failure, List<ShoppingListItemEntity>>, void> {
-  final ShoppingListMealIngredientRepository shoppingListMealIngredientRepository;
+    implements
+        UseCase<Either<Failure, List<ShoppingListItemEntity>>, NoParams> {
+  final ShoppingListMealIngredientRepository
+      shoppingListMealIngredientRepository;
 
   GetShoppingListUseCase(this.shoppingListMealIngredientRepository);
 
   @override
-  Future<Either<Failure, List<ShoppingListItemEntity>>> call({void params}) async {
-    return await shoppingListMealIngredientRepository.getMealIngredientToShoppingList();
+  Future<Either<Failure, List<ShoppingListItemEntity>>> call(
+      NoParams params) async {
+    return await shoppingListMealIngredientRepository
+        .getMealIngredientToShoppingList();
   }
 }

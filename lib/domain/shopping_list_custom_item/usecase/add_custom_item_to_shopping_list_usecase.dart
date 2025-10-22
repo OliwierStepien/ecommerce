@@ -12,10 +12,7 @@ class AddCustomItemToShoppingListUseCase
 
   @override
   Future<Either<Failure, void>> call(
-      {ShoppingListCustomItemEntity? params}) async {
-    if (params == null) {
-      return Left(GeneralFailure());
-    }
+      ShoppingListCustomItemEntity params) async {
     return await repository.addCustomItemToShoppingList(params);
   }
 }

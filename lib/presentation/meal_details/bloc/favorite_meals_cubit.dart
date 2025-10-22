@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/favorite_meal/entity/favorite_meal_entity.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/add_favorite_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
@@ -22,7 +23,7 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
 
   Future<void> displayFavoriteMeals() async {
     emit(const MealsLoading());
-    final returnedData = await getFavoritesMealUseCase.call();
+    final returnedData = await getFavoritesMealUseCase.call(NoParams());
     returnedData.fold(
       (error) => emit(MealsLoadingFailure(message: mapFailureToMessage(error))),
       (data) => emit(MealsLoadingSuccess(
@@ -39,11 +40,11 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
 
       if (isFavorite) {
         updatedMeals.removeWhere((m) => m.mealId == meal.mealId);
-        await removeFavoriteMealUseCase.call(params: meal.mealId);
+        await removeFavoriteMealUseCase.call(meal.mealId);
       } else {
         updatedMeals.add(meal);
         await addFavoriteMealUseCase.call(
-          params: FavoriteMealEntity(meal: meal),
+          FavoriteMealEntity(meal: meal),
         );
       }
 

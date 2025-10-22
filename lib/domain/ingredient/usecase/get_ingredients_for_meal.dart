@@ -4,17 +4,22 @@ import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
 
+class GetIngredientsForMealParams {
+  final String mealId;
+  const GetIngredientsForMealParams({required this.mealId});
+}
+
 class GetIngredientsForMealUseCase
     implements
-        UseCase<Either<Failure, List<IngredientEntity>>, Map<String, dynamic>> {
+        UseCase<Either<Failure, List<IngredientEntity>>,
+            GetIngredientsForMealParams> {
   final IngredientRepository repository;
 
   GetIngredientsForMealUseCase(this.repository);
 
   @override
   Future<Either<Failure, List<IngredientEntity>>> call(
-      {Map<String, dynamic>? params}) async {
-    return await repository
-        .getIngredientsForMeal(params!['mealId'] as String);
+      GetIngredientsForMealParams params) async {
+    return await repository.getIngredientsForMeal(params.mealId);
   }
 }

@@ -5,14 +5,15 @@ import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_cu
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 
 class GetShoppingListCustomItemUseCase
-    implements UseCase<Either<Failure, List<ShoppingListCustomItemEntity>>, void> {
+    implements
+        UseCase<Either<Failure, List<ShoppingListCustomItemEntity>>, NoParams> {
   final ShoppingListCustomItemRepository repository;
 
   GetShoppingListCustomItemUseCase(this.repository);
 
   @override
   Future<Either<Failure, List<ShoppingListCustomItemEntity>>> call(
-      {void params}) async {
+      NoParams params) async {
     return await repository.getCustomItemToShoppingList();
   }
 }

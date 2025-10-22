@@ -1,4 +1,5 @@
 import 'package:mealapp/core/network/connection_monitor.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/auth/usecase/is_logged_in.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +24,7 @@ class SplashCubit extends Cubit<SplashState> {
   }
 
   Future<void> _checkAuthStatus() async {
-    final isLoggedIn = await isLoggedInUseCase();
+    final isLoggedIn = await isLoggedInUseCase(NoParams());
     if (isClosed) return;
 
     emit(isLoggedIn ? const Authenticated() : const UnAuthenticated());

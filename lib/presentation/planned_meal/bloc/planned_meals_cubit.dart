@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure_mapper.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/usecase/add_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dart';
@@ -28,7 +29,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
 
   Future<void> loadPlannedMeals() async {
     emit(PlannedMealsLoading());
-    final result = await sl<GetPlannedMealsUseCase>().call();
+    final result = await sl<GetPlannedMealsUseCase>().call(NoParams());
 
     result.fold(
       (failure) => emit(PlannedMealsError(mapFailureToMessage(failure))),
@@ -88,7 +89,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
       return;
     }
 
-    final result = await sl<AddPlannedMealUseCase>().call(params: plannedMeal);
+    final result = await sl<AddPlannedMealUseCase>().call(plannedMeal);
 
     result.fold(
       (failure) {
@@ -116,7 +117,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
 
   Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
     final result =
-        await sl<RemovePlannedMealUseCase>().call(params: plannedMeal);
+        await sl<RemovePlannedMealUseCase>().call(plannedMeal);
 
     return result.fold(
       (failure) => false,
@@ -154,7 +155,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
 
     final params = DateRangeParams(start: start, end: end);
     final result =
-        await sl<RemovePlannedMealsInDateRangeUseCase>().call(params: params);
+        await sl<RemovePlannedMealsInDateRangeUseCase>().call(params);
 
     result.fold(
       (failure) {

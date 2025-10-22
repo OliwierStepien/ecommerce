@@ -10,7 +10,7 @@ class RemovePlannedMealUseCase implements UseCase<Either<Failure, void>, Planned
   RemovePlannedMealUseCase(this.repository);
 
   @override
-  Future<Either<Failure, void>> call({PlannedMealEntity? params}) async {
-    return await repository.removePlannedMeal(params!);
+  Future<Either<Failure, void>> call(PlannedMealEntity params) async {
+    return await repository.removePlannedMeal(params);
   }
 }

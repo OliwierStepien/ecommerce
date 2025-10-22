@@ -4,23 +4,28 @@ import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
 
+class GetMealsByCategoryParams {
+  final String categoryId;
+  final bool isVegetarian;
+  const GetMealsByCategoryParams(
+      {required this.categoryId, required this.isVegetarian});
+}
+
 class GetMealByCategoryIdUseCase
     implements
-        UseCase<Either<Failure, List<MealEntity>>, Map<String, dynamic>> {
+        UseCase<Either<Failure, List<MealEntity>>, GetMealsByCategoryParams> {
   final MealRepository mealRepository;
 
   GetMealByCategoryIdUseCase(this.mealRepository);
 
   @override
   Future<Either<Failure, List<MealEntity>>> call(
-      {Map<String, dynamic>? params}) async {
-    final categoryId = params?['categoryId'] as String;
-    final isVegetarian = params?['isVegetarian'] as bool;
-
-    if (isVegetarian) {
-      return await mealRepository.getVegetarianMealsByCategoryId(categoryId);
+      GetMealsByCategoryParams params) async {
+    if (params.isVegetarian) {
+      return await mealRepository
+          .getVegetarianMealsByCategoryId(params.categoryId);
     } else {
-      return await mealRepository.getMealsByCategoryId(categoryId);
+      return await mealRepository.getMealsByCategoryId(params.categoryId);
     }
   }
 }

@@ -9,7 +9,7 @@ class SignupUsecase implements UseCase<Either, UserCreationReq> {
   SignupUsecase(this.authRepository);
 
   @override
-  Future<Either> call({UserCreationReq? params}) async {
-    return await authRepository.signup(params!);
+  Future<Either> call(UserCreationReq params) async {
+    return await authRepository.signup(params);
   }
 }

@@ -8,7 +8,7 @@ class SendPasswordResetEmailUseCase implements UseCase<Either, String> {
   SendPasswordResetEmailUseCase(this.authRepository);
 
   @override
-  Future<Either> call({String? params}) async {
-    return await authRepository.sendPasswordResetEmail(params!);
+  Future<Either> call(String params) async {
+    return await authRepository.sendPasswordResetEmail(params);
   }
 }
