@@ -470,9 +470,12 @@ Future<void> initializeDependencies() async {
   );
 
   // ✅ Planned meals cubit
-  sl.registerFactory(
-    () => PlannedMealsCubit(),
-  );
+  sl.registerFactory(() => PlannedMealsCubit(
+        getPlannedMeals: sl(),
+        addPlannedMealUseCase: sl(),
+        removePlannedMealUseCase: sl(),
+        removeInRangeUseCase: sl(),
+      ));
 
   // SYNC SERVICES & CONNECTION MONITOR
 

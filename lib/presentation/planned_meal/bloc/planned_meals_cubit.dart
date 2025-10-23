@@ -8,19 +8,26 @@ import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dar
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meals_in_date_range_usecase.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_state.dart';
-import 'package:mealapp/service_locator.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class PlannedMealsCubit extends Cubit<PlannedMealsState> {
+  final GetPlannedMealsUseCase getPlannedMeals;
+  final AddPlannedMealUseCase addPlannedMealUseCase;
+  final RemovePlannedMealUseCase removePlannedMealUseCase;
+  final RemovePlannedMealsInDateRangeUseCase removeInRangeUseCase;
+
   DateTime _selectedDay;
   DateTime _focusedDay;
   Map<DateTime, List<PlannedMealEntity>> _groupedMeals = {};
 
-  PlannedMealsCubit()
-      : _selectedDay = DateTime.now(),
-        _focusedDay = DateTime.now(),
+  PlannedMealsCubit({
+    required this.getPlannedMeals,
+    required this.addPlannedMealUseCase,
+    required this.removePlannedMealUseCase,
+    required this.removeInRangeUseCase,
+  })  : _selectedDay = normalizeDate(DateTime.now()),
+        _focusedDay = normalizeDate(DateTime.now()),
         super(PlannedMealsInitial()) {
-    _selectedDay = _normalizeDate(_selectedDay);
-    _focusedDay = _normalizeDate(_focusedDay);
     loadPlannedMeals();
   }
 
@@ -29,7 +36,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
 
   Future<void> loadPlannedMeals() async {
     emit(PlannedMealsLoading());
-    final result = await sl<GetPlannedMealsUseCase>().call(NoParams());
+    final result = await getPlannedMeals.call(NoParams());
 
     result.fold(
       (failure) => emit(PlannedMealsError(mapFailureToMessage(failure))),
@@ -83,19 +90,22 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     if (alreadyAdded) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('This meal is already planned for that day.'),
-            duration: Duration(seconds: 1),),
+          content: Text('This meal is already planned for that day.'),
+          duration: Duration(seconds: 1),
+        ),
       );
       return;
     }
 
-    final result = await sl<AddPlannedMealUseCase>().call(plannedMeal);
+    final result = await addPlannedMealUseCase.call(plannedMeal);
 
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapFailureToMessage(failure)),
-          duration: const Duration(seconds: 1),),
+          SnackBar(
+            content: Text(mapFailureToMessage(failure)),
+            duration: const Duration(seconds: 1),
+          ),
         );
       },
       (_) {
@@ -108,16 +118,17 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
         ));
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meal added to plan'),
-          duration: Duration(seconds: 1),),
+          const SnackBar(
+            content: Text('Meal added to plan'),
+            duration: Duration(seconds: 1),
+          ),
         );
       },
     );
   }
 
   Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
-    final result =
-        await sl<RemovePlannedMealUseCase>().call(plannedMeal);
+    final result = await removePlannedMealUseCase.call(plannedMeal);
 
     return result.fold(
       (failure) => false,
@@ -154,8 +165,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     emit(PlannedMealsLoading());
 
     final params = DateRangeParams(start: start, end: end);
-    final result =
-        await sl<RemovePlannedMealsInDateRangeUseCase>().call(params);
+    final result = await removeInRangeUseCase.call(params);
 
     result.fold(
       (failure) {
