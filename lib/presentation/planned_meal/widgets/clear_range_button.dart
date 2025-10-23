@@ -6,11 +6,9 @@ class ClearRangeButton extends StatelessWidget {
     required this.onConfirm,
   });
 
-  /// Callback wywoływany po wybraniu zakresu — implementacja czyszczenia na zewnątrz.
   final Future<void> Function(
     DateTime start,
     DateTime end,
-    void Function(String message) showFeedback,
   ) onConfirm;
 
   @override
@@ -36,15 +34,7 @@ class ClearRangeButton extends StatelessWidget {
         );
 
         if (pickedRange != null) {
-          await onConfirm(pickedRange.start, pickedRange.end, (message) {
-            if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                duration: const Duration(seconds: 1),
-              ),
-            );
-          });
+          await onConfirm(pickedRange.start, pickedRange.end);
         }
       },
     );

@@ -17,95 +17,104 @@ class PlannedMealPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlannedMealsCubit, PlannedMealsState>(
-      builder: (context, state) {
-        final cubit = context.read<PlannedMealsCubit>();
+    return BlocListener<PlannedMealsCubit, PlannedMealsState>(
+      listenWhen: (prev, curr) =>
+          curr is PlannedMealsLoaded &&
+          (curr.toastMessage != null && curr.toastMessage!.isNotEmpty),
+      listener: (context, state) {
+        if (state is PlannedMealsLoaded && state.toastMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.toastMessage!),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+      },
+      child: BlocBuilder<PlannedMealsCubit, PlannedMealsState>(
+        builder: (context, state) {
+          final cubit = context.read<PlannedMealsCubit>();
 
-        // 🔹 Jawny typ Map<DateTime, List<PlannedMealEntity>>
-        final Map<DateTime, List<PlannedMealEntity>> plannedMeals =
-            (state is PlannedMealsLoaded)
-                ? state.plannedMeals
-                : <DateTime, List<PlannedMealEntity>>{};
+          if (state is PlannedMealsLoading || state is PlannedMealsInitial) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-        final selectedDay =
-            (state is PlannedMealsLoaded) ? state.selectedDay : DateTime.now();
-        final focusedDay =
-            (state is PlannedMealsLoaded) ? state.focusedDay : DateTime.now();
+          if (state is PlannedMealsError) {
+            return Scaffold(
+              appBar: AppBar(title: Text(context.l10n.calendar)),
+              body: Center(child: Text(state.message)),
+            );
+          }
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(context.l10n.calendar),
-            actions: [
-              ClearRangeButton(onConfirm: (start, end, onFeedback) async {
-                await cubit.removePlannedMealsInDateRange(start, end,
-                    (message) {
-                  if (!context.mounted) return;
-                  onFeedback(message);
-                });
-              }),
-            ],
-          ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CalendarSection(
-                      plannedMeals: plannedMeals,
-                      selectedDay: selectedDay,
-                      focusedDay: focusedDay,
-                      onDaySelected: (selected, focused) =>
-                          cubit.changeDay(selected, focused),
-                      onPageChanged: (newFocused) =>
-                          cubit.changeDay(selectedDay, newFocused),
-                    ),
-                    if (mealToAdd != null)
-                      Center(
-                        child: AddMealButton(
-                          label: context.l10n.addMealToDay,
-                          onPressed: () => cubit.addPlannedMeal(
-                            PlannedMealEntity(
-                              date: selectedDay,
-                              meal: mealToAdd!,
+          final loaded = state as PlannedMealsLoaded;
+
+          final Map<DateTime, List<PlannedMealEntity>> plannedMeals =
+              loaded.plannedMeals;
+
+          final selectedDay = loaded.selectedDay;
+          final focusedDay = loaded.focusedDay;
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.calendar),
+              actions: [
+                ClearRangeButton(
+                  onConfirm: (start, end) async {
+                    await cubit.removePlannedMealsInDateRange(start, end);
+                  },
+                ),
+              ],
+            ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CalendarSection(
+                        plannedMeals: plannedMeals,
+                        selectedDay: selectedDay,
+                        focusedDay: focusedDay,
+                        onDaySelected: (selected, focused) =>
+                            cubit.changeDay(selected, focused),
+                        onPageChanged: (newFocused) =>
+                            cubit.changeDay(selectedDay, newFocused),
+                      ),
+                      if (mealToAdd != null)
+                        Center(
+                          child: AddMealButton(
+                            label: context.l10n.addMealToDay,
+                            onPressed: () => cubit.addPlannedMeal(
+                              PlannedMealEntity(
+                                date: selectedDay,
+                                meal: mealToAdd!,
+                              ),
                             ),
-                            context,
                           ),
                         ),
-                      ),
-                    const SizedBox(height: 16),
-
-                    // 🔹 Użycie znormalizowanej daty przy odczycie
-                    MealsListSection(
-                      plannedMealsForSelectedDay: plannedMeals[DateTime(
+                      const SizedBox(height: 16),
+                      MealsListSection(
+                        plannedMealsForSelectedDay: plannedMeals[DateTime(
                               selectedDay.year,
                               selectedDay.month,
-                              selectedDay.day)] ??
-                          const [],
-                      onRemove: (plannedMeal) async {
-                        final success =
-                            await cubit.removePlannedMeal(plannedMeal);
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success
-                                  ? 'Meal removed from plan successfully.'
-                                  : 'Error removing meal.',
-                            ),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                              selectedDay.day,
+                            )] ??
+                            const [],
+                        onRemove: (plannedMeal) async {
+                          await cubit.removePlannedMeal(plannedMeal);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
