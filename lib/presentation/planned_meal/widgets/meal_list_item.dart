@@ -1,3 +1,4 @@
+// presentation/planned_meal/widgets/meal_list_item.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
@@ -7,11 +8,13 @@ import 'package:mealapp/common/helper/images/image_display.dart';
 class MealListItem extends StatelessWidget {
   final MealEntity mealEntity;
   final VoidCallback? onRemove;
+  final Widget? dragHandle; // 👈 Dodajemy uchwyt
 
   const MealListItem({
     super.key,
     required this.mealEntity,
     this.onRemove,
+    this.dragHandle, // 👈 Opcjonalny uchwyt
   });
 
   @override
@@ -60,6 +63,9 @@ class MealListItem extends StatelessWidget {
                 icon: const Icon(Icons.close, size: 18),
                 onPressed: onRemove,
               ),
+
+            // 👇 Uchwyt do przeciągania (jeśli przekazany)
+            if (dragHandle != null) dragHandle!,
           ],
         ),
       ),

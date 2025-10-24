@@ -1,3 +1,4 @@
+// data/planned_meal/source/remote/firebase_planned_meal_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/exception.dart';
@@ -64,9 +65,12 @@ class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
           .where('isDeleted', isEqualTo: false)
           .get()
           .timeout(const Duration(seconds: 15));
-      return returnedData.docs
+      final meals = returnedData.docs
           .map((doc) => PlannedMealModel.fromMap(doc.data()))
           .toList();
+      // 👇 Sortowanie według pozycji
+      meals.sort((a, b) => a.position.compareTo(b.position));
+      return meals;
     });
   }
 

@@ -91,6 +91,7 @@ class PlannedMealPage extends StatelessWidget {
                               PlannedMealEntity(
                                 date: selectedDay,
                                 meal: mealToAdd!,
+                                position: plannedMeals[selectedDay]?.length ?? 0,
                               ),
                             ),
                           ),
@@ -103,6 +104,7 @@ class PlannedMealPage extends StatelessWidget {
                               selectedDay.day,
                             )] ??
                             const [],
+                        selectedDate: selectedDay, // 👈 Przekazujemy datę
                         onRemove: (plannedMeal) async {
                           await cubit.removePlannedMeal(plannedMeal);
                         },

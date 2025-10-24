@@ -73,6 +73,7 @@ import 'package:mealapp/domain/planned_meal/usecase/add_planned_meal_usecase.dar
 import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meals_in_date_range_usecase.dart';
+import 'package:mealapp/domain/planned_meal/usecase/reorder_planned_meals_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
@@ -348,6 +349,8 @@ Future<void> initializeDependencies() async {
       () => RemovePlannedMealUseCase(sl<PlannedMealRepository>()));
   sl.registerLazySingleton<RemovePlannedMealsInDateRangeUseCase>(
       () => RemovePlannedMealsInDateRangeUseCase(sl<PlannedMealRepository>()));
+  sl.registerLazySingleton<ReorderPlannedMealsUseCase>(
+      () => ReorderPlannedMealsUseCase(sl<PlannedMealRepository>()));
 
 // Favorite Meal usecases
   sl.registerLazySingleton<AddFavoriteMealUseCase>(
@@ -475,6 +478,7 @@ Future<void> initializeDependencies() async {
         addPlannedMealUseCase: sl(),
         removePlannedMealUseCase: sl(),
         removeInRangeUseCase: sl(),
+        reorderPlannedMealsUseCase: sl(),
       ));
 
   // SYNC SERVICES & CONNECTION MONITOR

@@ -1,3 +1,4 @@
+// data/planned_meal/model/planned_meal_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
@@ -8,7 +9,7 @@ part 'planned_meal_model.g.dart';
 class PlannedMealModel {
   @HiveField(0)
   final DateTime date;
-  
+
   @HiveField(1)
   final MealModel meal;
 
@@ -18,22 +19,28 @@ class PlannedMealModel {
   @HiveField(3, defaultValue: false)
   final bool isDeleted;
 
+  @HiveField(4, defaultValue: 0) // 👈 DODAJ defaultValue
+  final int position;
+
   PlannedMealModel({
     required this.date,
     required this.meal,
+    required this.position, // 👈 Wymagane w konstruktorze
     this.isSynced = false,
     this.isDeleted = false,
   });
 
-    PlannedMealModel copyWith({
+  PlannedMealModel copyWith({
     DateTime? date,
     MealModel? meal,
     bool? isSynced,
     bool? isDeleted,
+    int? position, // 👈 Dodajemy copyWith dla position
   }) {
     return PlannedMealModel(
       date: date ?? this.date,
       meal: meal ?? this.meal,
+      position: position ?? this.position,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
     );
@@ -43,6 +50,7 @@ class PlannedMealModel {
     return {
       'date': date,
       'meal': meal.toMap(),
+      'position': position, // 👈 Dodajemy do mapy
       'isSynced': isSynced,
       'isDeleted': isDeleted,
     };
@@ -52,6 +60,7 @@ class PlannedMealModel {
     return PlannedMealModel(
       date: (map['date'] as Timestamp).toDate(),
       meal: MealModel.fromMap(map['meal']),
+      position: map['position'] ?? 0, // 👈 Domyślna wartość
       isSynced: map['isSynced'] ?? false,
       isDeleted: map['isDeleted'] ?? false,
     );

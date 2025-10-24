@@ -6,6 +6,7 @@ import 'package:mealapp/domain/planned_meal/usecase/add_planned_meal_usecase.dar
 import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meals_in_date_range_usecase.dart';
+import 'package:mealapp/domain/planned_meal/usecase/reorder_planned_meals_usecase.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_state.dart';
 
 class PlannedMealsCubit extends Cubit<PlannedMealsState> {
@@ -13,6 +14,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
   final AddPlannedMealUseCase addPlannedMealUseCase;
   final RemovePlannedMealUseCase removePlannedMealUseCase;
   final RemovePlannedMealsInDateRangeUseCase removeInRangeUseCase;
+  final ReorderPlannedMealsUseCase reorderPlannedMealsUseCase;
 
   DateTime _selectedDay;
   DateTime _focusedDay;
@@ -23,6 +25,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     required this.addPlannedMealUseCase,
     required this.removePlannedMealUseCase,
     required this.removeInRangeUseCase,
+    required this.reorderPlannedMealsUseCase,
   })  : _selectedDay = normalizeDate(DateTime.now()),
         _focusedDay = normalizeDate(DateTime.now()),
         super(PlannedMealsInitial()) {
@@ -82,8 +85,8 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     final existingMeals = _groupedMeals[date] ?? [];
 
     // duplikat w danym dniu
-    final alreadyAdded =
-        existingMeals.any((meal) => meal.meal.mealId == plannedMeal.meal.mealId);
+    final alreadyAdded = existingMeals
+        .any((meal) => meal.meal.mealId == plannedMeal.meal.mealId);
 
     if (alreadyAdded) {
       emit(PlannedMealsLoaded(
@@ -120,44 +123,44 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     );
   }
 
-Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
-  final result = await removePlannedMealUseCase.call(plannedMeal);
+  Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
+    final result = await removePlannedMealUseCase.call(plannedMeal);
 
-  return result.fold(
-    (failure) {
-      emit(PlannedMealsLoaded(
-        plannedMeals: Map.from(_groupedMeals),
-        selectedDay: _selectedDay,
-        focusedDay: _focusedDay,
-        toastMessage: mapFailureToMessage(failure),
-      ));
-      return false;
-    },
-    (_) {
-      final normalizedDate = _normalizeDate(plannedMeal.date);
-      final mealId = plannedMeal.meal.mealId;
+    return result.fold(
+      (failure) {
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+          toastMessage: mapFailureToMessage(failure),
+        ));
+        return false;
+      },
+      (_) {
+        final normalizedDate = _normalizeDate(plannedMeal.date);
+        final mealId = plannedMeal.meal.mealId;
 
-      if (_groupedMeals.containsKey(normalizedDate)) {
-        _groupedMeals[normalizedDate] = _groupedMeals[normalizedDate]!
-            .where((meal) => meal.meal.mealId != mealId)
-            .toList();
+        if (_groupedMeals.containsKey(normalizedDate)) {
+          _groupedMeals[normalizedDate] = _groupedMeals[normalizedDate]!
+              .where((meal) => meal.meal.mealId != mealId)
+              .toList();
 
-        if (_groupedMeals[normalizedDate]!.isEmpty) {
-          _groupedMeals.remove(normalizedDate);
+          if (_groupedMeals[normalizedDate]!.isEmpty) {
+            _groupedMeals.remove(normalizedDate);
+          }
         }
-      }
 
-      emit(PlannedMealsLoaded(
-        plannedMeals: Map.from(_groupedMeals),
-        selectedDay: _selectedDay,
-        focusedDay: _focusedDay,
-        toastMessage: 'Posiłek został usunięty.',
-      ));
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+          toastMessage: 'Posiłek został usunięty.',
+        ));
 
-      return true;
-    },
-  );
-}
+        return true;
+      },
+    );
+  }
 
   Future<void> removePlannedMealsInDateRange(
     DateTime start,
@@ -185,6 +188,44 @@ Future<bool> removePlannedMeal(PlannedMealEntity plannedMeal) async {
           selectedDay: _selectedDay,
           focusedDay: _focusedDay,
           toastMessage: 'Posiłki w wybranym zakresie zostały usunięte.',
+        ));
+      },
+    );
+  }
+
+  Future<void> reorderPlannedMeals({
+    required int oldIndex,
+    required int newIndex,
+    required DateTime date,
+  }) async {
+    final normalizedDate = _normalizeDate(date);
+    final currentMeals = _groupedMeals[normalizedDate] ?? [];
+
+    if (currentMeals.isEmpty) return;
+
+    final result = await reorderPlannedMealsUseCase.call(
+      plannedMeals: currentMeals,
+      oldIndex: oldIndex,
+      newIndex: newIndex,
+      date: normalizedDate,
+    );
+
+    result.fold(
+      (failure) {
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+          toastMessage: mapFailureToMessage(failure),
+        ));
+      },
+      (updatedMeals) {
+        _groupedMeals[normalizedDate] = updatedMeals;
+        emit(PlannedMealsLoaded(
+          plannedMeals: Map.from(_groupedMeals),
+          selectedDay: _selectedDay,
+          focusedDay: _focusedDay,
+          toastMessage: 'Kolejność posiłków została zmieniona.',
         ));
       },
     );

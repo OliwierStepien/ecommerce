@@ -1,3 +1,4 @@
+// data/planned_meal/source/local/hive_planned_meal_service.dart
 import 'package:hive/hive.dart';
 import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
 
@@ -17,19 +18,28 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
 
   @override
   Future<List<PlannedMealModel>> getPlannedMeals() async {
-    return _box.values.where((model) => !model.isDeleted).toList();
+    final meals = _box.values.where((model) => !model.isDeleted).toList();
+    // 👇 Sortowanie według pozycji
+    meals.sort((a, b) => a.position.compareTo(b.position));
+    return meals;
   }
 
   @override
   Future<List<PlannedMealModel>> getUnsyncedPlannedMeals() async {
-    return _box.values
+    final meals = _box.values
         .where((model) => !model.isSynced && !model.isDeleted)
         .toList();
+    // 👇 Sortowanie według pozycji
+    meals.sort((a, b) => a.position.compareTo(b.position));
+    return meals;
   }
 
   @override
   Future<List<PlannedMealModel>> getUnsyncedChanges() async {
-    return _box.values.where((model) => !model.isSynced).toList();
+    final meals = _box.values.where((model) => !model.isSynced).toList();
+    // 👇 Sortowanie według pozycji
+    meals.sort((a, b) => a.position.compareTo(b.position));
+    return meals;
   }
 
   @override
@@ -48,6 +58,7 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
           PlannedMealModel(
             date: model.date,
             meal: model.meal,
+            position: model.position, // 👈 Zachowaj pozycję
             isSynced: true,
             isDeleted: false,
           ));
@@ -65,7 +76,11 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
       if (model != null) {
         await _box.put(
           key,
-          model.copyWith(isDeleted: true, isSynced: false),
+          model.copyWith(
+            isDeleted: true, 
+            isSynced: false,
+            position: model.position, // 👈 Zachowaj pozycję
+          ),
         );
       }
     }

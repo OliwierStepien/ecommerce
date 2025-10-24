@@ -88,6 +88,7 @@ class PlannedMealSyncService implements SyncService {
               meal: MealMapper.toModel(entity.meal), // Konwersja encji na model
               isSynced: true, // Oznacz jako zsynchronizowane
               isDeleted: false,
+              position: model.position, // Zachowaj pozycję
             ));
           }
         }
