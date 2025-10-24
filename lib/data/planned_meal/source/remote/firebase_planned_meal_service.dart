@@ -10,6 +10,7 @@ abstract class FirebasePlannedMealService {
   Future<void> removePlannedMeal(PlannedMealModel plannedMeal);
   Future<List<PlannedMealModel>> getPlannedMeals();
   Future<void> removePlannedMealsInDateRange(DateTime start, DateTime end);
+  Future<void> updatePlannedMeal(PlannedMealModel plannedMeal);
 }
 
 class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
@@ -96,6 +97,17 @@ class FirebasePlannedMealServiceImpl implements FirebasePlannedMealService {
             .delete()
             .timeout(const Duration(seconds: 15));
       }
+    });
+  }
+
+  @override
+  Future<void> updatePlannedMeal(PlannedMealModel plannedMeal) async {
+    return handleFirestoreException(() async {
+      final docId = _generateDocId(plannedMeal);
+      await _userPlannedMealCollection()
+          .doc(docId)
+          .update(plannedMeal.toMap()) // 👈 UŻYJ update zamiast set
+          .timeout(const Duration(seconds: 15));
     });
   }
 }

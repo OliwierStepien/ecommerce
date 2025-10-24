@@ -11,6 +11,7 @@ abstract class HivePlannedMealService {
   Future<void> removePlannedMeal(PlannedMealModel plannedMeal, {bool isOnline});
   Future<void> removePlannedMealsInDateRange(DateTime start, DateTime end,
       {bool isOnline});
+  Future<void> updatePlannedMeal(PlannedMealModel plannedMeal);
 }
 
 class HivePlannedMealServiceImpl implements HivePlannedMealService {
@@ -77,7 +78,7 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
         await _box.put(
           key,
           model.copyWith(
-            isDeleted: true, 
+            isDeleted: true,
             isSynced: false,
             position: model.position, // 👈 Zachowaj pozycję
           ),
@@ -102,5 +103,11 @@ class HivePlannedMealServiceImpl implements HivePlannedMealService {
     for (final meal in mealsInRange) {
       await removePlannedMeal(meal, isOnline: isOnline);
     }
+  }
+
+  @override
+  Future<void> updatePlannedMeal(PlannedMealModel plannedMeal) async {
+    await _box.put(
+        '${plannedMeal.date}_${plannedMeal.meal.mealId}', plannedMeal);
   }
 }

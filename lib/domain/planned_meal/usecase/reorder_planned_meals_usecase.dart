@@ -1,6 +1,5 @@
 // domain/planned_meal/usecase/reorder_planned_meals_usecase.dart
 import 'package:dartz/dartz.dart';
-import 'package:flutter/material.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
@@ -14,7 +13,7 @@ class ReorderPlannedMealsUseCase {
     required List<PlannedMealEntity> plannedMeals,
     required int oldIndex,
     required int newIndex,
-    required DateTime date, // 👈 Potrzebujemy daty, bo grupowanie jest po dacie
+    required DateTime date,
   }) async {
     if (oldIndex == newIndex) {
       return Right(plannedMeals);
@@ -22,32 +21,36 @@ class ReorderPlannedMealsUseCase {
 
     final updatedMeals = List<PlannedMealEntity>.from(plannedMeals);
 
+    // Dostosuj indeksy dla ReorderableListView
     if (oldIndex < newIndex) newIndex -= 1;
     final movedMeal = updatedMeals.removeAt(oldIndex);
-
-    if (newIndex > updatedMeals.length) newIndex = updatedMeals.length;
-    if (newIndex < 0) newIndex = 0;
-
     updatedMeals.insert(newIndex, movedMeal);
 
-    // Nadaj nowe pozycje
+    // Aktualizuj pozycje
     for (int i = 0; i < updatedMeals.length; i++) {
-      final updatedMeal = updatedMeals[i].copyWith(position: i);
-      updatedMeals[i] = updatedMeal;
-      
-      // Zapisz zmiany w repozytorium
-      final result = await repository.removePlannedMeal(updatedMeals[i]);
-      result.fold(
-        (failure) => debugPrint('❌ Nie udało się zaktualizować: ${updatedMeals[i].meal.title}'),
-        (_) => debugPrint('✅ Zaktualizowano: ${updatedMeals[i].meal.title} (pos: ${updatedMeals[i].position})'),
+      updatedMeals[i] = updatedMeals[i].copyWith(position: i);
+    }
+
+    // 👇 ZAPISZ TYLKO ZMIENIONE POZYCJE
+    // Znajdź posiłki, których pozycja się zmieniła
+    final mealsToUpdate = <PlannedMealEntity>[];
+    for (int i = 0; i < updatedMeals.length; i++) {
+      final originalMeal = plannedMeals.firstWhere(
+        (meal) => meal.meal.mealId == updatedMeals[i].meal.mealId,
+        orElse: () => updatedMeals[i],
       );
       
-      // Dodaj z nową pozycją
-      final addResult = await repository.addPlannedMeal(updatedMeal);
-      addResult.fold(
-        (failure) => debugPrint('❌ Nie udało się dodać: ${updatedMeal.meal.title}'),
-        (_) => debugPrint('✅ Dodano: ${updatedMeal.meal.title} (pos: ${updatedMeal.position})'),
-      );
+      if (originalMeal.position != updatedMeals[i].position) {
+        mealsToUpdate.add(updatedMeals[i]);
+      }
+    }
+
+    // Zapisz tylko zmienione pozycje
+    for (final meal in mealsToUpdate) {
+      final result = await repository.updatePlannedMeal(meal);
+      if (result.isLeft()) {
+        return Left((result as Left<Failure, void>).value);
+      }
     }
 
     return Right(updatedMeals);

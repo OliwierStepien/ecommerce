@@ -33,6 +33,15 @@ class FirebasePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
+  Future<Either<Failure, void>> updatePlannedMeal(
+      PlannedMealEntity plannedMeal) async {
+    return handleFirestoreFailure(() async {
+      final model = PlannedMealMapper.toModel(plannedMeal);
+      await _firebasePlannedMealService.updatePlannedMeal(model);
+    });
+  }
+
+  @override
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
     return handleFirestoreFailure(() async {
       final models = await _firebasePlannedMealService.getPlannedMeals();

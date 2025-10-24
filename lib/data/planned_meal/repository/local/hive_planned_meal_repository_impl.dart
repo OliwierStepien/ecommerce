@@ -38,6 +38,14 @@ class HivePlannedMealRepositoryImpl implements PlannedMealRepository {
   }
 
   @override
+Future<Either<Failure, void>> updatePlannedMeal(PlannedMealEntity plannedMeal) async {
+  return handleHiveFailure(() async {
+    final model = PlannedMealMapper.toModel(plannedMeal);
+    await _hivePlannedMealService.updatePlannedMeal(model);
+  });
+}
+
+  @override
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals() async {
     return handleHiveFailure(() async {
       final models = await _hivePlannedMealService.getPlannedMeals();

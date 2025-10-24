@@ -4,10 +4,16 @@ import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 
 abstract class PlannedMealRepository {
   Future<Either<Failure, void>> addPlannedMeal(PlannedMealEntity plannedMeal);
-  Future<Either<Failure, void>> removePlannedMeal(PlannedMealEntity plannedMeal);
+  Future<Either<Failure, void>> removePlannedMeal(
+      PlannedMealEntity plannedMeal);
+  Future<Either<Failure, void>> updatePlannedMeal(
+      PlannedMealEntity plannedMeal);
   Future<Either<Failure, List<PlannedMealEntity>>> getPlannedMeals();
   Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedPlannedMeals();
-  Future<Either<Failure, void>> markPlannedMealAsSynced(DateTime date, String mealId);
-  Future<Either<Failure, List<PlannedMealEntity>>> getUnsyncedChangesForPlannedMeals();
-  Future<Either<Failure, void>> removePlannedMealsInDateRange(DateTime start, DateTime end);
+  Future<Either<Failure, void>> markPlannedMealAsSynced(
+      DateTime date, String mealId);
+  Future<Either<Failure, List<PlannedMealEntity>>>
+      getUnsyncedChangesForPlannedMeals();
+  Future<Either<Failure, void>> removePlannedMealsInDateRange(
+      DateTime start, DateTime end);
 }

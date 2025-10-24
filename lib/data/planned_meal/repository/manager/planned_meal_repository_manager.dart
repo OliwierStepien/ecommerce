@@ -107,4 +107,26 @@ class PlannedMealRepositoryManager implements PlannedMealRepository {
       getUnsyncedChangesForPlannedMeals() async {
     return await _localRepository.getUnsyncedChangesForPlannedMeals();
   }
+
+  @override
+  Future<Either<Failure, void>> updatePlannedMeal(
+      PlannedMealEntity plannedMeal) async {
+    // 1. Najpierw zawsze zapis lokalny
+    final localResult = await _localRepository.updatePlannedMeal(plannedMeal);
+    if (localResult.isLeft()) return localResult;
+
+    // 2. Synchronizacja jeśli online
+    final isOnline = await _networkInfo.checkInternetConnection();
+    if (!isOnline) return const Right(null);
+
+    final remoteResult = await _remoteRepository.updatePlannedMeal(plannedMeal);
+    return remoteResult.fold(
+      (failure) => const Right(null), // Nie oznaczaj sync przy błędzie
+      (_) async {
+        await _localRepository.markPlannedMealAsSynced(
+            plannedMeal.date, plannedMeal.meal.mealId);
+        return const Right(null);
+      },
+    );
+  }
 }

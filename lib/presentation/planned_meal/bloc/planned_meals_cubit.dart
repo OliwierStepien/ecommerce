@@ -193,6 +193,7 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
     );
   }
 
+  // presentation/planned_meal/bloc/planned_meals_cubit.dart
   Future<void> reorderPlannedMeals({
     required int oldIndex,
     required int newIndex,
@@ -203,6 +204,18 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
 
     if (currentMeals.isEmpty) return;
 
+    // 👇 1. LOKALNA AKTUALIZACJA - natychmiastowe odświeżenie UI
+    final locallyUpdatedMeals =
+        _reorderMealsLocally(currentMeals, oldIndex, newIndex);
+    _groupedMeals[normalizedDate] = locallyUpdatedMeals;
+
+    emit(PlannedMealsLoaded(
+      plannedMeals: Map.from(_groupedMeals),
+      selectedDay: _selectedDay,
+      focusedDay: _focusedDay,
+    ));
+
+    // 👇 2. ASYNCHRONICZNIE zapisz zmiany w tle
     final result = await reorderPlannedMealsUseCase.call(
       plannedMeals: currentMeals,
       oldIndex: oldIndex,
@@ -212,15 +225,19 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
 
     result.fold(
       (failure) {
+        // 👇 3. W przypadku błędu - przywróć poprzedni stan
+        _groupedMeals[normalizedDate] = currentMeals;
         emit(PlannedMealsLoaded(
           plannedMeals: Map.from(_groupedMeals),
           selectedDay: _selectedDay,
           focusedDay: _focusedDay,
-          toastMessage: mapFailureToMessage(failure),
+          toastMessage:
+              'Nie udało się zapisać zmian: ${mapFailureToMessage(failure)}',
         ));
       },
-      (updatedMeals) {
-        _groupedMeals[normalizedDate] = updatedMeals;
+      (finalUpdatedMeals) {
+        // 👇 4. Potwierdzenie sukcesu - upewnij się, że dane są aktualne
+        _groupedMeals[normalizedDate] = finalUpdatedMeals;
         emit(PlannedMealsLoaded(
           plannedMeals: Map.from(_groupedMeals),
           selectedDay: _selectedDay,
@@ -229,5 +246,22 @@ class PlannedMealsCubit extends Cubit<PlannedMealsState> {
         ));
       },
     );
+  }
+
+// 👇 Pomocnicza metoda do lokalnego przestawiania
+  List<PlannedMealEntity> _reorderMealsLocally(
+      List<PlannedMealEntity> meals, int oldIndex, int newIndex) {
+    final updatedMeals = List<PlannedMealEntity>.from(meals);
+
+    if (oldIndex < newIndex) newIndex -= 1;
+    final movedMeal = updatedMeals.removeAt(oldIndex);
+    updatedMeals.insert(newIndex, movedMeal);
+
+    // Aktualizuj pozycje lokalnie
+    for (int i = 0; i < updatedMeals.length; i++) {
+      updatedMeals[i] = updatedMeals[i].copyWith(position: i);
+    }
+
+    return updatedMeals;
   }
 }
