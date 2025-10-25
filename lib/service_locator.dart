@@ -21,6 +21,8 @@ import 'package:mealapp/data/favorite_meal/repository/remote/firebase_favorite_m
 import 'package:mealapp/data/favorite_meal/repository/sync/favorite_meal_sync_service.dart';
 import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_service.dart';
 import 'package:mealapp/data/favorite_meal/source/remote/firebase_favorite_meal_service.dart';
+import 'package:mealapp/data/friends/repository/remote/friend_repository_impl.dart';
+import 'package:mealapp/data/friends/source/remote/firebase_friend_service.dart';
 import 'package:mealapp/data/ingredient/repository/local/hive_ingredient_repository_impl.dart';
 import 'package:mealapp/data/ingredient/repository/manager/ingredient_repository_manager.dart';
 import 'package:mealapp/data/ingredient/repository/remote/firebase_ingredient_repository_impl.dart';
@@ -60,6 +62,10 @@ import 'package:mealapp/domain/category/usecase/get_categories.dart';
 import 'package:mealapp/domain/favorite_meal/repository/favorite_meal_repository.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/add_favorite_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
+import 'package:mealapp/domain/friends/repository/friend_repository.dart';
+import 'package:mealapp/domain/friends/usecase/add_friends_usecase.dart';
+import 'package:mealapp/domain/friends/usecase/get_friends_usecase.dart';
+import 'package:mealapp/domain/friends/usecase/remove_friends_usecase.dart';
 import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
@@ -88,6 +94,7 @@ import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.d
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
+import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
@@ -163,6 +170,11 @@ Future<void> initializeDependencies() async {
       FirebaseShoppingListCustomItemServiceImpl());
   sl.registerSingleton<HiveShoppingListCustomItemService>(
       HiveShoppingListCustomItemServiceImpl());
+
+  // Friends services
+
+  sl.registerLazySingleton<FirebaseFriendService>(
+      () => FirebaseFriendServiceImpl());
 
   // REPOSITORIES
 
@@ -292,6 +304,11 @@ Future<void> initializeDependencies() async {
           remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
           networkInfo: sl<NetworkInfo>()));
 
+  // Friend repositories
+
+  sl.registerLazySingleton<FriendRepository>(
+      () => FriendRepositoryImpl(firebaseService: sl()));
+
   // USECASES
 
   // Auth usecases
@@ -392,6 +409,17 @@ Future<void> initializeDependencies() async {
       RestoreCustomItemToShoppingListUseCase(
           sl<ShoppingListCustomItemRepository>()));
 
+  // Friends usecases
+
+  sl.registerLazySingleton<GetFriendsUseCase>(
+      () => GetFriendsUseCase(sl<FriendRepository>()));
+
+  sl.registerLazySingleton<AddFriendUseCase>(
+      () => AddFriendUseCase(sl<FriendRepository>()));
+
+  sl.registerLazySingleton<RemoveFriendUseCase>(
+      () => RemoveFriendUseCase(sl<FriendRepository>()));
+
   // CUBIT
 
   // ✅ Button state cubit
@@ -479,6 +507,14 @@ Future<void> initializeDependencies() async {
         removePlannedMealUseCase: sl(),
         removeInRangeUseCase: sl(),
         reorderPlannedMealsUseCase: sl(),
+      ));
+
+  // Friends cubit
+
+  sl.registerFactory<FriendsCubit>(() => FriendsCubit(
+        getFriendsUseCase: sl<GetFriendsUseCase>(),
+        addFriendUseCase: sl<AddFriendUseCase>(),
+        removeFriendUseCase: sl<RemoveFriendUseCase>(),
       ));
 
   // SYNC SERVICES & CONNECTION MONITOR

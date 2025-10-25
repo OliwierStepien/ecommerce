@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/auth/entity/user_entity.dart';
+import 'package:mealapp/domain/friends/entity/friend_entity.dart';
+import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
+import 'package:mealapp/presentation/friends/bloc/friend_state.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';
 
@@ -21,40 +24,46 @@ class UserInfoPage extends StatelessWidget {
           },
         ),
       ),
-      body: BlocBuilder<UserInfoDisplayCubit, UserInfoDisplayState>(
-        builder: (context, state) {
-          if (state is UserInfoLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: SingleChildScrollView(
+        child: BlocBuilder<UserInfoDisplayCubit, UserInfoDisplayState>(
+          builder: (context, state) {
+            if (state is UserInfoLoading) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-          if (state is UserInfoLoaded) {
-            return _UserInfoContent(user: state.user);
-          }
+            if (state is UserInfoLoaded) {
+              return _UserInfoContent(user: state.user);
+            }
 
-          if (state is LoadUserInfoFailure) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
+            if (state is LoadUserInfoFailure) {
+              return const SizedBox(
+                height: 200,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Błąd ładowania danych',
+                        style: TextStyle(fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: null, // Dodaj retry logikę
+                        child: Text('Spróbuj ponownie'),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<UserInfoDisplayCubit>().displayUserInfo();
-                    },
-                    child: const Text('Spróbuj ponownie'),
-                  ),
-                ],
-              ),
-            );
-          }
+                ),
+              );
+            }
 
-          return const SizedBox.shrink();
-        },
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -86,21 +95,112 @@ class _UserInfoContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          _InfoCard(
-            title: 'Konto',
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Edytuj profil'),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Funkcja wkrótce dostępna'),
-                    ),
-                  );
-                },
+          _FriendsCard(),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendsCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<FriendsCubit, FriendsState>(
+      builder: (context, state) {
+        return _InfoCard(
+          title: 'Znajomi',
+          children: [
+            // 👇 PRZYCISK DODAJ ZNAJOMEGO
+            ListTile(
+              leading: const Icon(Icons.person_add, color: Colors.blue),
+              title: const Text('Dodaj znajomego'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                _showAddFriendDialog(context);
+              },
+            ),
+            const SizedBox(height: 12),
+
+            // 👇 LISTA ZNAJOMYCH
+            if (state is FriendsLoading)
+              const Center(child: CircularProgressIndicator()),
+
+            if (state is FriendsLoaded)
+              ...state.friends
+                  .map((friend) => _FriendListItem(
+                        friend: friend,
+                        onRemove: () {
+                          context
+                              .read<FriendsCubit>()
+                              .removeFriend(friend.friendEmail);
+                        },
+                      ))
+                  .toList(),
+
+            if (state is FriendsLoaded && state.friends.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  'Brak znajomych. Dodaj pierwszego znajomego!',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ],
+
+            if (state is FriendsError)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  state.message,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddFriendDialog(BuildContext context) {
+    final emailController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Dodaj znajomego'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Wpisz adres email znajomego:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                hintText: 'email@przyklad.pl',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Anuluj'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final email = emailController.text.trim();
+              if (email.isNotEmpty) {
+                context.read<FriendsCubit>().addFriend(email);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Dodaj'),
           ),
         ],
       ),
@@ -178,6 +278,39 @@ class _InfoRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// 👇 _FriendListItem - DOPASOWANY DO RESZTY KODU
+class _FriendListItem extends StatelessWidget {
+  final FriendEntity friend;
+  final VoidCallback onRemove;
+
+  const _FriendListItem({
+    required this.friend,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Colors.blue[100],
+        child: Text(
+          friend.friendName[0].toUpperCase(),
+          style: const TextStyle(
+            color: Colors.blue,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      title: Text(friend.friendName),
+      subtitle: Text(friend.friendEmail),
+      trailing: IconButton(
+        icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+        onPressed: onRemove,
       ),
     );
   }

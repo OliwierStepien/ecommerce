@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/my_app.dart';
+import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
@@ -38,6 +39,7 @@ class MyAppWrapper extends StatelessWidget {
           create: (context) => sl<MealsDisplayCubit>(),
         ),
         BlocProvider(create: (_) => sl<PlannedMealsCubit>()),
+        BlocProvider(create: (_) => sl<FriendsCubit>()..loadFriends()),
       ],
       child: const MyApp(),
     );
