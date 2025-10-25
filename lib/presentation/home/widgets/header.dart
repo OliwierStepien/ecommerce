@@ -64,16 +64,28 @@ class _UserName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      context.l10n.helloUser(user.firstName),
-      style: const TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        context.push(Routes.nestedUserInfoPage);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.transparent,
+        ),
+        child: Text(
+          context.l10n.helloUser(user.firstName),
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          softWrap: true,
+          textAlign: TextAlign.start,
+        ),
       ),
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      softWrap: true,
-      textAlign: TextAlign.start,
     );
   }
 }

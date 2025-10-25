@@ -20,5 +20,6 @@ class Routes {
   static const String nestedMealDetailPage = '/home/meal-detail';
   static const String calendarPage = 'calendar';
   static const String nestedCalendarPage = '/home/calendar';
-
+  static const String userInfoPage = 'user-info';
+  static const String nestedUserInfoPage = '/home/user-info';
 }
