@@ -39,7 +39,7 @@ class MyAppWrapper extends StatelessWidget {
           create: (context) => sl<MealsDisplayCubit>(),
         ),
         BlocProvider(create: (_) => sl<PlannedMealsCubit>()),
-        BlocProvider(create: (_) => sl<FriendsCubit>()..loadFriends()),
+        BlocProvider(create: (_) => sl<FriendsCubit>()..initializeFriendsData()), // ZMIENIONE: initializeFriendsData zamiast loadFriends
       ],
       child: const MyApp(),
     );

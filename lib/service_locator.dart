@@ -65,7 +65,11 @@ import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
 import 'package:mealapp/domain/friends/repository/friend_repository.dart';
 import 'package:mealapp/domain/friends/usecase/add_friends_usecase.dart';
 import 'package:mealapp/domain/friends/usecase/get_friends_usecase.dart';
+import 'package:mealapp/domain/friends/usecase/get_pending_invitations_count_usecase.dart';
+import 'package:mealapp/domain/friends/usecase/get_pending_invitations_usecase.dart';
 import 'package:mealapp/domain/friends/usecase/remove_friends_usecase.dart';
+import 'package:mealapp/domain/friends/usecase/respond_to_invitation_usecase.dart';
+import 'package:mealapp/domain/friends/usecase/send_friend_invitation_usecase.dart';
 import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
@@ -411,14 +415,23 @@ Future<void> initializeDependencies() async {
 
   // Friends usecases
 
-  sl.registerLazySingleton<GetFriendsUseCase>(
-      () => GetFriendsUseCase(sl<FriendRepository>()));
+  sl.registerFactory<GetFriendsUseCase>(() => GetFriendsUseCase(sl()));
 
-  sl.registerLazySingleton<AddFriendUseCase>(
-      () => AddFriendUseCase(sl<FriendRepository>()));
+  sl.registerFactory<AddFriendUseCase>(() => AddFriendUseCase(sl()));
+  
+  sl.registerFactory<RemoveFriendUseCase>(() => RemoveFriendUseCase(sl()));
 
-  sl.registerLazySingleton<RemoveFriendUseCase>(
-      () => RemoveFriendUseCase(sl<FriendRepository>()));
+  sl.registerFactory<SendFriendInvitationUseCase>(
+      () => SendFriendInvitationUseCase(sl()));
+
+  sl.registerFactory<GetPendingInvitationsUseCase>(
+      () => GetPendingInvitationsUseCase(sl()));
+
+  sl.registerFactory<RespondToInvitationUseCase>(
+      () => RespondToInvitationUseCase(sl()));
+
+  sl.registerFactory<GetPendingInvitationsCountUseCase>(
+      () => GetPendingInvitationsCountUseCase(sl()));
 
   // CUBIT
 
@@ -515,6 +528,11 @@ Future<void> initializeDependencies() async {
         getFriendsUseCase: sl<GetFriendsUseCase>(),
         addFriendUseCase: sl<AddFriendUseCase>(),
         removeFriendUseCase: sl<RemoveFriendUseCase>(),
+        sendFriendInvitationUseCase: sl<SendFriendInvitationUseCase>(),
+        getPendingInvitationsUseCase: sl<GetPendingInvitationsUseCase>(),
+        respondToInvitationUseCase: sl<RespondToInvitationUseCase>(),
+        getPendingInvitationsCountUseCase:
+            sl<GetPendingInvitationsCountUseCase>(),
       ));
 
   // SYNC SERVICES & CONNECTION MONITOR

@@ -9,6 +9,7 @@ import 'package:mealapp/presentation/auth/signin_password/widgets/continue_passw
 import 'package:mealapp/presentation/auth/signin_password/widgets/signin_password_field.dart';
 import 'package:mealapp/presentation/auth/signin_password/widgets/reset_password.dart';
 import 'package:mealapp/presentation/auth/signin_password/widgets/signin_password_header.dart';
+import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/routes/routes.dart';
 
 class SignInPasswordPage extends StatelessWidget {
@@ -27,32 +28,44 @@ class SignInPasswordPage extends StatelessWidget {
       appBar: const BasicAppbar(),
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
+        onTap: () => FocusScope.of(context).unfocus(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 40,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
           child: BlocProvider(
             create: (context) => ButtonStateCubit(),
             child: BlocListener<ButtonStateCubit, ButtonState>(
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state is ButtonFailureState) {
-                  final snackbar = SnackBar(
-                    content: Text(state.errorMessage),
-                    behavior: SnackBarBehavior.floating,
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
                 }
+
                 if (state is ButtonSuccessState) {
-                  final snackbar = SnackBar(
-                    content: Text(state.successMessage),
-                    behavior: SnackBarBehavior.floating,
+                  // 1) Pokaż feedback
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.successMessage),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                  context.go(Routes.homePage);
+
+                  // 2) ODŚWIEŻ DANE UŻYTKOWNIKA PRZED NAWIGACJĄ
+                  // (UserInfoDisplayCubit jest dostarczony globalnie w MyAppWrapper)
+                  try {
+                    await context.read<UserInfoDisplayCubit>().displayUserInfo();
+                  } catch (_) {
+                    // jeśli z jakiegoś powodu nie ma w context — możesz ewentualnie użyć get_it
+                    // sl<UserInfoDisplayCubit>().displayUserInfo();
+                  }
+
+                  // 3) Dopiero teraz przejdź na Home
+                  if (context.mounted) {
+                    context.go(Routes.homePage);
+                  }
                 }
               },
               child: Form(
@@ -65,9 +78,10 @@ class SignInPasswordPage extends StatelessWidget {
                     SigninPasswordField(controller: _passwordCon),
                     const SizedBox(height: 20),
                     ContinuePasswordButton(
-                        formKey: _formKey,
-                        controller: _passwordCon,
-                        userSigninReq: userSigninReq),
+                      formKey: _formKey,
+                      controller: _passwordCon,
+                      userSigninReq: userSigninReq,
+                    ),
                     const SizedBox(height: 20),
                     const ResetPassword(),
                   ],

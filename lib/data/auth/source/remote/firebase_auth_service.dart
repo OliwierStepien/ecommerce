@@ -1,3 +1,4 @@
+import 'package:mealapp/common/helper/debug_log/debug_log.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/exception/handle_firestore_exception.dart';
 import 'package:mealapp/data/auth/model/user_creation_req.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +18,7 @@ class FirebaseAuthServiceImpl extends FirebaseAuthService {
   @override
   Future<String> signup(UserCreationReq user) async {
     return handleFirestoreException(() async {
+      debugLog('[FIREBASE] signup ${user.email}');
       final returnedData = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: user.email,
@@ -32,6 +34,7 @@ class FirebaseAuthServiceImpl extends FirebaseAuthService {
         'email': user.email,
       }).timeout(const Duration(seconds: 15));
 
+      debugLog('[FIREBASE] signup success uid=${returnedData.user!.uid}');
       return 'Konto zostało utworzone';
     });
   }
@@ -39,13 +42,15 @@ class FirebaseAuthServiceImpl extends FirebaseAuthService {
   @override
   Future<String> signin(UserSigninReq user) async {
     return handleFirestoreException(() async {
-      await FirebaseAuth.instance
+      debugLog('[FIREBASE] signin attempt for ${user.email}');
+      final creds = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
             email: user.email,
             password: user.password!,
           )
           .timeout(const Duration(seconds: 15));
 
+      debugLog('[FIREBASE] signin success -> uid=${creds.user?.uid}');
       return 'Logowanie zakończone sukcesem';
     });
   }
@@ -53,10 +58,10 @@ class FirebaseAuthServiceImpl extends FirebaseAuthService {
   @override
   Future<String> sendPasswordResetEmail(String email) async {
     return handleFirestoreException(() async {
+      debugLog('[FIREBASE] reset password for $email');
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: email)
           .timeout(const Duration(seconds: 15));
-
       return 'Email z instrukcją resetu hasła został wysłany';
     });
   }
@@ -64,35 +69,40 @@ class FirebaseAuthServiceImpl extends FirebaseAuthService {
   @override
   Future<String> signout() async {
     return handleFirestoreException(() async {
-      await FirebaseAuth.instance
-          .signOut()
-          .timeout(const Duration(seconds: 15));
+      debugLog('[FIREBASE] signout()');
+      await FirebaseAuth.instance.signOut().timeout(const Duration(seconds: 15));
       return 'Zostałeś wylogowany';
     });
   }
 
   @override
   Future<bool> isLoggedIn() async {
-    return handleFirestoreException(() async {
-      return FirebaseAuth.instance.currentUser != null;
-    });
+    final user = FirebaseAuth.instance.currentUser;
+    debugLog('[FIREBASE] isLoggedIn? -> ${user != null}, uid=${user?.uid}');
+    return user != null;
   }
 
   @override
   Future<Map<String, dynamic>> getUser() async {
     return handleFirestoreException(() async {
       final currentUser = FirebaseAuth.instance.currentUser;
-      final userData = await FirebaseFirestore.instance
+      debugLog('[FIREBASE] getUser uid=${currentUser?.uid}');
+      final snap = await FirebaseFirestore.instance
           .collection('Users')
           .doc(currentUser?.uid)
-          .get()
-          .then((value) => value.data());
+          .get();
 
-      if (userData == null) {
+      final data = snap.data();
+      if (data == null) {
+        debugLog('[FIREBASE] getUser: brak dokumentu!');
         throw Exception('Użytkownik nie znaleziony');
       }
 
-      return userData;
+      debugLog('[FIREBASE] getUser success for ${data['email']}');
+      return {
+        'userId': currentUser!.uid, // zawsze dodaj uid
+        ...data,
+      };
     });
   }
 }
