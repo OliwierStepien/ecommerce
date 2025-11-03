@@ -10,6 +10,7 @@ class FriendMapper {
       friendEmail: model.friendEmail,
       friendName: model.friendName,
       addedAt: model.addedAt,
+      friendUid: model.friendUid, // ✅
     );
   }
 
@@ -18,6 +19,7 @@ class FriendMapper {
       friendEmail: entity.friendEmail,
       friendName: entity.friendName,
       addedAt: entity.addedAt,
+      friendUid: entity.friendUid, // ✅
     );
   }
 

@@ -38,6 +38,8 @@ import 'package:mealapp/data/planned_meal/repository/remote/firebase_planned_mea
 import 'package:mealapp/data/planned_meal/repository/sync/planned_meal_sync_service.dart';
 import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service.dart';
 import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
+import 'package:mealapp/data/planned_meal_share/repository/remote/firebase_meal_share_repository_impl.dart';
+import 'package:mealapp/data/planned_meal_share/source/remote/firebase_meal_share_service.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/local/hive_shopping_list_custom_item_repository.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/manager/shopping_list_custom_item_repository_manager.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/remote/firebase_shopping_list_custom_item_repository.dart';
@@ -84,6 +86,7 @@ import 'package:mealapp/domain/planned_meal/usecase/get_planned_meal_usecase.dar
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meals_in_date_range_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/reorder_planned_meals_usecase.dart';
+import 'package:mealapp/domain/planned_meal_share/usecase/share_planned_meals_with_friend_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
@@ -106,6 +109,7 @@ import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
+import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
@@ -179,6 +183,11 @@ Future<void> initializeDependencies() async {
 
   sl.registerLazySingleton<FirebaseFriendService>(
       () => FirebaseFriendServiceImpl());
+
+// Meal Share service
+  sl.registerSingleton<FirebaseMealShareService>(FirebaseMealShareService(
+      // opcjonalnie wstrzyknij firestore/auth jeśli masz adaptery
+      ));
 
   // REPOSITORIES
 
@@ -313,6 +322,13 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<FriendRepository>(
       () => FriendRepositoryImpl(firebaseService: sl()));
 
+  sl.registerLazySingleton<FirebaseMealShareRepositoryImpl>(
+    () => FirebaseMealShareRepositoryImpl(
+      sl<FirebaseMealShareService>(),
+      sl<HivePlannedMealService>(),
+    ),
+  );
+
   // USECASES
 
   // Auth usecases
@@ -418,7 +434,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<GetFriendsUseCase>(() => GetFriendsUseCase(sl()));
 
   sl.registerFactory<AddFriendUseCase>(() => AddFriendUseCase(sl()));
-  
+
   sl.registerFactory<RemoveFriendUseCase>(() => RemoveFriendUseCase(sl()));
 
   sl.registerFactory<SendFriendInvitationUseCase>(
@@ -432,6 +448,12 @@ Future<void> initializeDependencies() async {
 
   sl.registerFactory<GetPendingInvitationsCountUseCase>(
       () => GetPendingInvitationsCountUseCase(sl()));
+
+  // Meal Share usecase
+  sl.registerFactory<SharePlannedMealsWithFriendUseCase>(
+    () => SharePlannedMealsWithFriendUseCase(
+        sl<FirebaseMealShareRepositoryImpl>()),
+  );
 
   // CUBIT
 
@@ -533,6 +555,12 @@ Future<void> initializeDependencies() async {
         respondToInvitationUseCase: sl<RespondToInvitationUseCase>(),
         getPendingInvitationsCountUseCase:
             sl<GetPendingInvitationsCountUseCase>(),
+      ));
+
+  // Meal Share cubit
+
+  sl.registerFactory<MealShareCubit>(() => MealShareCubit(
+        sl<SharePlannedMealsWithFriendUseCase>(),
       ));
 
   // SYNC SERVICES & CONNECTION MONITOR
