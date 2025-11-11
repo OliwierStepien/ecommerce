@@ -19,15 +19,20 @@ class PlannedMealModel {
   @HiveField(3, defaultValue: false)
   final bool isDeleted;
 
-  @HiveField(4, defaultValue: 0) // 👈 DODAJ defaultValue
+  @HiveField(4, defaultValue: 0)
   final int position;
+
+  /// 👇 NOWE: właściciel rekordu w Hive (UID użytkownika)
+  @HiveField(5, defaultValue: '')
+  final String ownerUid;
 
   PlannedMealModel({
     required this.date,
     required this.meal,
-    required this.position, // 👈 Wymagane w konstruktorze
+    required this.position,
     this.isSynced = false,
     this.isDeleted = false,
+    this.ownerUid = '',
   });
 
   PlannedMealModel copyWith({
@@ -35,7 +40,8 @@ class PlannedMealModel {
     MealModel? meal,
     bool? isSynced,
     bool? isDeleted,
-    int? position, // 👈 Dodajemy copyWith dla position
+    int? position,
+    String? ownerUid,
   }) {
     return PlannedMealModel(
       date: date ?? this.date,
@@ -43,6 +49,7 @@ class PlannedMealModel {
       position: position ?? this.position,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
+      ownerUid: ownerUid ?? this.ownerUid,
     );
   }
 
@@ -50,9 +57,10 @@ class PlannedMealModel {
     return {
       'date': date,
       'meal': meal.toMap(),
-      'position': position, // 👈 Dodajemy do mapy
+      'position': position,
       'isSynced': isSynced,
       'isDeleted': isDeleted,
+      'ownerUid': ownerUid, // 👈
     };
   }
 
@@ -60,9 +68,10 @@ class PlannedMealModel {
     return PlannedMealModel(
       date: (map['date'] as Timestamp).toDate(),
       meal: MealModel.fromMap(map['meal']),
-      position: map['position'] ?? 0, // 👈 Domyślna wartość
+      position: map['position'] ?? 0,
       isSynced: map['isSynced'] ?? false,
       isDeleted: map['isDeleted'] ?? false,
+      ownerUid: map['ownerUid'] ?? '', // 👈
     );
   }
 }

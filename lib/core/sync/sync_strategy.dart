@@ -1,14 +1,13 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 /// Interfejs strategii synchronizacji.
 abstract class SyncStrategy {
   Future<void> onDataChanged(); // dane uległy zmianie
-  Future<void> onAppResumed(); // aplikacja wznowiona
-  Future<void> onAppPaused(); // aplikacja zminimalizowana
+  Future<void> onAppResumed();  // aplikacja wznowiona
+  Future<void> onAppPaused();   // aplikacja zminimalizowana
   Future<void> onNetworkRestored(); // przywrócono internet
-  void dispose(); // czyszczenie zasobów
+  void dispose();               // czyszczenie zasobów
 }
 
 /// Prosta debounce’owa strategia: opóźnia synchronizację, żeby zgrupować szybkie
@@ -28,15 +27,15 @@ class DebounceSyncStrategy implements SyncStrategy {
     debugPrint('[DebounceSyncStrategy] scheduling sync (reason: $reason), debounce=${debounceDuration.inMilliseconds}ms');
     _syncTimer?.cancel();
     _syncTimer = Timer(debounceDuration, () async {
-      debugPrint('[DebounceSyncStrategy] debounce period elapsed, executing syncCallback');
+      debugPrint('[DebounceSyncStrategy] debounce elapsed → sync');
       final execStopwatch = Stopwatch()..start();
       try {
         await syncCallback();
-      } catch (e) {
-        debugPrint('[DebounceSyncStrategy] syncCallback error: $e');
+      } catch (e, st) {
+        debugPrint('[DebounceSyncStrategy] syncCallback error: $e\n$st');
       } finally {
         execStopwatch.stop();
-        debugPrint('[DebounceSyncStrategy] syncCallback took ${execStopwatch.elapsedMilliseconds}ms');
+        debugPrint('[DebounceSyncStrategy] sync took ${execStopwatch.elapsedMilliseconds}ms');
       }
     });
   }
@@ -69,7 +68,6 @@ class DebounceSyncStrategy implements SyncStrategy {
   @override
   Future<void> onNetworkRestored() async {
     _syncTimer?.cancel();
-    // Optional guard to avoid spamming restore syncs:
     if (_lastImmediateSync != null &&
         DateTime.now().difference(_lastImmediateSync!) < const Duration(seconds: 5)) {
       debugPrint('[DebounceSyncStrategy] onNetworkRestored: skipped duplicate immediate sync');

@@ -22,13 +22,14 @@ class PlannedMealModelAdapter extends TypeAdapter<PlannedMealModel> {
       position: fields[4] == null ? 0 : fields[4] as int,
       isSynced: fields[2] == null ? false : fields[2] as bool,
       isDeleted: fields[3] == null ? false : fields[3] as bool,
+      ownerUid: fields[5] == null ? '' : fields[5] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, PlannedMealModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.date)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class PlannedMealModelAdapter extends TypeAdapter<PlannedMealModel> {
       ..writeByte(3)
       ..write(obj.isDeleted)
       ..writeByte(4)
-      ..write(obj.position);
+      ..write(obj.position)
+      ..writeByte(5)
+      ..write(obj.ownerUid);
   }
 
   @override

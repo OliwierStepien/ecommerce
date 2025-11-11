@@ -11,6 +11,7 @@ import 'package:mealapp/presentation/friends/bloc/friend_state.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';
 import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_cubit.dart';
+import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_state.dart';
 
 class UserInfoPage extends StatelessWidget {
   const UserInfoPage({super.key});
@@ -50,6 +51,22 @@ class UserInfoPage extends StatelessWidget {
                   friends.loadPendingInvitationsCount();
                   friends.loadFriends();
                 }
+              }
+            },
+          ),
+          // ⬇️ SnackBary po udostępnianiu posiłków
+          BlocListener<MealShareCubit, MealShareState>(
+            listenWhen: (prev, curr) =>
+                curr is MealShareSuccess || curr is MealShareFailure,
+            listener: (context, state) {
+              if (state is MealShareSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              } else if (state is MealShareFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
               }
             },
           ),
@@ -239,76 +256,93 @@ class _FriendsTab extends StatelessWidget {
     );
   }
 
-  void _showAddFriendDialog(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
+  // ✅ Bezpieczna wersja z dialogContext + await + mounted
+  Future<void> _showAddFriendDialog(BuildContext context) async {
+    String email = '';
+
+    final String? result = await showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Dodaj znajomego'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            hintText: 'email@przyklad.pl',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Anuluj'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final email = controller.text.trim();
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Dodaj znajomego'),
+          content: TextField(
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              hintText: 'email@przyklad.pl',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+            onChanged: (v) => email = v.trim(),
+            onSubmitted: (_) {
               if (email.isNotEmpty) {
-                context.read<FriendsCubit>().sendFriendInvitation(email);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Zaproszenie wysłane do $email'),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                Navigator.of(dialogContext).pop(email);
               }
             },
-            child: const Text('Wyślij zaproszenie'),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(null),
+              child: const Text('Anuluj'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (email.isNotEmpty) {
+                  Navigator.of(dialogContext).pop(email);
+                }
+              },
+              child: const Text('Wyślij zaproszenie'),
+            ),
+          ],
+        );
+      },
     );
+
+    if (result != null && result.isNotEmpty) {
+      if (!context.mounted) return;
+      context.read<FriendsCubit>().sendFriendInvitation(result);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Zaproszenie wysłane do $result'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
-  void _showRemoveFriendDialog(BuildContext context, FriendEntity friend) {
-    showDialog(
+  // ✅ Bezpieczna wersja z dialogContext + await + mounted
+  Future<void> _showRemoveFriendDialog(BuildContext context, FriendEntity friend) async {
+    final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Usuń znajomego'),
         content: Text('Czy chcesz usunąć ${friend.friendName}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text('Anuluj'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              context.read<FriendsCubit>().removeFriend(friend.friendEmail);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Usunięto ${friend.friendName} z listy znajomych'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Usuń', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
+
+    if (confirmed == true) {
+      if (!context.mounted) return;
+      context.read<FriendsCubit>().removeFriend(friend.friendEmail);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Usunięto ${friend.friendName} z listy znajomych'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
 
@@ -320,6 +354,7 @@ class _FriendListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mealShare = context.read<MealShareCubit>();
+    final isSharing = context.watch<MealShareCubit>().state is MealShareLoading;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -336,33 +371,49 @@ class _FriendListItem extends StatelessWidget {
             ),
           ),
         ),
-        title: Text(friend.friendName, style: const TextStyle(fontWeight: FontWeight.w500)),
+        title: Text(
+          friend.friendName,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
         subtitle: Text(friend.friendEmail),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ⬇️ WAŻNE: teraz przekazujemy UID znajomego
             IconButton(
               tooltip: 'Udostępnij planned meals',
-              icon: const Icon(Icons.calendar_month),
-              onPressed: () async {
-                final picked = await showDateRangePicker(
-                  context: context,
-                  firstDate: DateTime.utc(2024, 1, 1),
-                  lastDate: DateTime.utc(2035, 12, 31),
-                  helpText: 'Wybierz zakres do udostępnienia',
-                );
-                if (picked == null) return;
+              icon: isSharing
+                  ? const SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.calendar_month),
+              onPressed: isSharing
+                  ? null
+                  : () async {
+                      final picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime.utc(2024, 1, 1),
+                        lastDate: DateTime.utc(2035, 12, 31),
+                        helpText: 'Wybierz zakres do udostępnienia',
+                      );
+                      if (picked == null) return;
 
-                final start = DateTime(picked.start.year, picked.start.month, picked.start.day);
-                final end   = DateTime(picked.end.year, picked.end.month, picked.end.day);
+                      final start = DateTime(
+                        picked.start.year,
+                        picked.start.month,
+                        picked.start.day,
+                      );
+                      final end = DateTime(
+                        picked.end.year,
+                        picked.end.month,
+                        picked.end.day,
+                      );
 
-                mealShare.shareMeals(
-                  friendUid: friend.friendUid, // ✅ zamiast friendEmail
-                  start: start,
-                  end: end,
-                );
-              },
+                      // Wyzwalamy akcję — SnackBar pokaże BlocListener
+                      mealShare.shareMeals(
+                        friendUid: friend.friendUid, // upewnij się, że to poprawne pole UID
+                        start: start,
+                        end: end,
+                      );
+                    },
             ),
             IconButton(
               icon: const Icon(Icons.person_remove, color: Colors.red),
@@ -434,16 +485,16 @@ class _InvitationsTab extends StatelessWidget {
   void _showAcceptInvitationDialog(BuildContext context, FriendInvitationEntity invitation) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Zaakceptuj zaproszenie'),
         content: Text('Czy chcesz zaakceptować zaproszenie od ${invitation.fromUserName}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Anuluj')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Anuluj')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             onPressed: () {
-              context.read<FriendsCubit>().respondToInvitation(invitation.id, true);
-              Navigator.pop(context);
+              dialogContext.read<FriendsCubit>().respondToInvitation(invitation.id, true);
+              Navigator.of(dialogContext).pop();
             },
             child: const Text('Zaakceptuj', style: TextStyle(color: Colors.white)),
           ),
@@ -455,16 +506,16 @@ class _InvitationsTab extends StatelessWidget {
   void _showRejectInvitationDialog(BuildContext context, FriendInvitationEntity invitation) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Odrzuć zaproszenie'),
         content: Text('Czy na pewno chcesz odrzucić zaproszenie od ${invitation.fromUserName}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Anuluj')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Anuluj')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              context.read<FriendsCubit>().respondToInvitation(invitation.id, false);
-              Navigator.pop(context);
+              dialogContext.read<FriendsCubit>().respondToInvitation(invitation.id, false);
+              Navigator.of(dialogContext).pop();
             },
             child: const Text('Odrzuć', style: TextStyle(color: Colors.white)),
           ),

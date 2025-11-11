@@ -13,9 +13,8 @@ class FirebaseMealShareService {
   })  : _fs = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
-  /// Zapisuje KOPIE posiłków nadawcy do kolekcji odbiorcy:
+  /// Kopiuje posiłki nadawcy do kolekcji odbiorcy:
   /// Users/{friendUid}/PlannedMeals/{date_mealId}
-  /// To są *niezależne* dokumenty – usunięcie u A nie usuwa u B.
   Future<void> sharePlannedMealsWithFriend({
     required String friendUid,
     required DateTime start,
@@ -40,6 +39,8 @@ class FirebaseMealShareService {
         'isDeleted': false,
         'sharedFromUid': user.uid,
         'sharedAt': FieldValue.serverTimestamp(),
+        // 👇 dodane: przypisz właściciela po stronie odbiorcy
+        'ownerUid': friendUid,
       }, SetOptions(merge: true));
     }
 

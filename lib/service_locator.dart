@@ -562,8 +562,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<MealShareCubit>(() => MealShareCubit(
         sl<SharePlannedMealsWithFriendUseCase>(),
       ));
-
-  // SYNC SERVICES & CONNECTION MONITOR
+// SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
   final plannedSyncService = PlannedMealSyncService(
@@ -579,49 +578,53 @@ Future<void> initializeDependencies() async {
     networkInfo: sl<NetworkInfo>(),
   );
 
-  // Shopping List Meal Ingredient
-
+// Shopping List Meal Ingredient
   final shoppingListMealIngredientSyncService =
       ShoppingListMealIngredientSyncService(
     remoteRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
     networkInfo: sl<NetworkInfo>(),
   );
 
-  // Shopping List Custom Item
-
+// Shopping List Custom Item
   final shoppingListCustomItemSyncService = ShoppingListCustomItemSyncService(
     remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
     networkInfo: sl<NetworkInfo>(),
   );
 
-  // SyncStrategy
+// SyncStrategy
 
-  // Najpierw zarejestruj controller (już bez strategii w konstruktorze)
+// Najpierw zarejestruj controller (już bez strategii w konstruktorze)
   sl.registerLazySingleton<SyncController>(() => SyncController(
-        // syncStrategy: removed
+        // nowo: planowane i ulubione
+        plannedMealSyncService: plannedSyncService,
+        favoriteMealSyncService: favoriteSyncService,
+
+        // były: zakupy
         shoppingListSyncService: shoppingListMealIngredientSyncService,
         customItemsSyncService: shoppingListCustomItemSyncService,
+
+        // lokalne serwisy do sprzątania zsynchronizowanych "deleted"
         hiveService: sl<HiveShoppingListMealIngredientService>(),
         customItemsHiveService: sl<HiveShoppingListCustomItemService>(),
       ));
 
-  // Teraz strategia, która odwołuje się do kontrolera
+// Teraz strategia, która odwołuje się do kontrolera
   sl.registerLazySingleton<SyncStrategy>(() => DebounceSyncStrategy(
         syncCallback: () => sl<SyncController>().syncData(),
       ));
 
-  // ConnectionMonitor (używa strategii przy przywróceniu sieci)
+// ConnectionMonitor (używa strategii przy przywróceniu sieci)
   final connectionMonitor = ConnectionMonitor(
     networkInfo: sl<NetworkInfo>(),
     syncServices: [
       plannedSyncService,
       favoriteSyncService,
       shoppingListMealIngredientSyncService,
-      shoppingListCustomItemSyncService
+      shoppingListCustomItemSyncService,
     ],
   );
 
-  // Register sync services & monitor
+// Register sync services & monitor
   sl.registerSingleton(plannedSyncService);
   sl.registerSingleton(favoriteSyncService);
   sl.registerSingleton(shoppingListMealIngredientSyncService);

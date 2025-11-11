@@ -41,23 +41,25 @@ class PlannedMealRepositoryManager implements PlannedMealRepository {
 
   @override
   Future<Either<Failure, void>> removePlannedMeal(
-      PlannedMealEntity plannedMeal) async {
-    // 1. Najpierw operacja lokalna
+    PlannedMealEntity plannedMeal,
+  ) async {
+    // 1) Najpierw lokalnie (zachowanie jak dotąd)
     final localResult = await _localRepository.removePlannedMeal(plannedMeal);
     if (localResult.isLeft()) return localResult;
 
-    // 2. Synchronizacja jeśli online
+    // 2) Jeśli offline — kończymy (zostanie soft-delete)
     final isOnline = await _networkInfo.checkInternetConnection();
     if (!isOnline) return const Right(null);
 
+    // 3) Zdalnie (Firebase)
     final remoteResult = await _remoteRepository.removePlannedMeal(plannedMeal);
+
+    // ⬇️ NIE wywołuj ponownie _localRepository.removePlannedMeal(...)
+    // Jeśli byłeś online, lokalne repo JUŻ zrobiło delete permanent.
+    // Jeśli byłeś offline, i tak tu nie trafisz (return wyżej).
     return remoteResult.fold(
-      (failure) => const Right(null), // Zachowaj lokalne usunięcie
-      (_) async {
-        await _localRepository
-            .removePlannedMeal(plannedMeal); // Pełne usunięcie
-        return const Right(null);
-      },
+      (failure) => const Right(null), // lokalne usunięcie zachowane
+      (_) => const Right(null),
     );
   }
 
