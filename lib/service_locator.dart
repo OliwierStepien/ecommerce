@@ -52,6 +52,8 @@ import 'package:mealapp/data/shopping_list_meal_ingredient/repository/remote/fir
 import 'package:mealapp/data/shopping_list_meal_ingredient/repository/sync/shopping_list_meal_ingredient_sync_service.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/local/hive_shopping_list_meal_ingredient_service.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/source/remote/firebase_shopping_list_meal_ingredient_service.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient_share/repository/firebase_shopping_list_share_repository_impl.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient_share/source/remote/firebase_shopping_list_share_service.dart';
 import 'package:mealapp/domain/auth/repository/auth.dart';
 import 'package:mealapp/domain/auth/usecase/get_user.dart';
 import 'package:mealapp/domain/auth/usecase/is_logged_in.dart';
@@ -100,6 +102,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient_share/usecase/share_shopping_list_with_friend_usecase.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
@@ -112,6 +115,7 @@ import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart'
 import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
+import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 
 final sl = GetIt.instance;
@@ -185,9 +189,12 @@ Future<void> initializeDependencies() async {
       () => FirebaseFriendServiceImpl());
 
 // Meal Share service
-  sl.registerSingleton<FirebaseMealShareService>(FirebaseMealShareService(
-      // opcjonalnie wstrzyknij firestore/auth jeśli masz adaptery
-      ));
+  sl.registerSingleton<FirebaseMealShareService>(FirebaseMealShareService());
+
+  // Shopping List Share service (NEW)
+  sl.registerSingleton<FirebaseShoppingListShareService>(
+    FirebaseShoppingListShareService(),
+  );
 
   // REPOSITORIES
 
@@ -329,6 +336,15 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+  // Shopping List Share repository (NEW)
+sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
+  () => FirebaseShoppingListShareRepositoryImpl(
+    sl<FirebaseShoppingListShareService>(),
+    sl<HiveShoppingListMealIngredientService>(),
+    sl<HiveShoppingListCustomItemService>(),
+  ),
+);
+
   // USECASES
 
   // Auth usecases
@@ -455,6 +471,13 @@ Future<void> initializeDependencies() async {
         sl<FirebaseMealShareRepositoryImpl>()),
   );
 
+  // Shopping List Share usecase (NEW)
+  sl.registerFactory<ShareShoppingListWithFriendUseCase>(
+    () => ShareShoppingListWithFriendUseCase(
+      sl<FirebaseShoppingListShareRepositoryImpl>(),
+    ),
+  );
+
   // CUBIT
 
   // ✅ Button state cubit
@@ -562,6 +585,14 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<MealShareCubit>(() => MealShareCubit(
         sl<SharePlannedMealsWithFriendUseCase>(),
       ));
+
+// Shopping List Share cubit (NEW)
+  sl.registerFactory<ShoppingListShareCubit>(
+    () => ShoppingListShareCubit(
+      sl<ShareShoppingListWithFriendUseCase>(),
+    ),
+  );
+
 // SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
@@ -579,15 +610,17 @@ Future<void> initializeDependencies() async {
   );
 
 // Shopping List Meal Ingredient
-  final shoppingListMealIngredientSyncService =
-      ShoppingListMealIngredientSyncService(
-    remoteRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
-    networkInfo: sl<NetworkInfo>(),
-  );
+final shoppingListMealIngredientSyncService =
+    ShoppingListMealIngredientSyncService(
+  remoteRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
+  remoteService: sl<FirebaseShoppingListMealIngredientService>(), // ⬅️ DODANE
+  networkInfo: sl<NetworkInfo>(),
+);
 
 // Shopping List Custom Item
   final shoppingListCustomItemSyncService = ShoppingListCustomItemSyncService(
     remoteRepository: sl<FirebaseShoppingListCustomItemRepositoryImpl>(),
+    remoteService: sl<FirebaseShoppingListCustomItemService>(),
     networkInfo: sl<NetworkInfo>(),
   );
 

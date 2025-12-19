@@ -1,4 +1,6 @@
+// core/sync/shopping_list_meal_ingredient_sync_service.dart
 import 'package:dartz/dartz.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
@@ -7,82 +9,76 @@ import 'package:mealapp/data/ingredient/mapper/ingredient_mapper.dart';
 import 'package:mealapp/data/meal/mapper/meal_mapper.dart';
 import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
+import 'package:mealapp/data/shopping_list_meal_ingredient/source/remote/firebase_shopping_list_meal_ingredient_service.dart';
 
-/// Synchronizuje pozycje listy zakupów pomiędzy Hive (lokalnie) a Firestore (zdalnie).
-/// Proces obejmuje:
-/// 1. Sprawdzenie połączenia z internetem
-/// 2. Usuwanie z Firestore pozycji oznaczonych jako usunięte (`isDeleted`)
-/// 3. Dodawanie lub aktualizowanie pozostałych pozycji
-/// 4. Oznaczanie ich jako zsynchronizowane (`isSynced`) lokalnie
+/// Synchronizacja listy zakupów z separacją danych per-user (ownerUid + key z uid).
 class ShoppingListMealIngredientSyncService implements SyncService {
   final ShoppingListMealIngredientRepository _remoteRepo;
+  final FirebaseShoppingListMealIngredientService _remoteService; // ⬅️ NOWE
   final NetworkInfo _networkInfo;
+  final FirebaseAuth _auth;
 
   ShoppingListMealIngredientSyncService({
     required ShoppingListMealIngredientRepository remoteRepo,
+    required FirebaseShoppingListMealIngredientService remoteService, // ⬅️ NOWE
     required NetworkInfo networkInfo,
+    FirebaseAuth? auth,
   })  : _remoteRepo = remoteRepo,
-        _networkInfo = networkInfo;
+        _remoteService = remoteService, // ⬅️ NOWE
+        _networkInfo = networkInfo,
+        _auth = auth ?? FirebaseAuth.instance;
+
+  String get _uid => _auth.currentUser?.uid ?? '';
+
+  Box<ShoppingListMealIngredientModel> get _box =>
+      Hive.box<ShoppingListMealIngredientModel>('shoppingListMealIngredients');
+
+  bool _isMine(ShoppingListMealIngredientModel m) =>
+      m.ownerUid == _uid || (_uid.isNotEmpty && m.ownerUid.isEmpty == true);
+
+  String _keyUid(ShoppingListMealIngredientModel m) =>
+      '${_uid}_${m.meal.mealId}_${m.ingredient.ingredientId}';
+
+  String _keyLegacy(ShoppingListMealIngredientModel m) =>
+      '${m.meal.mealId}_${m.ingredient.ingredientId}';
 
   @override
   Future<Either<Failure, void>> syncData() async {
-    // 1) Sprawdź, czy urządzenie ma dostęp do internetu
     if (!await _networkInfo.checkInternetConnection()) {
       return Left(NetworkFailure());
     }
 
-    // Otwórz lokalne pudełko Hive z modelami składników listy zakupów
-    final box = Hive.box<ShoppingListMealIngredientModel>(
-        'shoppingListMealIngredients');
-
-    // Wybierz wszystkie modele, które nie zostały jeszcze zsynchronizowane
-    final unsyncedModels = box.values.where((m) => !m.isSynced);
-
-    // Podziel dane na:
-    // a) elementy oznaczone jako usunięte (do zdalnego usunięcia)
+    // === PUSH lokalnych zmian ===
+    final unsyncedModels = _box.values.where((m) => !m.isSynced && _isMine(m));
     final deletedModels = unsyncedModels.where((m) => m.isDeleted).toList();
-
-    // b) elementy, które nie są oznaczone do usunięcia (do dodania lub aktualizacji)
     final nonDeletedUnsyncedModels =
         _deduplicate(unsyncedModels.where((m) => !m.isDeleted));
 
-    // 2) Najpierw usuń z Firestore modele oznaczone jako usunięte
-    final deletionFailure = await _syncDeletedModels(deletedModels, box);
+    final deletionFailure = await _syncDeletedModels(deletedModels);
     if (deletionFailure != null) return Left(deletionFailure);
 
-    // 3) Następnie dodaj lub zaktualizuj pozostałe modele w Firestore
-    final addFailure = await _syncAdditions(nonDeletedUnsyncedModels, box);
+    final addFailure = await _syncAdditions(nonDeletedUnsyncedModels);
     if (addFailure != null) return Left(addFailure);
 
-    // Zakończ pomyślnie
+    // === PULL z Firestore -> upsert do Hive ===
+    final pullFailure = await _pullFromRemote();
+    if (pullFailure != null) return Left(pullFailure);
+
     return const Right(null);
   }
 
-  /* ---------- PRYWATNE METODY POMOCNICZE ---------- */
-
-  /// Tworzy unikalny klucz dla modelu w formacie `<mealId>_<ingredientId>`,
-  /// wykorzystywany zarówno w Hive, jak i Firestore jako identyfikator.
-  String _modelKey(ShoppingListMealIngredientModel m) =>
-      '${m.meal.mealId}_${m.ingredient.ingredientId}';
-
-  /// Spośród wielu wersji tego samego składnika (dla tej samej pary `mealId` + `ingredientId`)
-  /// wybiera tylko najnowszy — nadpisując starsze wpisy.
   List<ShoppingListMealIngredientModel> _deduplicate(
     Iterable<ShoppingListMealIngredientModel> models,
   ) {
     final map = <String, ShoppingListMealIngredientModel>{};
     for (final m in models) {
-      // Nadpisuje wcześniejsze wpisy dla tego samego klucza
-      map[_modelKey(m)] = m;
+      map[_keyUid(m)] = m; // deduplikacja po kluczu z uid
     }
     return map.values.toList();
   }
 
-  /// Usuwa modele zdalnie (z Firestore), jeśli lokalnie oznaczono je jako `isDeleted`.
-  /// Następnie usuwa je również lokalnie z Hive.
   Future<Failure?> _syncDeletedModels(
     List<ShoppingListMealIngredientModel> models,
-    Box<ShoppingListMealIngredientModel> box,
   ) async {
     for (final m in models) {
       final result = await _remoteRepo.removeMealIngredientFromShoppingList(
@@ -90,20 +86,18 @@ class ShoppingListMealIngredientSyncService implements SyncService {
         IngredientMapper.toEntity(m.ingredient),
       );
 
-      // Jeśli wystąpił błąd, zakończ synchronizację niepowodzeniem
-      final failure = _failureOrNull(result);
+      final failure = result.fold<Failure?>((f) => f, (_) => null);
       if (failure != null) return failure;
 
-      // Usuń model również lokalnie (z Hive)
-      await box.delete(_modelKey(m));
+      // usuń lokalnie: nowy i legacy klucz
+      await _box.delete(_keyUid(m));
+      await _box.delete(_keyLegacy(m));
     }
     return null;
   }
 
-  /// Dodaje lub aktualizuje modele w Firestore, a następnie oznacza je jako zsynchronizowane lokalnie.
   Future<Failure?> _syncAdditions(
     List<ShoppingListMealIngredientModel> models,
-    Box<ShoppingListMealIngredientModel> box,
   ) async {
     for (final m in models) {
       final addResult = await _remoteRepo.addMealIngredientToShoppingList(
@@ -112,27 +106,38 @@ class ShoppingListMealIngredientSyncService implements SyncService {
         m.portionCount,
       );
 
-      // Jeśli wystąpił błąd, zakończ synchronizację niepowodzeniem
-      final failure = _failureOrNull(addResult);
+      final failure = addResult.fold<Failure?>((f) => f, (_) => null);
       if (failure != null) return failure;
 
-      // Zaktualizuj model lokalnie:
-      // - oznacz jako zsynchronizowany
-      // - upewnij się, że `isDeleted` = false
-      await box.put(
-        _modelKey(m),
-        m.copyWith(isSynced: true, isDeleted: false),
-      );
+      // zapisz pod nowym kluczem i z ownerUid ustawionym na mnie
+      final enriched =
+          m.copyWith(isSynced: true, isDeleted: false, ownerUid: _uid);
+      await _box.put(_keyUid(enriched), enriched);
+
+      // usuń ewentualny legacy klucz
+      await _box.delete(_keyLegacy(enriched));
     }
     return null;
   }
 
-  /// Jeśli operacja zakończyła się błędem (`Left`), zwraca obiekt `Failure`.
-  /// W przeciwnym razie zwraca `null`.
-  Failure? _failureOrNull(Either<Failure, void> result) {
-    return result.fold(
-      (failure) => failure,
-      (success) => null,
-    );
+  /// ⬇️⬇️⬇️ NOWE: PULL z Firestore i zapis do Hive
+  Future<Failure?> _pullFromRemote() async {
+    try {
+      final remoteModels =
+          await _remoteService.getMealIngredientsFromShoppingList();
+
+      for (final m in remoteModels.where((x) => !x.isDeleted)) {
+        final enriched =
+            m.copyWith(isSynced: true, isDeleted: false, ownerUid: _uid);
+        await _box.put(_keyUid(enriched), enriched);
+
+        // usuń ewentualny legacy klucz
+        await _box.delete(_keyLegacy(enriched));
+      }
+
+      return null;
+    } catch (_) {
+      return NetworkFailure();
+    }
   }
 }

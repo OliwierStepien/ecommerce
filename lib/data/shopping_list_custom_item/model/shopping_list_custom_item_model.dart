@@ -14,6 +14,8 @@ class ShoppingListCustomItemModel {
   final bool isSynced;
   @HiveField(4)
   final bool isDeleted;
+  @HiveField(5, defaultValue: '')
+  final String ownerUid;
 
   const ShoppingListCustomItemModel({
     required this.customItemId,
@@ -21,6 +23,7 @@ class ShoppingListCustomItemModel {
     required this.customItemCategory,
     required this.isSynced,
     required this.isDeleted,
+    this.ownerUid = '',
   });
 
   // Umożliwia kopiowanie obiektu z modyfikacjami
@@ -30,6 +33,7 @@ class ShoppingListCustomItemModel {
     String? customItemCategory,
     bool? isSynced,
     bool? isDeleted,
+    String? ownerUid,
   }) {
     return ShoppingListCustomItemModel(
       customItemId: customItemId ?? this.customItemId,
@@ -37,6 +41,7 @@ class ShoppingListCustomItemModel {
       customItemCategory: customItemCategory ?? this.customItemCategory,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
+      ownerUid: ownerUid ?? this.ownerUid,
     );
   }
 
@@ -47,6 +52,7 @@ class ShoppingListCustomItemModel {
       'customItemName': customItemName,
       'customItemCategory': customItemCategory,
       'isDeleted': isDeleted,
+      'ownerUid': ownerUid,
     };
   }
 
@@ -58,6 +64,7 @@ class ShoppingListCustomItemModel {
       customItemCategory: map['customItemCategory'] as String,
       isSynced: map['isSynced'] ?? false,
       isDeleted: map['isDeleted'] ?? false,
+      ownerUid: map['ownerUid'] ?? '',
     );
   }
 }

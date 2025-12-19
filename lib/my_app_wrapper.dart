@@ -15,6 +15,7 @@ import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.d
 import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
+import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_cubit.dart';
 import 'package:mealapp/presentation/splash/bloc/splash_cubit.dart';
 import 'package:mealapp/service_locator.dart';
 
@@ -47,6 +48,7 @@ class MyAppWrapper extends StatelessWidget {
         BlocProvider(create: (_) => sl<PlannedMealsCubit>()),
         BlocProvider(create: (_) => sl<FriendsCubit>()..initializeFriendsData()),
         BlocProvider(create: (_) => sl<MealShareCubit>()),
+        BlocProvider(create: (_) => sl<ShoppingListShareCubit>()),
       ],
       child: const MyApp(),
     );

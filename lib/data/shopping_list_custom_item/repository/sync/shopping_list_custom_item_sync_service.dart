@@ -1,142 +1,151 @@
 import 'package:dartz/dartz.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/core/network/network_info.dart';
 import 'package:mealapp/core/sync/sync_service.dart';
 import 'package:mealapp/data/shopping_list_custom_item/mapper/shopping_list_custom_item_mapper.dart';
 import 'package:mealapp/data/shopping_list_custom_item/model/shopping_list_custom_item_model.dart';
+import 'package:mealapp/data/shopping_list_custom_item/source/remote/firebase_shopping_list_custom_item_service.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 
-/// 🔄 Synchronizuje niestandardowe elementy listy zakupów między lokalnym Hive a zdalnym Firestore.
-/// Proces synchronizacji:
-/// 1. Sprawdzenie połączenia z internetem
-/// 2. Usunięcie elementów oznaczonych jako `isDeleted`
-/// 3. Dodanie lub aktualizacja pozostałych
-/// 4. Oznaczenie elementów jako zsynchronizowane (`isSynced`)
+/// 🔄 Synchronizuje niestandardowe elementy listy zakupów między lokalnym Hive a zdalnym Firestore
+/// z uwzględnieniem wielu użytkowników (ownerUid + klucze z uid).
 class ShoppingListCustomItemSyncService implements SyncService {
   final ShoppingListCustomItemRepository _remoteRepository;
+  final FirebaseShoppingListCustomItemService _remoteService;
   final NetworkInfo _networkInfo;
+  final FirebaseAuth _auth;
 
   ShoppingListCustomItemSyncService({
     required ShoppingListCustomItemRepository remoteRepository,
+    required FirebaseShoppingListCustomItemService remoteService,
     required NetworkInfo networkInfo,
+    FirebaseAuth? auth,
   })  : _remoteRepository = remoteRepository,
-        _networkInfo = networkInfo;
+        _remoteService = remoteService,
+        _networkInfo = networkInfo,
+        _auth = auth ?? FirebaseAuth.instance;
+
+  String get _uid => _auth.currentUser?.uid ?? '';
+
+  Box<ShoppingListCustomItemModel> get _box =>
+      Hive.box<ShoppingListCustomItemModel>('shoppingListCustomItems');
+
+  bool _isMine(ShoppingListCustomItemModel m) =>
+      m.ownerUid == _uid || (_uid.isNotEmpty && m.ownerUid.isEmpty == true);
+
+  String _keyUid(ShoppingListCustomItemModel m) =>
+      '${_uid}_${m.customItemId}';
+
+  String _keyLegacy(ShoppingListCustomItemModel m) => m.customItemId;
 
   @override
   Future<Either<Failure, void>> syncData() async {
-    // 1) Sprawdź, czy urządzenie ma dostęp do internetu
     if (!await _networkInfo.checkInternetConnection()) {
-      // Jeśli brak połączenia, zwróć błąd sieci
       return Left(NetworkFailure());
     }
 
-    // 2) Pobierz lokalne dane z Hive
-    final box = Hive.box<ShoppingListCustomItemModel>('shoppingListCustomItems');
+    // === PUSH lokalnych zmian (tylko „moje”) ===
+    final unsyncedModels =
+        _box.values.where((m) => !m.isSynced && _isMine(m));
 
-    // Filtrujemy tylko te, które jeszcze nie zostały zsynchronizowane
-    final unsyncedModels = box.values.where((m) => !m.isSynced);
-
-    // Rozdziel dane na:
-    // - Te oznaczone jako usunięte
     final deletedModels = unsyncedModels.where((m) => m.isDeleted).toList();
 
-    // - Te, które mają zostać dodane lub zaktualizowane (ale nie są usunięte)
-    final nonDeletedModels = _deduplicate(
-      unsyncedModels.where((m) => !m.isDeleted),
-    );
+    final nonDeletedUnsyncedModels =
+        _deduplicate(unsyncedModels.where((m) => !m.isDeleted));
 
-    // 3) Synchronizacja usuniętych modeli — usuń je z Firestore
-    final deletionFailure = await _syncDeletedModels(deletedModels, box);
-    if (deletionFailure != null) {
-      // Jeśli wystąpił błąd przy usuwaniu, zakończ synchronizację
-      return Left(deletionFailure);
-    }
+    final deletionFailure = await _syncDeletedModels(deletedModels);
+    if (deletionFailure != null) return Left(deletionFailure);
 
-    // 4) Synchronizacja pozostałych — dodanie/aktualizacja w Firestore
-    final addFailure = await _syncAdditions(nonDeletedModels, box);
-    if (addFailure != null) {
-      // Jeśli wystąpił błąd, zwróć go
-      return Left(addFailure);
-    }
+    final addFailure = await _syncAdditions(nonDeletedUnsyncedModels);
+    if (addFailure != null) return Left(addFailure);
 
-    // Jeśli wszystko się powiodło — zwracamy sukces
+    // === PULL z Firestore -> upsert do Hive ===
+    final pullFailure = await _pullFromRemote();
+    if (pullFailure != null) return Left(pullFailure);
+
     return const Right(null);
   }
 
-  /* ---------- POMOCNICZE METODY ---------- */
-
-  /// 🔑 Zwraca klucz identyfikujący model (customItemId) — używane do Hive box
-  String _modelKey(ShoppingListCustomItemModel m) => m.customItemId;
-
-  /// 🔁 Usuwa duplikaty modeli na podstawie customItemId (pozostawia ostatni wpis)
   List<ShoppingListCustomItemModel> _deduplicate(
     Iterable<ShoppingListCustomItemModel> models,
   ) {
     final map = <String, ShoppingListCustomItemModel>{};
-
     for (final m in models) {
-      map[_modelKey(m)] = m; // nadpisuje wcześniejsze wpisy o tym samym ID
+      map[_keyUid(m)] = m; // deduplikacja po kluczu z uid
     }
-
-    // Zwraca listę unikalnych modeli
     return map.values.toList();
   }
 
-  /// 🗑️ Synchronizuje usuwanie elementów — najpierw usuwa z Firestore, a potem z Hive
   Future<Failure?> _syncDeletedModels(
     List<ShoppingListCustomItemModel> models,
-    Box<ShoppingListCustomItemModel> box,
   ) async {
     for (final m in models) {
-      // 1) Próba usunięcia z Firestore
       final result =
-          await _remoteRepository.removeCustomItemFromShoppingList(m.customItemId);
+          await _remoteRepository.removeCustomItemFromShoppingList(
+        m.customItemId,
+      );
 
-      // 2) Jeśli nie udało się usunąć z Firestore — przerwij i zwróć błąd
       final failure = _failureOrNull(result);
       if (failure != null) return failure;
 
-      // 3) Po udanym usunięciu — fizycznie usuń z Hive
-      await box.delete(_modelKey(m));
+      // usuń lokalnie: nowy i legacy klucz
+      await _box.delete(_keyUid(m));
+      await _box.delete(_keyLegacy(m));
     }
-
-    // Wszystko się powiodło
     return null;
   }
 
-  /// ➕ Synchronizuje dodawanie/aktualizację elementów — wysyła do Firestore i oznacza jako zsynchronizowane w Hive
   Future<Failure?> _syncAdditions(
     List<ShoppingListCustomItemModel> models,
-    Box<ShoppingListCustomItemModel> box,
   ) async {
     for (final m in models) {
-      // 1) Zamiana modelu Hive na encję domenową (potrzebną do zapisu w Firestore)
       final entity = ShoppingListCustomItemMapper.toEntity(m);
 
-      // 2) Próba dodania lub aktualizacji w Firestore
-      final result = await _remoteRepository.addCustomItemToShoppingList(entity);
+      final result =
+          await _remoteRepository.addCustomItemToShoppingList(entity);
 
-      // 3) Jeśli nie udało się — zakończ i zwróć błąd
       final failure = _failureOrNull(result);
       if (failure != null) return failure;
 
-      // 4) Oznaczenie w Hive jako zsynchronizowany i nieusunięty
-      await box.put(
-        _modelKey(m),
-        m.copyWith(isSynced: true, isDeleted: false),
-      );
-    }
+      final enriched =
+          m.copyWith(isSynced: true, isDeleted: false, ownerUid: _uid);
 
-    // Wszystko się powiodło
+      await _box.put(_keyUid(enriched), enriched);
+
+      // usuń ewentualny legacy klucz
+      await _box.delete(_keyLegacy(enriched));
+    }
     return null;
   }
 
-  /// 🔍 Pomocnicza metoda do wyciągania błędu z Either<Failure, void>
+  /// ⬇️ PULL z Firestore i zapis do Hive (multi-user)
+  Future<Failure?> _pullFromRemote() async {
+    try {
+      final remoteItems =
+          await _remoteService.getCustomItemFromShoppingList();
+
+      for (final m in remoteItems.where((x) => !x.isDeleted)) {
+        final enriched =
+            m.copyWith(isSynced: true, isDeleted: false, ownerUid: _uid);
+
+        await _box.put(_keyUid(enriched), enriched);
+
+        // usuń ewentualny legacy klucz
+        await _box.delete(_keyLegacy(enriched));
+      }
+
+      return null;
+    } catch (_) {
+      return NetworkFailure();
+    }
+  }
+
   Failure? _failureOrNull(Either<Failure, void> result) {
     return result.fold(
-      (failure) => failure, // jeśli jest Left — zwróć Failure
-      (success) => null,          // jeśli jest Right — brak błędu
+      (failure) => failure,
+      (_) => null,
     );
   }
 }

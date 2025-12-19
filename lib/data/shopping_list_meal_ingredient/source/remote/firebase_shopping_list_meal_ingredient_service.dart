@@ -26,13 +26,14 @@ class FirebaseShoppingListMealIngredientServiceImpl
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
+  // ✅ UJEDNOLICONA ŚCIEŻKA z share i regułami
   CollectionReference<Map<String, dynamic>> _userShoppingMealItemsCollection() {
     final user = _auth.currentUser;
     if (user == null) throw UnauthorizedException();
     return _firestore
         .collection('Users')
         .doc(user.uid)
-        .collection('ShoppingList');
+        .collection('ShoppingListMealIngredients');
   }
 
   String _generateDocId(ShoppingListMealIngredientModel item) {
@@ -43,12 +44,21 @@ class FirebaseShoppingListMealIngredientServiceImpl
   Future<void> addMealIngredientToShoppingList(
       ShoppingListMealIngredientModel item) async {
     return handleFirestoreException(() async {
-      final docId = _generateDocId(item);
+      final user = _auth.currentUser;
+      if (user == null) throw UnauthorizedException();
 
-      // 🔹 zapisujemy tylko uproszczony model do Firestore
+      final docId = _generateDocId(item);
+      final base = item.toFirestoreMap();
+
+      // ✅ dopisz ownerUid, bo tego wymagają reguły "allow create"
       await _userShoppingMealItemsCollection()
           .doc(docId)
-          .set(item.toFirestoreMap())
+          .set({
+            ...base,
+            'ownerUid': user.uid,
+            // Dla porządku upewnij się, że aktywny wpis:
+            'isDeleted': false,
+          })
           .timeout(const Duration(seconds: 15));
     });
   }
@@ -58,8 +68,6 @@ class FirebaseShoppingListMealIngredientServiceImpl
       ShoppingListMealIngredientModel item) async {
     return handleFirestoreException(() async {
       final docId = _generateDocId(item);
-
-      // 🔹 usuwamy dokument zamiast oznaczać flagą
       await _userShoppingMealItemsCollection()
           .doc(docId)
           .delete()
@@ -76,17 +84,16 @@ class FirebaseShoppingListMealIngredientServiceImpl
           .get()
           .timeout(const Duration(seconds: 15));
 
-      return result.docs.map((doc) {
-        // 🔹 Teraz dane mają format uproszczony (Firestore)
-        return ShoppingListMealIngredientModel.fromMap(doc.data());
-      }).toList();
+      return result.docs
+          .map((doc) => ShoppingListMealIngredientModel.fromMap(doc.data()))
+          .toList();
     });
   }
 
   @override
   Future<void> restoreMealIngredientToShoppingList(
       ShoppingListMealIngredientModel item) async {
-    // 🔹 przywracamy tak samo jak dodawanie
+    // przywracamy tak samo jak dodawanie
     return addMealIngredientToShoppingList(item);
   }
 }

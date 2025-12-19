@@ -12,6 +12,8 @@ import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_state.dart';
 import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_cubit.dart';
 import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_state.dart';
+import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_cubit.dart';
+import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_state.dart';
 
 class UserInfoPage extends StatelessWidget {
   const UserInfoPage({super.key});
@@ -44,7 +46,8 @@ class UserInfoPage extends StatelessWidget {
           BlocListener<UserInfoDisplayCubit, UserInfoDisplayState>(
             listener: (context, state) {
               if (state is UserInfoLoaded) {
-                debugLog('UserInfoPage: Użytkownik zalogowany - ładowanie znajomych');
+                debugLog(
+                    'UserInfoPage: Użytkownik zalogowany - ładowanie znajomych');
                 if (context.read<FriendsCubit>().state is FriendsInitial) {
                   final friends = context.read<FriendsCubit>();
                   friends.loadPendingInvitations();
@@ -64,6 +67,23 @@ class UserInfoPage extends StatelessWidget {
                   SnackBar(content: Text(state.message)),
                 );
               } else if (state is MealShareFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+          ),
+          // ⬇️ SnackBary po udostępnianiu listy zakupów
+          BlocListener<ShoppingListShareCubit, ShoppingListShareState>(
+            listenWhen: (prev, curr) =>
+                curr is ShoppingListShareSuccess ||
+                curr is ShoppingListShareFailure,
+            listener: (context, state) {
+              if (state is ShoppingListShareSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              } else if (state is ShoppingListShareFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
@@ -192,7 +212,8 @@ class _FriendsTab extends StatelessWidget {
                 padding: const EdgeInsets.all(32.0),
                 child: Column(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const Icon(Icons.error_outline,
+                        color: Colors.red, size: 48),
                     const SizedBox(height: 16),
                     Text(
                       state.message,
@@ -201,7 +222,8 @@ class _FriendsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => context.read<FriendsCubit>().loadFriends(),
+                      onPressed: () =>
+                          context.read<FriendsCubit>().loadFriends(),
                       child: const Text('Spróbuj ponownie'),
                     ),
                   ],
@@ -312,7 +334,8 @@ class _FriendsTab extends StatelessWidget {
   }
 
   // ✅ Bezpieczna wersja z dialogContext + await + mounted
-  Future<void> _showRemoveFriendDialog(BuildContext context, FriendEntity friend) async {
+  Future<void> _showRemoveFriendDialog(
+      BuildContext context, FriendEntity friend) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -356,6 +379,11 @@ class _FriendListItem extends StatelessWidget {
     final mealShare = context.read<MealShareCubit>();
     final isSharing = context.watch<MealShareCubit>().state is MealShareLoading;
 
+    // ⬇️ nowy: stan i referencja do udostępniania listy zakupów
+    final shoppingShare = context.read<ShoppingListShareCubit>();
+    final isShoppingSharing =
+        context.watch<ShoppingListShareCubit>().state is ShoppingListShareLoading;
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
@@ -379,11 +407,14 @@ class _FriendListItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Udostępnianie planned meals (z wyborem zakresu dat)
             IconButton(
               tooltip: 'Udostępnij planned meals',
               icon: isSharing
                   ? const SizedBox(
-                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.calendar_month),
               onPressed: isSharing
                   ? null
@@ -409,9 +440,27 @@ class _FriendListItem extends StatelessWidget {
 
                       // Wyzwalamy akcję — SnackBar pokaże BlocListener
                       mealShare.shareMeals(
-                        friendUid: friend.friendUid, // upewnij się, że to poprawne pole UID
+                        friendUid: friend.friendUid,
                         start: start,
                         end: end,
+                      );
+                    },
+            ),
+            // ⬇️ NOWY przycisk: udostępnienie listy zakupów (bez zakresu dat)
+            IconButton(
+              tooltip: 'Udostępnij listę zakupów',
+              icon: isShoppingSharing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.shopping_cart),
+              onPressed: isShoppingSharing
+                  ? null
+                  : () {
+                      shoppingShare.shareShoppingList(
+                        friendUid: friend.friendUid,
                       );
                     },
             ),
@@ -460,10 +509,12 @@ class _InvitationsTab extends StatelessWidget {
           children: [
             Icon(Icons.person_add_disabled, size: 64, color: Colors.grey),
             SizedBox(height: 16),
-            Text('Brak oczekujących zaproszeń', style: TextStyle(fontSize: 18, color: Colors.grey)),
+            Text('Brak oczekujących zaproszeń',
+                style: TextStyle(fontSize: 18, color: Colors.grey)),
             SizedBox(height: 8),
             Text('Zaproszenia od innych użytkowników\npojawiają się tutaj',
-                textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey)),
           ],
         ),
       );
@@ -482,39 +533,52 @@ class _InvitationsTab extends StatelessWidget {
     );
   }
 
-  void _showAcceptInvitationDialog(BuildContext context, FriendInvitationEntity invitation) {
+  void _showAcceptInvitationDialog(
+      BuildContext context, FriendInvitationEntity invitation) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Zaakceptuj zaproszenie'),
-        content: Text('Czy chcesz zaakceptować zaproszenie od ${invitation.fromUserName}?'),
+        content: Text(
+            'Czy chcesz zaakceptować zaproszenie od ${invitation.fromUserName}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Anuluj')),
+          TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Anuluj')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             onPressed: () {
-              dialogContext.read<FriendsCubit>().respondToInvitation(invitation.id, true);
+              dialogContext
+                  .read<FriendsCubit>()
+                  .respondToInvitation(invitation.id, true);
               Navigator.of(dialogContext).pop();
             },
-            child: const Text('Zaakceptuj', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Zaakceptuj', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  void _showRejectInvitationDialog(BuildContext context, FriendInvitationEntity invitation) {
+  void _showRejectInvitationDialog(
+      BuildContext context, FriendInvitationEntity invitation) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Odrzuć zaproszenie'),
-        content: Text('Czy na pewno chcesz odrzucić zaproszenie od ${invitation.fromUserName}?'),
+        content: Text(
+            'Czy na pewno chcesz odrzucić zaproszenie od ${invitation.fromUserName}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Anuluj')),
+          TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Anuluj')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              dialogContext.read<FriendsCubit>().respondToInvitation(invitation.id, false);
+              dialogContext
+                  .read<FriendsCubit>()
+                  .respondToInvitation(invitation.id, false);
               Navigator.of(dialogContext).pop();
             },
             child: const Text('Odrzuć', style: TextStyle(color: Colors.white)),
@@ -548,27 +612,39 @@ class _InvitationListItem extends StatelessWidget {
             CircleAvatar(
               backgroundColor: Colors.orange[100],
               child: Text(
-                invitation.fromUserName.isNotEmpty ? invitation.fromUserName[0].toUpperCase() : '?',
-                style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold),
+                invitation.fromUserName.isNotEmpty
+                    ? invitation.fromUserName[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                    color: Colors.orange[800], fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(invitation.fromUserName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(invitation.fromUserEmail, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(invitation.fromUserName,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(invitation.fromUserEmail,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 14)),
+                  ]),
             ),
           ]),
           const SizedBox(height: 12),
-          Text('Wysłano: ${_formatDate(invitation.sentAt)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text('Wysłano: ${_formatDate(invitation.sentAt)}',
+              style: const TextStyle(color: Colors.grey, fontSize: 12)),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.check, size: 18),
                 label: const Text('Zaakceptuj'),
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.green, side: const BorderSide(color: Colors.green)),
+                style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.green,
+                    side: const BorderSide(color: Colors.green)),
                 onPressed: onAccept,
               ),
             ),
@@ -577,7 +653,9 @@ class _InvitationListItem extends StatelessWidget {
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.close, size: 18),
                 label: const Text('Odrzuć'),
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+                style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red)),
                 onPressed: onReject,
               ),
             ),
@@ -599,14 +677,21 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      const Expanded(flex: 2, child: Text('')),
-      Expanded(
-        flex: 2,
-        child: Text(label, style: const TextStyle(color: Colors.grey)),
-      ),
-      Expanded(flex: 3, child: Text(value)),
-    ]);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(
+          '$label: ',
+          style: const TextStyle(color: Colors.grey),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -623,9 +708,11 @@ class _EmptyFriendsView extends StatelessWidget {
             children: [
               Icon(Icons.people_outline, size: 64, color: Colors.grey),
               SizedBox(height: 16),
-              Text('Brak znajomych', style: TextStyle(color: Colors.grey, fontSize: 18)),
+              Text('Brak znajomych',
+                  style: TextStyle(color: Colors.grey, fontSize: 18)),
               SizedBox(height: 8),
-              Text('Dodaj pierwszego znajomego!', style: TextStyle(color: Colors.grey)),
+              Text('Dodaj pierwszego znajomego!',
+                  style: TextStyle(color: Colors.grey)),
             ],
           ),
         ),

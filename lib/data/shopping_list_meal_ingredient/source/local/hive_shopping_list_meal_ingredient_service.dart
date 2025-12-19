@@ -1,5 +1,7 @@
+// data/shopping_list_meal_ingredient/source/local/hive_shopping_list_meal_ingredient_service.dart
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive/hive.dart';
 import 'package:mealapp/common/helper/debug_log/debug_log.dart';
 import 'package:mealapp/core/sync/sync_strategy.dart';
@@ -7,181 +9,145 @@ import 'package:mealapp/data/shopping_list_meal_ingredient/model/shopping_list_m
 import 'package:mealapp/service_locator.dart';
 
 abstract class HiveShoppingListMealIngredientService {
-  Future<List<ShoppingListMealIngredientModel>>
-      getMealIngredientFromShoppingList();
-  Future<void> addMealIngredientToShoppingList(
-      ShoppingListMealIngredientModel item);
+  Future<List<ShoppingListMealIngredientModel>> getMealIngredientFromShoppingList();
+  Future<void> addMealIngredientToShoppingList(ShoppingListMealIngredientModel item);
   Future<void> removeMealIngredientFromShoppingList(
     ShoppingListMealIngredientModel item, {
     bool isOnline = false,
   });
-  Future<List<ShoppingListMealIngredientModel>>
-      getUnsyncedShoppingListMealIngredient();
-  Future<void> markShoppingListMealIngredientAsSynced(
-      String mealId, String ingredientId);
-  Future<List<ShoppingListMealIngredientModel>>
-      getUnsyncedChangesForShoppingListMealIngredient();
-  Future<void> restoreMealIngredientToShoppingList(
-      ShoppingListMealIngredientModel item);
+  Future<List<ShoppingListMealIngredientModel>> getUnsyncedShoppingListMealIngredient();
+  Future<void> markShoppingListMealIngredientAsSynced(String mealId, String ingredientId);
+  Future<List<ShoppingListMealIngredientModel>> getUnsyncedChangesForShoppingListMealIngredient();
+  Future<void> restoreMealIngredientToShoppingList(ShoppingListMealIngredientModel item);
   Future<void> clearSyncedDeletedItems();
 }
 
-class HiveShoppingListMealIngredientServiceImpl
-    implements HiveShoppingListMealIngredientService {
+class HiveShoppingListMealIngredientServiceImpl implements HiveShoppingListMealIngredientService {
+  HiveShoppingListMealIngredientServiceImpl({FirebaseAuth? auth})
+      : _auth = auth ?? FirebaseAuth.instance;
+
+  final FirebaseAuth _auth;
+
   Box<ShoppingListMealIngredientModel> get _box =>
       Hive.box<ShoppingListMealIngredientModel>('shoppingListMealIngredients');
 
-  String _key(ShoppingListMealIngredientModel item) =>
+  String get _uid => _auth.currentUser?.uid ?? '';
+
+  String _keyUid(ShoppingListMealIngredientModel item) =>
+      '${_uid}_${item.meal.mealId}_${item.ingredient.ingredientId}';
+
+  String _keyLegacy(ShoppingListMealIngredientModel item) =>
       '${item.meal.mealId}_${item.ingredient.ingredientId}';
 
+  bool _isMine(ShoppingListMealIngredientModel m) =>
+      m.ownerUid == _uid || (_uid.isNotEmpty && m.ownerUid.isEmpty == true);
+
   @override
-  Future<List<ShoppingListMealIngredientModel>>
-      getMealIngredientFromShoppingList() async {
-    return _box.values.where((model) => !model.isDeleted).toList();
+  Future<List<ShoppingListMealIngredientModel>> getMealIngredientFromShoppingList() async {
+    final all = _box.values.toList();
+    final mine = all.where((model) => !model.isDeleted && _isMine(model)).toList();
+    debugLog('🛒 HIVE getMealIngredientFromShoppingList(): total=${all.length}, mine=${mine.length}, uid=$_uid',
+        name: 'HiveSL');
+    return mine;
   }
 
   @override
-  Future<void> addMealIngredientToShoppingList(
-      ShoppingListMealIngredientModel item) async {
-    final key = _key(item);
-    final model = _box.get(key);
+  Future<void> addMealIngredientToShoppingList(ShoppingListMealIngredientModel item) async {
+    final enriched = item.copyWith(ownerUid: _uid, isSynced: false, isDeleted: false);
+    final key = _keyUid(enriched);
 
-    await _box.put(
-      key,
-      item.copyWith(
-        isSynced: model?.isSynced ?? false,
-        isDeleted: false,
-      ),
-    );
+    await _box.put(key, enriched);
 
     final allIngredients = await getMealIngredientFromShoppingList();
-    debugLog(
-        '✅ Dodano składnik: ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-        name: 'HiveService');
-    debugLog('🛒 Liczba składników w shopping list: ${allIngredients.length}',
-        name: 'HiveService');
-    debugLog('📋 Składniki:', name: 'HiveService');
-    for (final item in allIngredients) {
-      debugLog(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-          name: 'HiveService');
-    }
-        // trigger sync (nieblokująco)
+    debugLog('✅ Dodano składnik: ${item.ingredient.ingredientName} (posiłek: ${item.meal.title})', name: 'HiveSL');
+    debugLog('🛒 Liczba składników (mine): ${allIngredients.length}', name: 'HiveSL');
+
     unawaited(sl<SyncStrategy>().onDataChanged());
   }
 
   @override
   Future<void> removeMealIngredientFromShoppingList(
-      ShoppingListMealIngredientModel item,
-      {bool isOnline = false}) async {
-    final key = '${item.meal.mealId}_${item.ingredient.ingredientId}';
-    final model = _box.get(key);
+    ShoppingListMealIngredientModel item, {
+    bool isOnline = false,
+  }) async {
+    // próbuj po nowym kluczu, w razie czego po legacy
+    final enriched = item.copyWith(ownerUid: _uid);
+    final kNew = _keyUid(enriched);
+    final kOld = _keyLegacy(enriched);
 
-    if (model != null) {
-      await _box.put(
-        key,
-        model.copyWith(
-          isSynced: false,
-          isDeleted: true,
-        ),
-      );
+    final current = _box.get(kNew) ?? _box.get(kOld);
+
+    if (current != null) {
+      if (isOnline) {
+        await _box.delete(kNew);
+        await _box.delete(kOld);
+        debugLog('🗑️ HIVE delete permanent (online): key=$kNew|$kOld', name: 'HiveSL');
+      } else {
+        await _box.put(
+          current == _box.get(kNew) ? kNew : kOld,
+          current.copyWith(isSynced: false, isDeleted: true, ownerUid: _uid),
+        );
+        debugLog('❌ HIVE mark deleted (local): key=${current == _box.get(kNew) ? kNew : kOld}', name: 'HiveSL');
+      }
     }
-
 
     final allIngredients = await getMealIngredientFromShoppingList();
-    debugLog(
-        '❌ Usunięto składnik: ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-        name: 'HiveService');
-    debugLog('🛒 Liczba składników w shopping list: ${allIngredients.length}',
-        name: 'HiveService');
-    debugLog('📋 Składniki:', name: 'HiveService');
-    for (final item in allIngredients) {
-      debugLog(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-          name: 'HiveService');
-    }
-    // trigger sync (nieblokująco)
+    debugLog('🛒 Liczba składników (mine) po usunięciu: ${allIngredients.length}', name: 'HiveSL');
+
     unawaited(sl<SyncStrategy>().onDataChanged());
   }
 
   @override
-  Future<List<ShoppingListMealIngredientModel>>
-      getUnsyncedShoppingListMealIngredient() async {
-    return _box.values
-        .where((model) => !model.isSynced && !model.isDeleted)
-        .toList();
+  Future<List<ShoppingListMealIngredientModel>> getUnsyncedShoppingListMealIngredient() async {
+    return _box.values.where((m) => !m.isSynced && !m.isDeleted && _isMine(m)).toList();
   }
 
   @override
-  Future<List<ShoppingListMealIngredientModel>>
-      getUnsyncedChangesForShoppingListMealIngredient() async {
-    return _box.values.where((model) => !model.isSynced).toList();
+  Future<List<ShoppingListMealIngredientModel>> getUnsyncedChangesForShoppingListMealIngredient() async {
+    return _box.values.where((m) => !m.isSynced && _isMine(m)).toList();
   }
 
   @override
-  Future<void> markShoppingListMealIngredientAsSynced(
-      String mealId, String ingredientId) async {
-    final key = '${mealId}_$ingredientId';
-    final model = _box.get(key);
+  Future<void> markShoppingListMealIngredientAsSynced(String mealId, String ingredientId) async {
+    final kNew = '${_uid}_${mealId}_$ingredientId';
+    final kOld = '${mealId}_$ingredientId';
 
+    final model = _box.get(kNew) ?? _box.get(kOld);
     if (model != null) {
-      await _box.put(
-        key,
-        model.copyWith(isSynced: true),
-      );
-
-      debugLog(
-          '✅ Zaznaczono jako zsynchronizowany: $ingredientId (z posiłku: $mealId)',
-          name: 'HiveService');
+      final keyToUse = _box.get(kNew) != null ? kNew : kOld;
+      await _box.put(keyToUse, model.copyWith(isSynced: true, ownerUid: _uid));
+      debugLog('✅ Zaznaczono jako synced: $ingredientId (meal: $mealId)', name: 'HiveSL');
+      // jeśli to był legacy klucz, przepisz pod nowy i usuń stary
+      if (keyToUse == kOld) {
+        await _box.put(kNew, (model.copyWith(isSynced: true, ownerUid: _uid)));
+        await _box.delete(kOld);
+        debugLog('🔁 Migrated legacy -> uid key: $kOld -> $kNew', name: 'HiveSL');
+      }
     }
   }
 
   @override
-  Future<void> restoreMealIngredientToShoppingList(
-      ShoppingListMealIngredientModel item) async {
-    final key = _key(item);
-    final existingModel = _box.get(key);
+  Future<void> restoreMealIngredientToShoppingList(ShoppingListMealIngredientModel item) async {
+    final enriched = item.copyWith(ownerUid: _uid);
+    final kNew = _keyUid(enriched);
+    final existing = _box.get(kNew) ?? _box.get(_keyLegacy(enriched));
 
-    final modelToSave = existingModel != null
-        ? existingModel.copyWith(
-            isDeleted: false,
-            portionCount: item.portionCount,
-            // isSynced zostaje jak jest (po „delete” powinno być false)
-          )
-        : item.copyWith(
-            isDeleted: false,
-            isSynced: false, // nowy wpis => do synchronizacji
-          );
+    final modelToSave = (existing ?? enriched).copyWith(
+      isDeleted: false,
+      isSynced: false, // po restore – do synchronizacji
+      ownerUid: _uid,
+      portionCount: item.portionCount,
+    );
 
-    await _box.put(key, modelToSave);
+    await _box.put(kNew, modelToSave);
+    if (existing != null && _box.containsKey(_keyLegacy(enriched))) {
+      await _box.delete(_keyLegacy(enriched));
+    }
 
-
-    // Logowanie stanu po przywróceniu składnika
     final allIngredients = await getMealIngredientFromShoppingList();
-    final allItemsInBox = _box.values.toList();
+    debugLog('♻️ Przywrócono: ${item.ingredient.ingredientName} (posiłek: ${item.meal.title})', name: 'HiveSL');
+    debugLog('🛒 Liczba składników (mine): ${allIngredients.length}', name: 'HiveSL');
 
-    debugLog(
-        '♻️ Przywrócono składnik: ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-        name: 'HiveService');
-    debugLog('🔑 Klucz: $key', name: 'HiveService');
-    debugLog('📦 Ilość wpisów w Hive: ${allItemsInBox.length}',
-        name: 'HiveService');
-    debugLog(
-        '🛒 Liczba aktywnych składników w shopping list: ${allIngredients.length}',
-        name: 'HiveService');
-    debugLog('📋 Aktywne składniki:', name: 'HiveService');
-    for (final item in allIngredients) {
-      debugLog(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-          name: 'HiveService');
-    }
-    debugLog('🗑️ Usunięte składniki:', name: 'HiveService');
-    for (final item in allItemsInBox.where((m) => m.isDeleted)) {
-      debugLog(
-          ' - ${item.ingredient.ingredientName} (z posiłku: ${item.meal.title})',
-          name: 'HiveService');
-    }
-        // trigger sync (nieblokująco)
     unawaited(sl<SyncStrategy>().onDataChanged());
   }
 
@@ -189,13 +155,12 @@ class HiveShoppingListMealIngredientServiceImpl
   Future<void> clearSyncedDeletedItems() async {
     final keysToDelete = _box.keys.where((key) {
       final item = _box.get(key);
-      return item != null && item.isDeleted && item.isSynced;
+      return item != null && item.isDeleted && item.isSynced && _isMine(item);
     }).toList();
 
     for (final key in keysToDelete) {
       await _box.delete(key);
-      debugLog('🧹 Usunięto trwale zsynchronizowany składnik z kluczem: $key',
-          name: 'HiveService');
+      debugLog('🧹 Usunięto trwale zsynchronizowany składnik: $key', name: 'HiveSL');
     }
   }
 }

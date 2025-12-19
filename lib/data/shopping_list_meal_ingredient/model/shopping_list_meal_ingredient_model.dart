@@ -1,3 +1,4 @@
+// data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart
 import 'package:hive/hive.dart';
 import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
@@ -8,14 +9,22 @@ part 'shopping_list_meal_ingredient_model.g.dart';
 class ShoppingListMealIngredientModel {
   @HiveField(0)
   final MealModel meal;
+
   @HiveField(1)
   final IngredientModel ingredient;
+
   @HiveField(2)
   final int portionCount;
+
   @HiveField(3)
   final bool isSynced;
+
   @HiveField(4)
   final bool isDeleted;
+
+  /// 👇 NOWE: właściciel rekordu w Hive (UID użytkownika)
+  @HiveField(5, defaultValue: '')
+  final String ownerUid;
 
   const ShoppingListMealIngredientModel({
     required this.meal,
@@ -23,6 +32,7 @@ class ShoppingListMealIngredientModel {
     required this.portionCount,
     required this.isSynced,
     required this.isDeleted,
+    this.ownerUid = '',
   });
 
   ShoppingListMealIngredientModel copyWith({
@@ -31,6 +41,7 @@ class ShoppingListMealIngredientModel {
     int? portionCount,
     bool? isSynced,
     bool? isDeleted,
+    String? ownerUid,
   }) {
     return ShoppingListMealIngredientModel(
       meal: meal ?? this.meal,
@@ -38,6 +49,7 @@ class ShoppingListMealIngredientModel {
       portionCount: portionCount ?? this.portionCount,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
+      ownerUid: ownerUid ?? this.ownerUid,
     );
   }
 
@@ -53,10 +65,11 @@ class ShoppingListMealIngredientModel {
       'isSynced': isSynced,
       'isDeleted': isDeleted,
       'scaledAmount': scaledAmount,
+      'ownerUid': ownerUid, // 👈
     };
   }
 
-  /// ☁️ Uproszczone mapowanie do Firestore
+  /// ☁️ Uproszczone mapowanie do Firestore (bez ownerUid – po stronie serwera jest auth)
   Map<String, dynamic> toFirestoreMap() {
     final scaledAmount = ingredient.amountPerPortion != null
         ? ingredient.amountPerPortion! * portionCount
@@ -84,7 +97,8 @@ class ShoppingListMealIngredientModel {
 
   /// 🔄 Odczyt z mapy (z Hive lub Firestore)
   factory ShoppingListMealIngredientModel.fromMap(Map<String, dynamic> map) {
-    final isFirestoreFormat = map.containsKey('mealId') && map.containsKey('ingredientId');
+    final isFirestoreFormat =
+        map.containsKey('mealId') && map.containsKey('ingredientId');
 
     if (isFirestoreFormat) {
       // 🔹 Format uproszczony (Firestore)
@@ -92,8 +106,8 @@ class ShoppingListMealIngredientModel {
         meal: MealModel(
           title: map['mealTitle'] ?? '',
           mealId: map['mealId'] ?? '',
-          categoryId: const [], // wymagane, ale puste
-          image: '', // brak danych o obrazku w Firestore
+          categoryId: const [],
+          image: '',
           ingredients: const [],
           steps: const [],
           isVegetarian: false,
@@ -110,6 +124,7 @@ class ShoppingListMealIngredientModel {
         portionCount: map['portionCount'] ?? 1,
         isSynced: map['isSynced'] ?? false,
         isDeleted: map['isDeleted'] ?? false,
+        ownerUid: map['ownerUid'] ?? '', // może nie istnieć w FS – zostanie ''
       );
     } else {
       // 🔹 Format pełny (Hive)
@@ -119,6 +134,7 @@ class ShoppingListMealIngredientModel {
         portionCount: map['portionCount'] ?? 1,
         isSynced: map['isSynced'] ?? false,
         isDeleted: map['isDeleted'] ?? false,
+        ownerUid: map['ownerUid'] ?? '',
       );
     }
   }
