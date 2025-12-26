@@ -12,6 +12,18 @@ class ShoppingListCustomItemEntity extends Equatable {
     required this.customItemCategory,
   });
 
+  ShoppingListCustomItemEntity copyWith({
+    String? customItemId,
+    String? customItemName,
+    String? customItemCategory,
+  }) {
+    return ShoppingListCustomItemEntity(
+      customItemId: customItemId ?? this.customItemId,
+      customItemName: customItemName ?? this.customItemName,
+      customItemCategory: customItemCategory ?? this.customItemCategory,
+    );
+  }
+
   // Equatable pozwala na łatwe porównywanie obiektów po wartości (potrzebne np. w BLoC)
   @override
   List<Object?> get props => [

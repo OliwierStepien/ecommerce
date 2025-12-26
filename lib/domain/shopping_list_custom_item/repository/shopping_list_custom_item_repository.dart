@@ -18,4 +18,6 @@ abstract class ShoppingListCustomItemRepository {
       getUnsyncedChangesForShoppingListCustomItem();
   Future<Either<Failure, void>> restoreCustomItemToShoppingList(
       ShoppingListCustomItemEntity shoppingListCustomItemEntity);
+  Future<Either<Failure, void>> updateCustomItemToShoppingList(
+      ShoppingListCustomItemEntity shoppingListCustomItemEntity);
 }

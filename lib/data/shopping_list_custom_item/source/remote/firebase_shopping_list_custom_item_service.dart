@@ -9,7 +9,9 @@ abstract class FirebaseShoppingListCustomItemService {
   Future<void> addCustomItemToShoppingList(ShoppingListCustomItemModel item);
   Future<void> removeCustomItemFromShoppingList(String customItemId);
   Future<List<ShoppingListCustomItemModel>> getCustomItemFromShoppingList();
-  Future<void> restoreCustomItemToShoppingList(ShoppingListCustomItemModel item);
+  Future<void> restoreCustomItemToShoppingList(
+      ShoppingListCustomItemModel item);
+  Future<void> updateCustomItemToShoppingList(ShoppingListCustomItemModel item);
 }
 
 // Implementacja interfejsu - korzysta z Firebase Firestore oraz Firebase Auth.
@@ -43,14 +45,11 @@ class FirebaseShoppingListCustomItemServiceImpl
 
       final base = item.toMap();
 
-      await _userCustomItemsCollection()
-          .doc(item.customItemId)
-          .set({
-            ...base,
-            'ownerUid': user.uid,
-            'isDeleted': false,
-          })
-          .timeout(const Duration(seconds: 15));
+      await _userCustomItemsCollection().doc(item.customItemId).set({
+        ...base,
+        'ownerUid': user.uid,
+        'isDeleted': false,
+      }).timeout(const Duration(seconds: 15));
     });
   }
 
@@ -83,5 +82,25 @@ class FirebaseShoppingListCustomItemServiceImpl
   Future<void> restoreCustomItemToShoppingList(
       ShoppingListCustomItemModel item) async {
     return addCustomItemToShoppingList(item);
+  }
+
+  @override
+  Future<void> updateCustomItemToShoppingList(
+      ShoppingListCustomItemModel item) async {
+    return handleFirestoreException(() async {
+      final user = _auth.currentUser;
+      if (user == null) throw UnauthorizedException();
+
+      final base = item.toMap();
+
+      await _userCustomItemsCollection().doc(item.customItemId).set(
+        {
+          ...base,
+          'ownerUid': user.uid,
+          'isDeleted': false,
+        },
+        SetOptions(merge: true), // ⬅️ kluczowe
+      ).timeout(const Duration(seconds: 15));
+    });
   }
 }

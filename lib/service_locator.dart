@@ -94,6 +94,7 @@ import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/update_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/repository/shopping_list_meal_ingredient_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
@@ -337,13 +338,13 @@ Future<void> initializeDependencies() async {
   );
 
   // Shopping List Share repository (NEW)
-sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
-  () => FirebaseShoppingListShareRepositoryImpl(
-    sl<FirebaseShoppingListShareService>(),
-    sl<HiveShoppingListMealIngredientService>(),
-    sl<HiveShoppingListCustomItemService>(),
-  ),
-);
+  sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
+    () => FirebaseShoppingListShareRepositoryImpl(
+      sl<FirebaseShoppingListShareService>(),
+      sl<HiveShoppingListMealIngredientService>(),
+      sl<HiveShoppingListCustomItemService>(),
+    ),
+  );
 
   // USECASES
 
@@ -443,6 +444,10 @@ sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
 
   sl.registerLazySingleton<RestoreCustomItemToShoppingListUseCase>(() =>
       RestoreCustomItemToShoppingListUseCase(
+          sl<ShoppingListCustomItemRepository>()));
+
+  sl.registerLazySingleton<UpdateCustomItemToShoppingListUseCase>(() =>
+      UpdateCustomItemToShoppingListUseCase(
           sl<ShoppingListCustomItemRepository>()));
 
   // Friends usecases
@@ -550,6 +555,7 @@ sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
         removeUseCase: sl<RemoveCustomItemFromShoppingListUseCase>(),
         restoreUseCase: sl<RestoreCustomItemToShoppingListUseCase>(),
         getUseCase: sl<GetShoppingListCustomItemUseCase>(),
+        updateUseCase: sl<UpdateCustomItemToShoppingListUseCase>(),
         syncStrategy: sl<SyncStrategy>(),
       ));
 
@@ -610,12 +616,12 @@ sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
   );
 
 // Shopping List Meal Ingredient
-final shoppingListMealIngredientSyncService =
-    ShoppingListMealIngredientSyncService(
-  remoteRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
-  remoteService: sl<FirebaseShoppingListMealIngredientService>(), // ⬅️ DODANE
-  networkInfo: sl<NetworkInfo>(),
-);
+  final shoppingListMealIngredientSyncService =
+      ShoppingListMealIngredientSyncService(
+    remoteRepo: sl<FirebaseShoppingListMealIngredientRepositoryImpl>(),
+    remoteService: sl<FirebaseShoppingListMealIngredientService>(), // ⬅️ DODANE
+    networkInfo: sl<NetworkInfo>(),
+  );
 
 // Shopping List Custom Item
   final shoppingListCustomItemSyncService = ShoppingListCustomItemSyncService(

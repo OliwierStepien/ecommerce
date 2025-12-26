@@ -1,4 +1,3 @@
-
 import 'package:dartz/dartz.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/failure.dart';
 import 'package:mealapp/common/helper/handle_firestore_operation/failure/handle_firestore_failure.dart';
@@ -11,9 +10,9 @@ import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_lis
 /// wykorzystująca Firebase jako źródło danych. Łączy warstwę domenową z warstwą infrastruktury.
 class FirebaseShoppingListCustomItemRepositoryImpl
     implements ShoppingListCustomItemRepository {
-  
   // Prywatne pole przechowujące referencję do serwisu Firebase
-  final FirebaseShoppingListCustomItemService _firebaseShoppingListCustomItemService;
+  final FirebaseShoppingListCustomItemService
+      _firebaseShoppingListCustomItemService;
 
   /// Konstruktor przyjmujący wymagany serwis Firebase jako zależność
   /// Umożliwia wstrzykiwanie mocków do testów
@@ -62,7 +61,7 @@ class FirebaseShoppingListCustomItemRepositoryImpl
       // Pobranie danych z Firestore
       final returnedData = await _firebaseShoppingListCustomItemService
           .getCustomItemFromShoppingList();
-      
+
       // Konwersja listy modeli na listę encji domenowych
       return returnedData.map(ShoppingListCustomItemMapper.toEntity).toList();
     });
@@ -87,7 +86,7 @@ class FirebaseShoppingListCustomItemRepositoryImpl
       // Pobranie wszystkich elementów (w przyszłości można dodać filtrowanie po isSynced)
       final allMeals = await _firebaseShoppingListCustomItemService
           .getCustomItemFromShoppingList();
-          
+
       // Konwersja na encje domenowe
       return allMeals.map(ShoppingListCustomItemMapper.toEntity).toList();
     });
@@ -113,6 +112,18 @@ class FirebaseShoppingListCustomItemRepositoryImpl
       await _firebaseShoppingListCustomItemService
           .restoreCustomItemToShoppingList(
         ShoppingListCustomItemMapper.toModel(shoppingListCustomItemEntity),
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> updateCustomItemToShoppingList(
+    ShoppingListCustomItemEntity entity,
+  ) async {
+    return handleFirestoreFailure(() async {
+      await _firebaseShoppingListCustomItemService
+          .updateCustomItemToShoppingList(
+        ShoppingListCustomItemMapper.toModel(entity),
       );
     });
   }

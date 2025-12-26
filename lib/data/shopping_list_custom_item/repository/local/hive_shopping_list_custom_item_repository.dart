@@ -82,4 +82,15 @@ class HiveShoppingListCustomItemRepositoryImpl
       );
     });
   }
+
+  @override
+  Future<Either<Failure, void>> updateCustomItemToShoppingList(
+    ShoppingListCustomItemEntity entity,
+  ) async {
+    return handleHiveFailure(() async {
+      await _hiveShoppingListCustomItemService.updateCustomItemToShoppingList(
+        ShoppingListCustomItemMapper.toModel(entity),
+      );
+    });
+  }
 }

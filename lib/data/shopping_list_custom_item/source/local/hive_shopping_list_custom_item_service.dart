@@ -23,6 +23,7 @@ abstract class HiveShoppingListCustomItemService {
   Future<void> restoreCustomItemToShoppingList(
       ShoppingListCustomItemModel item);
   Future<void> clearSyncedDeletedItems();
+  Future<void> updateCustomItemToShoppingList(ShoppingListCustomItemModel item);
 }
 
 /// Implementacja serwisu przy użyciu lokalnej bazy danych Hive
@@ -51,8 +52,7 @@ class HiveShoppingListCustomItemServiceImpl
   Future<List<ShoppingListCustomItemModel>>
       getCustomItemFromShoppingList() async {
     final all = _box.values.toList();
-    final mine =
-        all.where((item) => !item.isDeleted && _isMine(item)).toList();
+    final mine = all.where((item) => !item.isDeleted && _isMine(item)).toList();
 
     debugLog(
       '🛒 HIVE getCustomItemFromShoppingList(): total=${all.length}, mine=${mine.length}, uid=$_uid',
@@ -149,7 +149,9 @@ class HiveShoppingListCustomItemServiceImpl
   @override
   Future<List<ShoppingListCustomItemModel>>
       getUnsyncedChangesForShoppingListCustomItem() async {
-    return _box.values.where((item) => !item.isSynced && _isMine(item)).toList();
+    return _box.values
+        .where((item) => !item.isSynced && _isMine(item))
+        .toList();
   }
 
   @override
@@ -209,8 +211,10 @@ class HiveShoppingListCustomItemServiceImpl
     }
 
     final allItems = _box.values.toList();
-    final activeItems = allItems.where((i) => !i.isDeleted && _isMine(i)).toList();
-    final deletedItems = allItems.where((i) => i.isDeleted && _isMine(i)).toList();
+    final activeItems =
+        allItems.where((i) => !i.isDeleted && _isMine(i)).toList();
+    final deletedItems =
+        allItems.where((i) => i.isDeleted && _isMine(i)).toList();
 
     debugLog(
       '♻️ Przywrócono składnik: ${item.customItemName}',
@@ -232,10 +236,7 @@ class HiveShoppingListCustomItemServiceImpl
   Future<void> clearSyncedDeletedItems() async {
     final keysToDelete = _box.keys.where((key) {
       final item = _box.get(key);
-      return item != null &&
-          item.isDeleted &&
-          item.isSynced &&
-          _isMine(item);
+      return item != null && item.isDeleted && item.isSynced && _isMine(item);
     }).toList();
 
     for (final key in keysToDelete) {
@@ -245,5 +246,37 @@ class HiveShoppingListCustomItemServiceImpl
         name: 'HiveCustomSL',
       );
     }
+  }
+
+  @override
+  Future<void> updateCustomItemToShoppingList(
+      ShoppingListCustomItemModel item) async {
+    final enriched = item.copyWith(
+      ownerUid: _uid,
+      isDeleted: false,
+      isSynced: false,
+    );
+
+    final kNew = _keyUid(enriched);
+    final kOld = _keyLegacy(enriched);
+
+    final existing = _box.get(kNew) ?? _box.get(kOld);
+
+    // Jeśli istnieje, aktualizujemy tylko pola “biznesowe” + metadane sync
+    final toSave = (existing ?? enriched).copyWith(
+      customItemName: enriched.customItemName,
+      customItemCategory: enriched.customItemCategory,
+      ownerUid: _uid,
+      isDeleted: false,
+      isSynced: false,
+    );
+
+    await _box.put(kNew, toSave);
+    await _box.delete(kOld); // migracja legacy -> uid key
+
+    debugLog(
+        '✏️ Zaktualizowano custom item: ${toSave.customItemName} (key=$kNew)',
+        name: 'HiveCustomSL');
+    unawaited(sl<SyncStrategy>().onDataChanged());
   }
 }

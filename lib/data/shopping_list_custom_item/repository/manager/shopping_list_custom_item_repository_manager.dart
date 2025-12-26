@@ -81,7 +81,8 @@ class ShoppingListCustomItemRepositoryManager
         );
 
         return remoteResult.fold(
-          (failure) => const Right(null), // brak błędu — zsynchronizujemy później
+          (failure) =>
+              const Right(null), // brak błędu — zsynchronizujemy później
           (success) async {
             // 4) Po sukcesie oznaczamy w Hive jako zsynchronizowane (albo usuwamy z Hive na stałe)
             await _localRepository
@@ -147,4 +148,32 @@ class ShoppingListCustomItemRepositoryManager
           String customItemId) =>
       _localRepository
           .markShoppingListCustomItemAsSynced(customItemId); // do sync service
+          
+  @override
+  Future<Either<Failure, void>> updateCustomItemToShoppingList(
+    ShoppingListCustomItemEntity customItem,
+  ) async {
+    final localResult =
+        await _localRepository.updateCustomItemToShoppingList(customItem);
+
+    return localResult.fold(
+      (failure) => Left(failure),
+      (_) async {
+        final isOnline = await _networkInfo.checkInternetConnection();
+        if (!isOnline) return const Right(null);
+
+        final remoteResult =
+            await _remoteRepository.updateCustomItemToShoppingList(customItem);
+
+        return remoteResult.fold(
+          (_) => const Right(null),
+          (_) async {
+            await _localRepository
+                .markShoppingListCustomItemAsSynced(customItem.customItemId);
+            return const Right(null);
+          },
+        );
+      },
+    );
+  }
 }

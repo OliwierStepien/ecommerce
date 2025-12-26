@@ -6,6 +6,7 @@ import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/remove_custom_item_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/restore_custom_item_to_shopping_list_use_case.dart';
+import 'package:mealapp/domain/shopping_list_custom_item/usecase/update_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_state.dart';
 
 class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
@@ -14,6 +15,7 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
   final RestoreCustomItemToShoppingListUseCase _restoreUseCase;
   final GetShoppingListCustomItemUseCase _getUseCase;
   final SyncStrategy _syncStrategy;
+  final UpdateCustomItemToShoppingListUseCase _updateUseCase;
 
   /// 📦 Ostatnio usunięty element + jego oryginalna pozycja
   Map<String, dynamic>? _lastRemovedItem;
@@ -24,11 +26,13 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     required RemoveCustomItemFromShoppingListUseCase removeUseCase,
     required RestoreCustomItemToShoppingListUseCase restoreUseCase,
     required GetShoppingListCustomItemUseCase getUseCase,
+    required UpdateCustomItemToShoppingListUseCase updateUseCase,
     required SyncStrategy syncStrategy,
   })  : _addUseCase = addUseCase,
         _removeUseCase = removeUseCase,
         _restoreUseCase = restoreUseCase,
         _getUseCase = getUseCase,
+        _updateUseCase = updateUseCase,
         _syncStrategy = syncStrategy,
         super(const ShoppingListCustomItemInitial()) {
     _loadCustomItems();
@@ -38,7 +42,8 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     emit(const ShoppingListCustomItemLoading());
     final result = await _getUseCase.call(NoParams());
     result.fold(
-      (failure) => emit(ShoppingListCustomItemError(message: failure.toString())),
+      (failure) =>
+          emit(ShoppingListCustomItemError(message: failure.toString())),
       (customItems) => emit(ShoppingListCustomItemLoaded(items: customItems)),
     );
   }
@@ -91,8 +96,9 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
           'index': index,
         };
 
-        final updatedList = List<ShoppingListCustomItemEntity>.from(previousItems)
-          ..removeAt(index);
+        final updatedList =
+            List<ShoppingListCustomItemEntity>.from(previousItems)
+              ..removeAt(index);
 
         emit(currentState.copyWith(items: updatedList));
 
@@ -128,8 +134,9 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
       result.fold(
         (_) => emit(currentState.copyWith(items: previousItems)),
         (_) {
-          final updatedList = List<ShoppingListCustomItemEntity>.from(previousItems)
-            ..insert(index, item);
+          final updatedList =
+              List<ShoppingListCustomItemEntity>.from(previousItems)
+                ..insert(index, item);
           emit(currentState.copyWith(items: updatedList));
           _lastRemovedItem = null;
         },
@@ -142,6 +149,38 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
   }
 
   bool get shouldShowNotification => !_suppressNotifications;
+
+  Future<void> updateCustomIngredient(
+    ShoppingListCustomItemEntity updated, {
+    bool suppressNotification = false,
+  }) async {
+    if (state is! ShoppingListCustomItemLoaded) return;
+    final currentState = state as ShoppingListCustomItemLoaded;
+    final previousItems = currentState.items;
+
+    try {
+      _suppressNotifications = suppressNotification;
+
+      final idx = previousItems
+          .indexWhere((x) => x.customItemId == updated.customItemId);
+      if (idx == -1) return;
+
+      final newList = List<ShoppingListCustomItemEntity>.from(previousItems);
+      newList[idx] = updated;
+
+      emit(currentState.copyWith(items: newList));
+
+      final result = await _updateUseCase.call(updated);
+      result.fold(
+        (_) => emit(currentState.copyWith(items: previousItems)),
+        (_) {},
+      );
+
+      await _syncStrategy.onDataChanged();
+    } finally {
+      _suppressNotifications = false;
+    }
+  }
 
   @override
   Future<void> close() {
