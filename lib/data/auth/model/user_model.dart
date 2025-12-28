@@ -1,8 +1,9 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 
 part 'user_model.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: HiveTypeIds.user)
 class UserModel {
   @HiveField(0)
   final String userId;

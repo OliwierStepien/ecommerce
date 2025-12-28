@@ -1,8 +1,9 @@
 // data/friends/model/friend_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 
-@HiveType(typeId: 7)
+@HiveType(typeId: HiveTypeIds.friend)
 class FriendModel {
   @HiveField(0)
   final String friendEmail;

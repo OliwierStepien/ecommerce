@@ -1,9 +1,10 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 
 part 'favorite_meal_model.g.dart';
 
-@HiveType(typeId: 6)
+@HiveType(typeId: HiveTypeIds.favoriteMeal)
 class FavoriteMealModel {
   @HiveField(0)
   final MealModel meal;

@@ -1,11 +1,12 @@
 // data/shopping_list_meal_ingredient/model/shopping_list_meal_ingredient_model.dart
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 
 part 'shopping_list_meal_ingredient_model.g.dart';
 
-@HiveType(typeId: 7)
+@HiveType(typeId: HiveTypeIds.shoppingListMealIngredient)
 class ShoppingListMealIngredientModel {
   @HiveField(0)
   final MealModel meal;

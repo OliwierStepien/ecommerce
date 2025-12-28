@@ -1,8 +1,9 @@
 // data/friends/model/friend_invitation_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 
-@HiveType(typeId: 8)
+@HiveType(typeId: HiveTypeIds.friendInvitation)
 class FriendInvitationModel {
   @HiveField(0)
   final String id;
@@ -70,7 +71,7 @@ class FriendInvitationModel {
   }
 }
 
-@HiveType(typeId: 9)
+@HiveType(typeId: HiveTypeIds.friendInvitationStatus)
 enum FriendInvitationStatus {
   @HiveField(0)
   pending,

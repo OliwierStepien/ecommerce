@@ -1,11 +1,12 @@
 // data/planned_meal/model/planned_meal_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 
 part 'planned_meal_model.g.dart';
 
-@HiveType(typeId: 5)
+@HiveType(typeId: HiveTypeIds.plannedMeal)
 class PlannedMealModel {
   @HiveField(0)
   final DateTime date;

@@ -1,8 +1,9 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 
 part 'ingredient_model.g.dart';
 
-@HiveType(typeId: 3)
+@HiveType(typeId: HiveTypeIds.ingredient)
 class IngredientModel {
   @HiveField(0)
   final num? amountPerPortion;

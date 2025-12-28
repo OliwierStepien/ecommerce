@@ -1,9 +1,10 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 
 part 'meal_model.g.dart';
 
-@HiveType(typeId: 2)
+@HiveType(typeId: HiveTypeIds.meal)
 class MealModel {
   @HiveField(0)
   final String title;

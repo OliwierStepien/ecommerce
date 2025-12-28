@@ -1,8 +1,9 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 
 part 'category_model.g.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: HiveTypeIds.category)
 
 class CategoryModel {
     @HiveField(0)

@@ -1,8 +1,9 @@
 import 'package:hive/hive.dart';
+import 'package:mealapp/core/storage/hive_type_id.dart';
 
 part 'shopping_list_custom_item_model.g.dart';
 
-@HiveType(typeId: 8)
+@HiveType(typeId: HiveTypeIds.shoppingListCustomItem)
 class ShoppingListCustomItemModel {
   @HiveField(0)
   final String customItemId;
