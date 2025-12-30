@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/common/widgets/appbar/app_bar.dart';
+import 'package:mealapp/domain/grocery/usecase/get_groceries.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
+import 'package:mealapp/presentation/grocery/bloc/groceries_display_cubit.dart';
+import 'package:mealapp/presentation/grocery/widget/groceries_bottom_sheet.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_state.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_cubit.dart';
@@ -27,6 +30,25 @@ class ShoppingListPage extends StatelessWidget {
       builder: (_) => AddCustomIngredientBottomSheet(
         getAllIngredientsUseCase: sl<GetAllIngredientsUseCase>(),
       ),
+    );
+  }
+
+  void _showGroceriesSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return BlocProvider(
+          create: (_) => GroceriesDisplayCubit(
+            useCase: sl<GetGroceriesUseCase>(),
+          )..loadGroceries(),
+          child: const GroceriesBottomSheet(),
+        );
+      },
     );
   }
 
@@ -54,7 +76,6 @@ class ShoppingListPage extends StatelessWidget {
                   }
 
                   if (mealState is ShoppingListMealIngredientLoaded) {
-                    // ✅ lista składników z posiłków
                     final mealItems = mealState.items;
 
                     return BlocBuilder<ShoppingListCustomItemCubit,
@@ -74,7 +95,6 @@ class ShoppingListPage extends StatelessWidget {
                           );
                         }
 
-                        // ✅ lista składników niestandardowych
                         final customItems =
                             customState is ShoppingListCustomItemLoaded
                                 ? customState.items.map((item) {
@@ -94,7 +114,6 @@ class ShoppingListPage extends StatelessWidget {
                                   }).toList()
                                 : <Map<String, dynamic>>[];
 
-                        // ✅ scalone dane: posiłki + customy
                         final combinedItems = [...mealItems, ...customItems];
                         final groupedItems =
                             _groupItemsByCategory(combinedItems);
@@ -158,13 +177,24 @@ class ShoppingListPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FloatingActionButton(
-                mini: true,
-                onPressed: () => _showAddIngredientSheet(context),
-                child: const Icon(Icons.add),
-              ),
+
+            // ✅ DWA PRZYCISKI NA DOLE: LEWY (bottom sheet) + PRAWY (add)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'openGroceriesBtn',
+                  mini: true,
+                  onPressed: () => _showGroceriesSheet(context),
+                  child: const Icon(Icons.menu),
+                ),
+                FloatingActionButton(
+                  heroTag: 'addBtn',
+                  mini: true,
+                  onPressed: () => _showAddIngredientSheet(context),
+                  child: const Icon(Icons.add),
+                ),
+              ],
             ),
           ],
         ),
@@ -172,19 +202,16 @@ class ShoppingListPage extends StatelessWidget {
     );
   }
 
-  /// 📦 Grupowanie elementów po kategorii składnika
   Map<String, List<Map<String, dynamic>>> _groupItemsByCategory(
-      List<Map<String, dynamic>> items) {
+    List<Map<String, dynamic>> items,
+  ) {
     final Map<String, List<Map<String, dynamic>>> groupedItems = {};
-    for (var item in items) {
+    for (final item in items) {
       final category = item['ingredientCategory'] ?? 'Inne';
       groupedItems.putIfAbsent(category, () => []).add(item);
     }
 
-    // ✅ SORTOWANIE kluczy kategorii alfabetycznie
     final sortedKeys = groupedItems.keys.toList()..sort();
-    final sortedMap = {for (var key in sortedKeys) key: groupedItems[key]!};
-
-    return sortedMap;
+    return {for (final key in sortedKeys) key: groupedItems[key]!};
   }
 }

@@ -23,6 +23,11 @@ import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_servi
 import 'package:mealapp/data/favorite_meal/source/remote/firebase_favorite_meal_service.dart';
 import 'package:mealapp/data/friends/repository/remote/friend_repository_impl.dart';
 import 'package:mealapp/data/friends/source/remote/firebase_friend_service.dart';
+import 'package:mealapp/data/grocery/repository/local/hive_grocery_repository_impl.dart';
+import 'package:mealapp/data/grocery/repository/manager/grocery_repository_manager.dart';
+import 'package:mealapp/data/grocery/repository/remote/firebase_grocery_repository_impl.dart';
+import 'package:mealapp/data/grocery/source/local/hive_grocery_service.dart';
+import 'package:mealapp/data/grocery/source/remote/firebase_grocery_service.dart';
 import 'package:mealapp/data/ingredient/repository/local/hive_ingredient_repository_impl.dart';
 import 'package:mealapp/data/ingredient/repository/manager/ingredient_repository_manager.dart';
 import 'package:mealapp/data/ingredient/repository/remote/firebase_ingredient_repository_impl.dart';
@@ -74,6 +79,8 @@ import 'package:mealapp/domain/friends/usecase/get_pending_invitations_usecase.d
 import 'package:mealapp/domain/friends/usecase/remove_friends_usecase.dart';
 import 'package:mealapp/domain/friends/usecase/respond_to_invitation_usecase.dart';
 import 'package:mealapp/domain/friends/usecase/send_friend_invitation_usecase.dart';
+import 'package:mealapp/domain/grocery/repository/grocery_repository.dart';
+import 'package:mealapp/domain/grocery/usecase/get_groceries.dart';
 import 'package:mealapp/domain/ingredient/repository/ingredient_repository.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/meal/repository/meal_repository.dart';
@@ -196,6 +203,10 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<FirebaseShoppingListShareService>(
     FirebaseShoppingListShareService(),
   );
+
+  // Grocery services
+  sl.registerSingleton<FirebaseGroceryService>(FirebaseGroceryServiceImpl());
+  sl.registerSingleton<HiveGroceryService>(HiveGroceryServiceImpl());
 
   // REPOSITORIES
 
@@ -337,7 +348,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // Shopping List Share repository (NEW)
+  // Shopping List Share repository
   sl.registerLazySingleton<FirebaseShoppingListShareRepositoryImpl>(
     () => FirebaseShoppingListShareRepositoryImpl(
       sl<FirebaseShoppingListShareService>(),
@@ -345,6 +356,23 @@ Future<void> initializeDependencies() async {
       sl<HiveShoppingListCustomItemService>(),
     ),
   );
+
+  // Grocery repositories
+sl.registerLazySingleton<FirebaseGroceryRepositoryImpl>(
+  () => FirebaseGroceryRepositoryImpl(service: sl<FirebaseGroceryService>()),
+);
+
+sl.registerLazySingleton<HiveGroceryRepositoryImpl>(
+  () => HiveGroceryRepositoryImpl(hiveGroceryService: sl<HiveGroceryService>()),
+);
+
+sl.registerLazySingleton<GroceryRepository>(
+  () => GroceryRepositoryManager(
+    localRepository: sl<HiveGroceryRepositoryImpl>(),
+    remoteRepository: sl<FirebaseGroceryRepositoryImpl>(),
+    networkInfo: sl<NetworkInfo>(),
+  ),
+);
 
   // USECASES
 
@@ -481,6 +509,11 @@ Future<void> initializeDependencies() async {
     () => ShareShoppingListWithFriendUseCase(
       sl<FirebaseShoppingListShareRepositoryImpl>(),
     ),
+  );
+
+  // Grocery usecases
+  sl.registerLazySingleton<GetGroceriesUseCase>(
+    () => GetGroceriesUseCase(sl<GroceryRepository>()),
   );
 
   // CUBIT

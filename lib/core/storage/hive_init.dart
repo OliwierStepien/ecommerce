@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealapp/data/auth/model/user_model.dart';
 import 'package:mealapp/data/category/model/category_model.dart';
 import 'package:mealapp/data/favorite_meal/model/favorite_meal_model.dart';
+import 'package:mealapp/data/grocery/model/grocery_model.dart';
 import 'package:mealapp/data/ingredient/model/ingredient_model.dart';
 import 'package:mealapp/data/meal/model/meal_model.dart';
 import 'package:mealapp/data/planned_meal/model/planned_meal_model.dart';
@@ -44,8 +45,10 @@ class HiveConfig {
       Hive.openBox<IngredientModel>('ingredients'),
       Hive.openBox<PlannedMealModel>('plannedMeals'),
       Hive.openBox<FavoriteMealModel>('favoritesMeals'),
-      Hive.openBox<ShoppingListMealIngredientModel>('shoppingListMealIngredients'),
+      Hive.openBox<ShoppingListMealIngredientModel>(
+          'shoppingListMealIngredients'),
       Hive.openBox<ShoppingListCustomItemModel>('shoppingListCustomItems'),
+      Hive.openBox<GroceryModel>('groceries'),
     ]);
   }
 

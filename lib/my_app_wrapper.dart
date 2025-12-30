@@ -5,6 +5,7 @@ import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/core/new.dart';
 import 'package:mealapp/my_app.dart';
 import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
+import 'package:mealapp/presentation/grocery/bloc/groceries_display_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
@@ -49,6 +50,7 @@ class MyAppWrapper extends StatelessWidget {
         BlocProvider(create: (_) => sl<FriendsCubit>()..initializeFriendsData()),
         BlocProvider(create: (_) => sl<MealShareCubit>()),
         BlocProvider(create: (_) => sl<ShoppingListShareCubit>()),
+        BlocProvider(create: (_) => sl<GroceriesDisplayCubit>()),
       ],
       child: const MyApp(),
     );
