@@ -6,6 +6,7 @@ import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/grocery/bloc/groceries_display_cubit.dart';
 import 'package:mealapp/presentation/grocery/bloc/groceries_display_state.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_cubit.dart';
+import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_custom_item_state.dart';
 
 class GroceriesBottomSheet extends StatelessWidget {
   const GroceriesBottomSheet({super.key});
@@ -99,34 +100,114 @@ class _GroceryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      title: Text(grocery.groceryItemName),
-      subtitle: Text(grocery.groceryItemCategory),
-      trailing: IconButton(
-        icon: const Icon(Icons.add_circle_outline),
-        onPressed: () {
-          final customCubit = context.read<ShoppingListCustomItemCubit>();
+    return BlocBuilder<ShoppingListCustomItemCubit, ShoppingListCustomItemState>(
+      builder: (context, customState) {
+        final bool isAdded = customState is ShoppingListCustomItemLoaded &&
+            customState.items.any((x) => x.customItemId == grocery.groceryItemId);
 
-          customCubit.addCustomIngredient(
-            ShoppingListCustomItemEntity(
-              customItemId: grocery.groceryItemId,
-              customItemName: grocery.groceryItemName,
-              customItemCategory: grocery.groceryItemCategory,
+        return ListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(grocery.groceryItemName),
+          subtitle: Text(grocery.groceryItemCategory),
+          trailing: IconButton(
+            icon: Icon(
+              isAdded ? Icons.check_circle : Icons.add_circle_outline,
+              color: isAdded ? Colors.green : null,
             ),
-            suppressNotification: true,
-          );
+            onPressed: () async {
+              final customCubit = context.read<ShoppingListCustomItemCubit>();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.addedIngredientToShoppingList(grocery.groceryItemName),
-              ),
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        },
+              // ✅ Toggle OFF (usuń)
+              if (isAdded) {
+                customCubit.removeCustomIngredient(
+                  grocery.groceryItemId,
+                  suppressNotification: true,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      context.l10n.removedIngredientFromShoppingList(
+                        grocery.groceryItemName,
+                      ),
+                    ),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+                return;
+              }
+
+              // ✅ Toggle ON (dodaj) — najpierw dialog edycji nazwy
+              final editedName = await _showEditNameDialog(
+                context: context,
+                initial: grocery.groceryItemName,
+              );
+
+              final trimmed = editedName?.trim() ?? '';
+              if (trimmed.isEmpty) return;
+              if (!context.mounted) return;
+
+              // ✅ Deduplikacja na wszelki wypadek (gdyby stan się zmienił)
+              final state = customCubit.state;
+              final alreadyAdded = state is ShoppingListCustomItemLoaded &&
+                  state.items.any((x) => x.customItemId == grocery.groceryItemId);
+              if (alreadyAdded) return;
+
+              customCubit.addCustomIngredient(
+                ShoppingListCustomItemEntity(
+                  customItemId: grocery.groceryItemId, // 🔑 stałe ID = brak duplikatów
+                  customItemName: trimmed, // ✅ nazwa po edycji
+                  customItemCategory: grocery.groceryItemCategory,
+                ),
+                suppressNotification: true,
+              );
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    context.l10n.addedIngredientToShoppingList(trimmed),
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<String?> _showEditNameDialog({
+    required BuildContext context,
+    required String initial,
+  }) async {
+    final controller = TextEditingController(text: initial);
+
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Dodaj do listy'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Np. banany 5kg',
+          ),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => Navigator.of(dialogContext).pop(controller.text),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Anuluj'),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text.trim()),
+            child: const Text('Zapisz'),
+          ),
+        ],
       ),
     );
   }

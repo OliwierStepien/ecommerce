@@ -32,8 +32,15 @@ class HiveConfig {
   // / 🧹 Czyści tylko wybrane boxy (przed otwarciem)
   // static Future<void> _clearSpecificBoxes() async {
   //   await Future.wait([
+  //     Hive.deleteBoxFromDisk('users'),
+  //     Hive.deleteBoxFromDisk('categories'),
+  //     Hive.deleteBoxFromDisk('meals'),
+  //     Hive.deleteBoxFromDisk('ingredients'),
+  //     Hive.deleteBoxFromDisk('plannedMeals'),
+  //     Hive.deleteBoxFromDisk('favoritesMeals'),
   //     Hive.deleteBoxFromDisk('shoppingListMealIngredients'),
   //     Hive.deleteBoxFromDisk('shoppingListCustomItems'),
+  //     Hive.deleteBoxFromDisk('groceries'),
   //   ]);
   // }
 
