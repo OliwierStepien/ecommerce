@@ -21,6 +21,12 @@ import 'package:mealapp/data/favorite_meal/repository/remote/firebase_favorite_m
 import 'package:mealapp/data/favorite_meal/repository/sync/favorite_meal_sync_service.dart';
 import 'package:mealapp/data/favorite_meal/source/local/hive_favorite_meal_service.dart';
 import 'package:mealapp/data/favorite_meal/source/remote/firebase_favorite_meal_service.dart';
+import 'package:mealapp/data/freezer/repository/local/hive_freezer_item_repository_impl.dart';
+import 'package:mealapp/data/freezer/repository/manager/freezer_item_repository_manager.dart';
+import 'package:mealapp/data/freezer/repository/remote/firebase_freezer_item_repository_impl.dart';
+import 'package:mealapp/data/freezer/repository/sync/freezer_item_sync_service.dart';
+import 'package:mealapp/data/freezer/source/local/hive_freezer_item_service.dart';
+import 'package:mealapp/data/freezer/source/remote/firebase_freezer_item_service.dart';
 import 'package:mealapp/data/friends/repository/remote/friend_repository_impl.dart';
 import 'package:mealapp/data/friends/source/remote/firebase_friend_service.dart';
 import 'package:mealapp/data/grocery/repository/local/hive_grocery_repository_impl.dart';
@@ -71,6 +77,12 @@ import 'package:mealapp/domain/category/usecase/get_categories.dart';
 import 'package:mealapp/domain/favorite_meal/repository/favorite_meal_repository.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/add_favorite_meal.dart';
 import 'package:mealapp/domain/favorite_meal/usecase/remove_favorite_meal.dart';
+import 'package:mealapp/domain/freezer/repository/freezer_item_repository.dart';
+import 'package:mealapp/domain/freezer/usecase/add_freezer_item_usecase.dart';
+import 'package:mealapp/domain/freezer/usecase/get_freezer_items_usecase.dart';
+import 'package:mealapp/domain/freezer/usecase/remove_freezer_item_usecase.dart';
+import 'package:mealapp/domain/freezer/usecase/restore_freezer_item_usecase.dart';
+import 'package:mealapp/domain/freezer/usecase/update_freezer_item_usecase.dart';
 import 'package:mealapp/domain/friends/repository/friend_repository.dart';
 import 'package:mealapp/domain/friends/usecase/add_friends_usecase.dart';
 import 'package:mealapp/domain/friends/usecase/get_friends_usecase.dart';
@@ -112,6 +124,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_
 import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient_share/usecase/share_shopping_list_with_friend_usecase.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
+import 'package:mealapp/presentation/freezer/bloc/freezer_item_cubit.dart';
 import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
@@ -207,6 +220,14 @@ Future<void> initializeDependencies() async {
   // Grocery services
   sl.registerSingleton<FirebaseGroceryService>(FirebaseGroceryServiceImpl());
   sl.registerSingleton<HiveGroceryService>(HiveGroceryServiceImpl());
+
+// FREEZER services
+  sl.registerSingleton<FirebaseFreezerItemService>(
+    FirebaseFreezerItemServiceImpl(),
+  );
+  sl.registerSingleton<HiveFreezerItemService>(
+    HiveFreezerItemServiceImpl(),
+  );
 
   // REPOSITORIES
 
@@ -358,21 +379,43 @@ Future<void> initializeDependencies() async {
   );
 
   // Grocery repositories
-sl.registerLazySingleton<FirebaseGroceryRepositoryImpl>(
-  () => FirebaseGroceryRepositoryImpl(service: sl<FirebaseGroceryService>()),
-);
+  sl.registerLazySingleton<FirebaseGroceryRepositoryImpl>(
+    () => FirebaseGroceryRepositoryImpl(service: sl<FirebaseGroceryService>()),
+  );
 
-sl.registerLazySingleton<HiveGroceryRepositoryImpl>(
-  () => HiveGroceryRepositoryImpl(hiveGroceryService: sl<HiveGroceryService>()),
-);
+  sl.registerLazySingleton<HiveGroceryRepositoryImpl>(
+    () =>
+        HiveGroceryRepositoryImpl(hiveGroceryService: sl<HiveGroceryService>()),
+  );
 
-sl.registerLazySingleton<GroceryRepository>(
-  () => GroceryRepositoryManager(
-    localRepository: sl<HiveGroceryRepositoryImpl>(),
-    remoteRepository: sl<FirebaseGroceryRepositoryImpl>(),
-    networkInfo: sl<NetworkInfo>(),
-  ),
-);
+  sl.registerLazySingleton<GroceryRepository>(
+    () => GroceryRepositoryManager(
+      localRepository: sl<HiveGroceryRepositoryImpl>(),
+      remoteRepository: sl<FirebaseGroceryRepositoryImpl>(),
+      networkInfo: sl<NetworkInfo>(),
+    ),
+  );
+
+  // FREEZER repositories
+  sl.registerLazySingleton<FirebaseFreezerItemRepositoryImpl>(
+    () => FirebaseFreezerItemRepositoryImpl(
+      service: sl<FirebaseFreezerItemService>(),
+    ),
+  );
+
+  sl.registerLazySingleton<HiveFreezerItemRepositoryImpl>(
+    () => HiveFreezerItemRepositoryImpl(
+      service: sl<HiveFreezerItemService>(),
+    ),
+  );
+
+  sl.registerLazySingleton<FreezerItemRepository>(
+    () => FreezerItemRepositoryManager(
+      localRepository: sl<HiveFreezerItemRepositoryImpl>(),
+      remoteRepository: sl<FirebaseFreezerItemRepositoryImpl>(),
+      networkInfo: sl<NetworkInfo>(),
+    ),
+  );
 
   // USECASES
 
@@ -516,6 +559,27 @@ sl.registerLazySingleton<GroceryRepository>(
     () => GetGroceriesUseCase(sl<GroceryRepository>()),
   );
 
+// FREEZER usecases
+  sl.registerLazySingleton<AddFreezerItemUseCase>(
+    () => AddFreezerItemUseCase(sl<FreezerItemRepository>()),
+  );
+
+  sl.registerLazySingleton<GetFreezerItemsUseCase>(
+    () => GetFreezerItemsUseCase(sl<FreezerItemRepository>()),
+  );
+
+  sl.registerLazySingleton<RemoveFreezerItemUseCase>(
+    () => RemoveFreezerItemUseCase(sl<FreezerItemRepository>()),
+  );
+
+  sl.registerLazySingleton<RestoreFreezerItemUseCase>(
+    () => RestoreFreezerItemUseCase(sl<FreezerItemRepository>()),
+  );
+
+  sl.registerLazySingleton<UpdateFreezerItemUseCase>(
+    () => UpdateFreezerItemUseCase(sl<FreezerItemRepository>()),
+  );
+
   // CUBIT
 
   // ✅ Button state cubit
@@ -632,6 +696,18 @@ sl.registerLazySingleton<GroceryRepository>(
     ),
   );
 
+// Freezer cubit
+  sl.registerFactory(
+    () => FreezerItemCubit(
+      addUseCase: sl<AddFreezerItemUseCase>(),
+      removeUseCase: sl<RemoveFreezerItemUseCase>(),
+      restoreUseCase: sl<RestoreFreezerItemUseCase>(),
+      getUseCase: sl<GetFreezerItemsUseCase>(),
+      updateUseCase: sl<UpdateFreezerItemUseCase>(),
+      syncStrategy: sl<SyncStrategy>(),
+    ),
+  );
+
 // SYNC SERVICES & CONNECTION MONITOR
 
 // Planned Meal
@@ -663,21 +739,30 @@ sl.registerLazySingleton<GroceryRepository>(
     networkInfo: sl<NetworkInfo>(),
   );
 
+// Freezer
+  final freezerItemSyncService = FreezerItemSyncService(
+    remoteRepository: sl<FirebaseFreezerItemRepositoryImpl>(),
+    remoteService: sl<FirebaseFreezerItemService>(),
+    networkInfo: sl<NetworkInfo>(),
+  );
+
 // SyncStrategy
 
 // Najpierw zarejestruj controller (już bez strategii w konstruktorze)
   sl.registerLazySingleton<SyncController>(() => SyncController(
-        // nowo: planowane i ulubione
         plannedMealSyncService: plannedSyncService,
         favoriteMealSyncService: favoriteSyncService,
-
-        // były: zakupy
         shoppingListSyncService: shoppingListMealIngredientSyncService,
         customItemsSyncService: shoppingListCustomItemSyncService,
 
-        // lokalne serwisy do sprzątania zsynchronizowanych "deleted"
+        // ✅ FREEZER
+        freezerItemSyncService: freezerItemSyncService,
+
         hiveService: sl<HiveShoppingListMealIngredientService>(),
         customItemsHiveService: sl<HiveShoppingListCustomItemService>(),
+
+        // ✅ FREEZER
+        freezerHiveService: sl<HiveFreezerItemService>(),
       ));
 
 // Teraz strategia, która odwołuje się do kontrolera
@@ -693,6 +778,7 @@ sl.registerLazySingleton<GroceryRepository>(
       favoriteSyncService,
       shoppingListMealIngredientSyncService,
       shoppingListCustomItemSyncService,
+      freezerItemSyncService,
     ],
   );
 
@@ -702,4 +788,5 @@ sl.registerLazySingleton<GroceryRepository>(
   sl.registerSingleton(shoppingListMealIngredientSyncService);
   sl.registerSingleton(shoppingListCustomItemSyncService);
   sl.registerSingleton(connectionMonitor);
+  sl.registerSingleton(freezerItemSyncService);
 }

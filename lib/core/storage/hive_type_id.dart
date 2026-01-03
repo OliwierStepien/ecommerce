@@ -12,4 +12,5 @@ class HiveTypeIds {
   static const friendInvitation = 9;
   static const friendInvitationStatus = 10;
   static const friend = 11;
+  static const freezerItem = 12;
 }

@@ -12,6 +12,7 @@ class Destination {
 
 final destinations = [
   Destination(label: 'Ulubione', icon: Icons.favorite),
-  Destination(label: 'Strona główna', icon: Icons.home),
+  Destination(label: 'Zamrażarka', icon: Icons.ac_unit),
+  Destination(label: 'Start', icon: Icons.home),
   Destination(label: 'Zakupy', icon: Icons.shopping_cart),
 ];

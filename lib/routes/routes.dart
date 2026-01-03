@@ -7,6 +7,7 @@ class Routes {
   static const String forgotPasswordPage = '/forgot-password';
   static const String passwordResetEmailPage = '/password-reset-email';
   static const String favoritePage = '/favorite';
+  static const String freezerPage = '/freezer';
   static const String shoppingListPage = '/shopping-list';
 
   static const String homePage = '/home';
