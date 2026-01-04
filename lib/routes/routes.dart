@@ -9,6 +9,7 @@ class Routes {
   static const String favoritePage = '/favorite';
   static const String freezerPage = '/freezer';
   static const String shoppingListPage = '/shopping-list';
+  static const String nestedCalendarPage = '/calendar';
 
   static const String homePage = '/home';
   static const String categoryMealsPage = 'category-meals';
@@ -19,8 +20,6 @@ class Routes {
   static const String nestedSearchPage = '/home/search';
   static const String mealDetailPage = 'meal-detail';
   static const String nestedMealDetailPage = '/home/meal-detail';
-  static const String calendarPage = 'calendar';
-  static const String nestedCalendarPage = '/home/calendar';
   static const String userInfoPage = 'user-info';
   static const String nestedUserInfoPage = '/home/user-info';
 }

@@ -14,5 +14,6 @@ final destinations = [
   Destination(label: 'Ulubione', icon: Icons.favorite),
   Destination(label: 'Zamrażarka', icon: Icons.ac_unit),
   Destination(label: 'Start', icon: Icons.home),
+  Destination(label: 'Kalendarz', icon: Icons.calendar_month_outlined),
   Destination(label: 'Zakupy', icon: Icons.shopping_cart),
 ];

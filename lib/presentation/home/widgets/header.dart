@@ -10,6 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/routes/routes.dart';
 
+// ✅ NOWE
+import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
+import 'package:mealapp/core/usecase/usecase.dart';
+import 'package:mealapp/domain/auth/usecase/signout.dart';
+import 'package:mealapp/service_locator.dart';
+
 class Header extends StatelessWidget {
   const Header({super.key});
 
@@ -27,7 +33,7 @@ class Header extends StatelessWidget {
             children: [
               const _MenuIcon(),
               _UserNameWithInvitations(user: state.user),
-              const _CalendarIcon(),
+              const _SignOutIcon(),
             ],
           );
         }
@@ -66,7 +72,6 @@ class _UserNameWithInvitations extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Automatyczne ładowanie liczby zaproszeń przy budowaniu widgetu
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final friendsCubit = context.read<FriendsCubit>();
       if (friendsCubit.state is FriendsInitial) {
@@ -91,7 +96,6 @@ class _UserNameWithInvitations extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Tekst powitania
                 Text(
                   context.l10n.helloUser(user.firstName),
                   style: const TextStyle(
@@ -103,8 +107,6 @@ class _UserNameWithInvitations extends StatelessWidget {
                   softWrap: true,
                   textAlign: TextAlign.start,
                 ),
-
-                // Badge z liczbą zaproszeń (jeśli są)
                 if (invitationsCount > 0) ...[
                   const SizedBox(width: 8),
                   _InvitationsBadge(count: invitationsCount),
@@ -143,15 +145,19 @@ class _InvitationsBadge extends StatelessWidget {
   }
 }
 
-class _CalendarIcon extends StatelessWidget {
-  const _CalendarIcon();
+// ✅ NOWE: wylogowanie w miejscu kalendarza
+class _SignOutIcon extends StatelessWidget {
+  const _SignOutIcon();
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.calendar_month_outlined),
+      icon: const Icon(Icons.exit_to_app),
       onPressed: () {
-        context.push(Routes.nestedCalendarPage);
+        context.read<ButtonStateCubit>().execute(
+          params: NoParams(),
+          usecase: sl<SignoutUsecase>(),
+        );
       },
     );
   }

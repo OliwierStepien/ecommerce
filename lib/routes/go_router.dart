@@ -82,10 +82,6 @@ final router = GoRouter(
               builder: (context, state) => const HomePage(),
               routes: [
                 GoRoute(
-                  path: Routes.calendarPage,
-                  builder: (context, state) => const PlannedMealPage(),
-                ),
-                GoRoute(
                   path: Routes.mealDetailPage,
                   builder: (context, state) =>
                       MealDetailPage(mealEntity: state.extra as MealEntity),
@@ -109,6 +105,14 @@ final router = GoRouter(
                   builder: (context, state) => const UserInfoPage(),
                 ),
               ],
+            ),
+          ],
+        ),
+    StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.nestedCalendarPage,
+              builder: (context, state) => const PlannedMealPage(),
             ),
           ],
         ),
