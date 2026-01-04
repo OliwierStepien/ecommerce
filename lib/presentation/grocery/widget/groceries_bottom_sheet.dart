@@ -13,6 +13,17 @@ class GroceriesBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Łatwo sterujesz rozmiarem w 1 miejscu
+    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        );
+
+    final categoryStyle = Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        );
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -28,7 +39,6 @@ class GroceriesBottomSheet extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-
           BlocBuilder<GroceriesDisplayCubit, GroceriesDisplayState>(
             builder: (context, state) {
               if (state is GroceriesLoading) {
@@ -61,13 +71,19 @@ class GroceriesBottomSheet extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 10),
+                          Text(category, style: categoryStyle),
                           const SizedBox(height: 8),
-                          Text(
-                            category,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ...items.map(
+                            (g) => _GroceryTile(
+                              grocery: g,
+                              titleStyle: titleStyle,
+                              subtitleStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontSize: 14),
+                            ),
                           ),
-                          const SizedBox(height: 6),
-                          ...items.map((g) => _GroceryTile(grocery: g)),
                         ],
                       );
                     }).toList(),
@@ -86,7 +102,8 @@ class GroceriesBottomSheet extends StatelessWidget {
   Map<String, List<GroceryEntity>> _groupByCategory(List<GroceryEntity> items) {
     final map = <String, List<GroceryEntity>>{};
     for (final g in items) {
-      final cat = g.groceryItemCategory.trim().isEmpty ? 'Inne' : g.groceryItemCategory;
+      final cat =
+          g.groceryItemCategory.trim().isEmpty ? 'Inne' : g.groceryItemCategory;
       map.putIfAbsent(cat, () => []).add(g);
     }
     final keys = map.keys.toList()..sort();
@@ -96,7 +113,14 @@ class GroceriesBottomSheet extends StatelessWidget {
 
 class _GroceryTile extends StatelessWidget {
   final GroceryEntity grocery;
-  const _GroceryTile({required this.grocery});
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
+
+  const _GroceryTile({
+    required this.grocery,
+    this.titleStyle,
+    this.subtitleStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -106,14 +130,25 @@ class _GroceryTile extends StatelessWidget {
             customState.items.any((x) => x.customItemId == grocery.groceryItemId);
 
         return ListTile(
-          dense: true,
+          dense: false, // ✅ pozwala na większą wysokość wiersza
+          visualDensity: VisualDensity.standard,
           contentPadding: EdgeInsets.zero,
-          title: Text(grocery.groceryItemName),
-          subtitle: Text(grocery.groceryItemCategory),
+          minVerticalPadding: 10, // ✅ większe “oddechy”
+          title: Text(
+            grocery.groceryItemName,
+            style: titleStyle ??
+                Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18),
+          ),
+          subtitle: Text(
+            grocery.groceryItemCategory,
+            style: subtitleStyle ??
+                Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
+          ),
           trailing: IconButton(
             icon: Icon(
               isAdded ? Icons.check_circle : Icons.add_circle_outline,
               color: isAdded ? Colors.green : null,
+              size: 26, // ✅ opcjonalnie większa ikonka
             ),
             onPressed: () async {
               final customCubit = context.read<ShoppingListCustomItemCubit>();
