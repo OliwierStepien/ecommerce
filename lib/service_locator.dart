@@ -27,6 +27,8 @@ import 'package:mealapp/data/freezer/repository/remote/firebase_freezer_item_rep
 import 'package:mealapp/data/freezer/repository/sync/freezer_item_sync_service.dart';
 import 'package:mealapp/data/freezer/source/local/hive_freezer_item_service.dart';
 import 'package:mealapp/data/freezer/source/remote/firebase_freezer_item_service.dart';
+import 'package:mealapp/data/freezer_item_share/repository/firebase_freezer_share_repository_impl.dart';
+import 'package:mealapp/data/freezer_item_share/source/remote/firebase_freezer_share_service.dart';
 import 'package:mealapp/data/friends/repository/remote/friend_repository_impl.dart';
 import 'package:mealapp/data/friends/source/remote/firebase_friend_service.dart';
 import 'package:mealapp/data/grocery/repository/local/hive_grocery_repository_impl.dart';
@@ -83,6 +85,7 @@ import 'package:mealapp/domain/freezer/usecase/get_freezer_items_usecase.dart';
 import 'package:mealapp/domain/freezer/usecase/remove_freezer_item_usecase.dart';
 import 'package:mealapp/domain/freezer/usecase/restore_freezer_item_usecase.dart';
 import 'package:mealapp/domain/freezer/usecase/update_freezer_item_usecase.dart';
+import 'package:mealapp/domain/freezer_item_share/usecase/share_freezer_with_friend_usecase.dart';
 import 'package:mealapp/domain/friends/repository/friend_repository.dart';
 import 'package:mealapp/domain/friends/usecase/add_friends_usecase.dart';
 import 'package:mealapp/domain/friends/usecase/get_friends_usecase.dart';
@@ -125,6 +128,7 @@ import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient_share/usecase/share_shopping_list_with_friend_usecase.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/freezer/bloc/freezer_item_cubit.dart';
+import 'package:mealapp/presentation/freezer_share/bloc/freezer_share_cubit.dart';
 import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
@@ -227,6 +231,11 @@ Future<void> initializeDependencies() async {
   );
   sl.registerSingleton<HiveFreezerItemService>(
     HiveFreezerItemServiceImpl(),
+  );
+
+  // Freezer share service
+  sl.registerSingleton<FirebaseFreezerShareService>(
+    FirebaseFreezerShareService(),
   );
 
   // REPOSITORIES
@@ -417,6 +426,14 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+  // Freezer share repository
+  sl.registerLazySingleton<FirebaseFreezerShareRepositoryImpl>(
+    () => FirebaseFreezerShareRepositoryImpl(
+      sl<FirebaseFreezerShareService>(),
+      sl<HiveFreezerItemService>(),
+    ),
+  );
+
   // USECASES
 
   // Auth usecases
@@ -580,6 +597,13 @@ Future<void> initializeDependencies() async {
     () => UpdateFreezerItemUseCase(sl<FreezerItemRepository>()),
   );
 
+  // Freezer share usecase
+  sl.registerFactory<ShareFreezerWithFriendUseCase>(
+    () => ShareFreezerWithFriendUseCase(
+      sl<FirebaseFreezerShareRepositoryImpl>(),
+    ),
+  );
+
   // CUBIT
 
   // ✅ Button state cubit
@@ -706,6 +730,11 @@ Future<void> initializeDependencies() async {
       updateUseCase: sl<UpdateFreezerItemUseCase>(),
       syncStrategy: sl<SyncStrategy>(),
     ),
+  );
+
+  // Freezer share cubit
+  sl.registerFactory<FreezerShareCubit>(
+    () => FreezerShareCubit(sl<ShareFreezerWithFriendUseCase>()),
   );
 
 // SYNC SERVICES & CONNECTION MONITOR

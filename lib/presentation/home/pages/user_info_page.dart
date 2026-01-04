@@ -15,6 +15,10 @@ import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_state.da
 import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_cubit.dart';
 import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_state.dart';
 
+// ✅ NEW: freezer share
+import 'package:mealapp/presentation/freezer_share/bloc/freezer_share_cubit.dart';
+import 'package:mealapp/presentation/freezer_share/bloc/freezer_share_state.dart';
+
 class UserInfoPage extends StatelessWidget {
   const UserInfoPage({super.key});
 
@@ -57,6 +61,7 @@ class UserInfoPage extends StatelessWidget {
               }
             },
           ),
+
           // ⬇️ SnackBary po udostępnianiu posiłków
           BlocListener<MealShareCubit, MealShareState>(
             listenWhen: (prev, curr) =>
@@ -73,6 +78,7 @@ class UserInfoPage extends StatelessWidget {
               }
             },
           ),
+
           // ⬇️ SnackBary po udostępnianiu listy zakupów
           BlocListener<ShoppingListShareCubit, ShoppingListShareState>(
             listenWhen: (prev, curr) =>
@@ -84,6 +90,23 @@ class UserInfoPage extends StatelessWidget {
                   SnackBar(content: Text(state.message)),
                 );
               } else if (state is ShoppingListShareFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+          ),
+
+          // ✅ NEW: SnackBary po udostępnianiu zamrażarki
+          BlocListener<FreezerShareCubit, FreezerShareState>(
+            listenWhen: (prev, curr) =>
+                curr is FreezerShareSuccess || curr is FreezerShareFailure,
+            listener: (context, state) {
+              if (state is FreezerShareSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              } else if (state is FreezerShareFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
@@ -379,10 +402,15 @@ class _FriendListItem extends StatelessWidget {
     final mealShare = context.read<MealShareCubit>();
     final isSharing = context.watch<MealShareCubit>().state is MealShareLoading;
 
-    // ⬇️ nowy: stan i referencja do udostępniania listy zakupów
     final shoppingShare = context.read<ShoppingListShareCubit>();
     final isShoppingSharing =
-        context.watch<ShoppingListShareCubit>().state is ShoppingListShareLoading;
+        context.watch<ShoppingListShareCubit>().state
+            is ShoppingListShareLoading;
+
+    // ✅ NEW: freezer share
+    final freezerShare = context.read<FreezerShareCubit>();
+    final isFreezerSharing =
+        context.watch<FreezerShareCubit>().state is FreezerShareLoading;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -414,7 +442,8 @@ class _FriendListItem extends StatelessWidget {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Icon(Icons.calendar_month),
               onPressed: isSharing
                   ? null
@@ -438,7 +467,6 @@ class _FriendListItem extends StatelessWidget {
                         picked.end.day,
                       );
 
-                      // Wyzwalamy akcję — SnackBar pokaże BlocListener
                       mealShare.shareMeals(
                         friendUid: friend.friendUid,
                         start: start,
@@ -446,7 +474,8 @@ class _FriendListItem extends StatelessWidget {
                       );
                     },
             ),
-            // ⬇️ NOWY przycisk: udostępnienie listy zakupów (bez zakresu dat)
+
+            // Udostępnienie listy zakupów
             IconButton(
               tooltip: 'Udostępnij listę zakupów',
               icon: isShoppingSharing
@@ -464,6 +493,26 @@ class _FriendListItem extends StatelessWidget {
                       );
                     },
             ),
+
+            // ✅ NEW: Udostępnienie zamrażarki
+            IconButton(
+              tooltip: 'Udostępnij zamrażarkę',
+              icon: isFreezerSharing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.ac_unit),
+              onPressed: isFreezerSharing
+                  ? null
+                  : () {
+                      freezerShare.shareFreezer(
+                        friendUid: friend.friendUid,
+                      );
+                    },
+            ),
+
             IconButton(
               icon: const Icon(Icons.person_remove, color: Colors.red),
               tooltip: 'Usuń znajomego',
@@ -543,8 +592,9 @@ class _InvitationsTab extends StatelessWidget {
             'Czy chcesz zaakceptować zaproszenie od ${invitation.fromUserName}?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Anuluj')),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Anuluj'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             onPressed: () {
@@ -571,8 +621,9 @@ class _InvitationsTab extends StatelessWidget {
             'Czy na pewno chcesz odrzucić zaproszenie od ${invitation.fromUserName}?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Anuluj')),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Anuluj'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
@@ -616,26 +667,39 @@ class _InvitationListItem extends StatelessWidget {
                     ? invitation.fromUserName[0].toUpperCase()
                     : '?',
                 style: TextStyle(
-                    color: Colors.orange[800], fontWeight: FontWeight.bold),
+                  color: Colors.orange[800],
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(invitation.fromUserName,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(invitation.fromUserEmail,
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 14)),
-                  ]),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    invitation.fromUserName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    invitation.fromUserEmail,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ]),
           const SizedBox(height: 12),
-          Text('Wysłano: ${_formatDate(invitation.sentAt)}',
-              style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(
+            'Wysłano: ${_formatDate(invitation.sentAt)}',
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
@@ -643,8 +707,9 @@ class _InvitationListItem extends StatelessWidget {
                 icon: const Icon(Icons.check, size: 18),
                 label: const Text('Zaakceptuj'),
                 style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.green,
-                    side: const BorderSide(color: Colors.green)),
+                  foregroundColor: Colors.green,
+                  side: const BorderSide(color: Colors.green),
+                ),
                 onPressed: onAccept,
               ),
             ),
@@ -654,8 +719,9 @@ class _InvitationListItem extends StatelessWidget {
                 icon: const Icon(Icons.close, size: 18),
                 label: const Text('Odrzuć'),
                 style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    side: const BorderSide(color: Colors.red)),
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                ),
                 onPressed: onReject,
               ),
             ),
@@ -680,15 +746,9 @@ class _InfoRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Text(
-          '$label: ',
-          style: const TextStyle(color: Colors.grey),
-        ),
+        Text('$label: ', style: const TextStyle(color: Colors.grey)),
         Expanded(
-          child: Text(
-            value,
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(value, overflow: TextOverflow.ellipsis),
         ),
       ],
     );
@@ -708,8 +768,10 @@ class _EmptyFriendsView extends StatelessWidget {
             children: [
               Icon(Icons.people_outline, size: 64, color: Colors.grey),
               SizedBox(height: 16),
-              Text('Brak znajomych',
-                  style: TextStyle(color: Colors.grey, fontSize: 18)),
+              Text(
+                'Brak znajomych',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
               SizedBox(height: 8),
               Text('Dodaj pierwszego znajomego!',
                   style: TextStyle(color: Colors.grey)),
