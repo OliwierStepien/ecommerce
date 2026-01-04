@@ -16,6 +16,9 @@ import 'package:mealapp/presentation/shopping_list/widgets/add_custom_ingredient
 import 'package:mealapp/domain/ingredient/usecase/get_all_ingredients.dart';
 import 'package:mealapp/service_locator.dart';
 
+// ✅ NOWE: UseCase do czyszczenia listy zakupów (bulk delete online + fallback offline)
+import 'package:mealapp/domain/shopping_list_clear/usecase/clear_shopping_list_usecase.dart';
+
 class ShoppingListPage extends StatelessWidget {
   const ShoppingListPage({super.key});
 
@@ -47,6 +50,66 @@ class ShoppingListPage extends StatelessWidget {
             useCase: sl<GetGroceriesUseCase>(),
           )..loadGroceries(),
           child: const GroceriesBottomSheet(),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmClearAll(BuildContext context) async {
+    // ✅ pobierz cubity na początku (zanim pojawią się async gaps)
+    final mealCubit = context.read<ShoppingListMealIngredientCubit>();
+    final customCubit = context.read<ShoppingListCustomItemCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Wyczyścić listę zakupów?'),
+        content: const Text('Czy na pewno chcesz usunąć wszystkie pozycje?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Anuluj'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Usuń wszystko',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    // ✅ natychmiast czyść UI (bez czekania)
+    mealCubit.clearView();
+    customCubit.clearView();
+
+    final res = await sl<ClearShoppingListUseCase>().call();
+    if (!context.mounted) return;
+
+    await res.fold(
+      (f) async {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Błąd: $f')),
+        );
+
+        // opcjonalnie: przywróć stan przez reload, żeby UI nie zostało puste po błędzie
+        await mealCubit.reload();
+        await customCubit.reload();
+      },
+      (_) async {
+        // ✅ po sukcesie dociągnij z Hive dla spójności
+        await mealCubit.reload();
+        await customCubit.reload();
+
+        if (!context.mounted) return;
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Lista zakupów została wyczyszczona.'),
+          duration: Duration(seconds: 2),),
         );
       },
     );
@@ -110,6 +173,8 @@ class ShoppingListPage extends StatelessWidget {
                                       'unit': '',
                                       'scaledAmount': null,
                                       'isCustom': true,
+                                      // opcjonalnie: porządek w mapie (nie używasz teraz)
+                                      'portionCount': null,
                                     };
                                   }).toList()
                                 : <Map<String, dynamic>>[];
@@ -177,8 +242,6 @@ class ShoppingListPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // ✅ DWA PRZYCISKI NA DOLE: LEWY (bottom sheet) + PRAWY (add)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -188,6 +251,15 @@ class ShoppingListPage extends StatelessWidget {
                   onPressed: () => _showGroceriesSheet(context),
                   child: const Icon(Icons.menu),
                 ),
+
+                // 🗑️ CLEAR ALL – bez tekstu
+                FloatingActionButton(
+                  heroTag: 'clearAllBtn',
+                  mini: true,
+                  onPressed: () => _confirmClearAll(context),
+                  child: const Icon(Icons.delete_forever),
+                ),
+
                 FloatingActionButton(
                   heroTag: 'addBtn',
                   mini: true,

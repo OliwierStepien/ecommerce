@@ -53,6 +53,8 @@ import 'package:mealapp/data/planned_meal/source/local/hive_planned_meal_service
 import 'package:mealapp/data/planned_meal/source/remote/firebase_planned_meal_service.dart';
 import 'package:mealapp/data/planned_meal_share/repository/remote/firebase_meal_share_repository_impl.dart';
 import 'package:mealapp/data/planned_meal_share/source/remote/firebase_meal_share_service.dart';
+import 'package:mealapp/data/shopping_list_clear/repository/shopping_list_clear_repository_impl.dart';
+import 'package:mealapp/data/shopping_list_clear/source/remote/firebase_shopping_list_clear_service.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/local/hive_shopping_list_custom_item_repository.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/manager/shopping_list_custom_item_repository_manager.dart';
 import 'package:mealapp/data/shopping_list_custom_item/repository/remote/firebase_shopping_list_custom_item_repository.dart';
@@ -111,6 +113,8 @@ import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meal_usecase.
 import 'package:mealapp/domain/planned_meal/usecase/remove_planned_meals_in_date_range_usecase.dart';
 import 'package:mealapp/domain/planned_meal/usecase/reorder_planned_meals_usecase.dart';
 import 'package:mealapp/domain/planned_meal_share/usecase/share_planned_meals_with_friend_usecase.dart';
+import 'package:mealapp/domain/shopping_list_clear/repository/shopping_list_clear_repository.dart';
+import 'package:mealapp/domain/shopping_list_clear/usecase/clear_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/repository/shopping_list_custom_item_repository.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/add_custom_item_to_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/usecase/get_shopping_list_custom_item.dart';
@@ -236,6 +240,11 @@ Future<void> initializeDependencies() async {
   // Freezer share service
   sl.registerSingleton<FirebaseFreezerShareService>(
     FirebaseFreezerShareService(),
+  );
+
+   // ✅ Shopping List Clear (bulk delete)
+  sl.registerSingleton<FirebaseShoppingListClearService>(
+    FirebaseShoppingListClearServiceImpl(),
   );
 
   // REPOSITORIES
@@ -434,6 +443,22 @@ Future<void> initializeDependencies() async {
     ),
   );
 
+    // ✅ Shopping List Clear repository (bulk delete)
+  sl.registerLazySingleton<FirebaseShoppingListClearRepositoryImpl>(
+    () => FirebaseShoppingListClearRepositoryImpl(
+      service: sl<FirebaseShoppingListClearService>(),
+      networkInfo: sl<NetworkInfo>(),
+      // żeby offline fallback działał lokalnie:
+      mealHive: sl<HiveShoppingListMealIngredientService>(),
+      customHive: sl<HiveShoppingListCustomItemService>(),
+    ),
+  );
+
+  // jeśli chcesz trzymać się domeny (interfejs):
+  sl.registerLazySingleton<ShoppingListClearRepository>(
+    () => sl<FirebaseShoppingListClearRepositoryImpl>(),
+  );
+
   // USECASES
 
   // Auth usecases
@@ -602,6 +627,11 @@ Future<void> initializeDependencies() async {
     () => ShareFreezerWithFriendUseCase(
       sl<FirebaseFreezerShareRepositoryImpl>(),
     ),
+  );
+
+    // ✅ Clear whole shopping list (bulk delete)
+  sl.registerLazySingleton<ClearShoppingListUseCase>(
+    () => ClearShoppingListUseCase(sl<ShoppingListClearRepository>()),
   );
 
   // CUBIT

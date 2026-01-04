@@ -49,12 +49,22 @@ class ShoppingListMealIngredientCubit
 
         for (final item in shoppingListItems) {
           mappedItems.add(
-              _createItemMap(item.ingredient, item.meal, item.portionCount));
+            _createItemMap(item.ingredient, item.meal, item.portionCount),
+          );
         }
 
         emit(ShoppingListMealIngredientLoaded(items: mappedItems));
       },
     );
+  }
+
+  /// ✅ PUBLIC: użyj po bulk clear
+  Future<void> reload() async => _loadShoppingList();
+
+  /// ✅ PUBLIC: natychmiast czyści widok (UI)
+  void clearView() {
+    emit(const ShoppingListMealIngredientLoaded(items: []));
+    _lastRemovedItem = null;
   }
 
   Future<void> addIngredient(
@@ -75,7 +85,6 @@ class ShoppingListMealIngredientCubit
 
       emit(currentState.copyWith(items: updatedList));
 
-      // Use case zwraca void, więc nie używamy result.fold
       await _addUseCase.call(
         AddToShoppingListParams(
           meal: meal,
@@ -86,7 +95,6 @@ class ShoppingListMealIngredientCubit
 
       await _syncStrategy.onDataChanged();
     } catch (e) {
-      // W przypadku błędu przywróć poprzedni stan
       emit(currentState.copyWith(items: previousItems));
       debugPrint('❌ Failed to add ingredient: $e');
       rethrow;
@@ -124,7 +132,6 @@ class ShoppingListMealIngredientCubit
 
         emit(currentState.copyWith(items: updatedList));
 
-        // Use case zwraca void, więc nie używamy result.fold
         await _removeUseCase.call(
           RemoveFromShoppingListParams(
             meal: meal,
@@ -135,7 +142,6 @@ class ShoppingListMealIngredientCubit
         await _syncStrategy.onDataChanged();
       }
     } catch (e) {
-      // W przypadku błędu przywróć poprzedni stan
       emit(currentState.copyWith(items: previousItems));
       debugPrint('❌ Failed to remove ingredient: $e');
       rethrow;
@@ -194,13 +200,14 @@ class ShoppingListMealIngredientCubit
               AddToShoppingListParams(
                 meal: meal,
                 ingredient: ingredient,
-                portionCount: previousItems[existingIngredientIndex]
-                    ['portionCount'],
+                portionCount:
+                    previousItems[existingIngredientIndex]['portionCount'],
               ),
             );
           } catch (restoreError) {
             debugPrint(
-                '❌ Failed to restore ingredient after update error: $restoreError');
+              '❌ Failed to restore ingredient after update error: $restoreError',
+            );
           }
           emit(currentState.copyWith(items: previousItems));
           debugPrint('❌ Failed to add ingredient during update: $e');
@@ -247,7 +254,6 @@ class ShoppingListMealIngredientCubit
       try {
         _suppressNotifications = true;
 
-        // Use case zwraca void, więc nie używamy result.fold
         await _restoreUseCase.call(
           RestoreToShoppingListParams(
             meal: meal,
@@ -293,7 +299,9 @@ class ShoppingListMealIngredientCubit
   }
 
   double? _calculateScaledAmount(
-      IngredientEntity ingredient, int portionCount) {
+    IngredientEntity ingredient,
+    int portionCount,
+  ) {
     return ingredient.amountPerPortion != null
         ? (ingredient.amountPerPortion! * portionCount).toDouble()
         : null;

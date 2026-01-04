@@ -48,6 +48,15 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     );
   }
 
+  /// ✅ PUBLIC: użyj po bulk clear (albo ręcznie kiedy chcesz odświeżyć)
+  Future<void> reload() async => _loadCustomItems();
+
+  /// ✅ PUBLIC: natychmiast czyści widok (UI) bez czekania na IO
+  void clearView() {
+    emit(const ShoppingListCustomItemLoaded(items: []));
+    _lastRemovedItem = null;
+  }
+
   Future<void> addCustomIngredient(
     ShoppingListCustomItemEntity ingredient, {
     bool suppressNotification = false,

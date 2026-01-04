@@ -24,6 +24,7 @@ abstract class HiveShoppingListCustomItemService {
       ShoppingListCustomItemModel item);
   Future<void> clearSyncedDeletedItems();
   Future<void> updateCustomItemToShoppingList(ShoppingListCustomItemModel item);
+  Future<void> clearAll({bool isOnline});
 }
 
 /// Implementacja serwisu przy użyciu lokalnej bazy danych Hive
@@ -277,6 +278,30 @@ class HiveShoppingListCustomItemServiceImpl
     debugLog(
         '✏️ Zaktualizowano custom item: ${toSave.customItemName} (key=$kNew)',
         name: 'HiveCustomSL');
+    unawaited(sl<SyncStrategy>().onDataChanged());
+  }
+
+  @override
+  Future<void> clearAll({bool isOnline = false}) async {
+    final keys = _box.keys.toList();
+
+    for (final key in keys) {
+      final m = _box.get(key);
+      if (m == null) continue;
+      if (!_isMine(m)) continue;
+
+      if (isOnline) {
+        // po udanym bulk delete w FS czyścimy twardo
+        await _box.delete(key);
+      } else {
+        // offline: oznacz jako deleted, do późniejszego sync
+        await _box.put(
+          key,
+          m.copyWith(isDeleted: true, isSynced: false, ownerUid: _uid),
+        );
+      }
+    }
+
     unawaited(sl<SyncStrategy>().onDataChanged());
   }
 }
