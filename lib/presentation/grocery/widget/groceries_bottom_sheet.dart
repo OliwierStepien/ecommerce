@@ -35,7 +35,7 @@ class GroceriesBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Groceries',
+            'Przykładowa lista zakupów',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
