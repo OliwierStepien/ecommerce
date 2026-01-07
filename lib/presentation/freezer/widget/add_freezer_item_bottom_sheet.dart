@@ -55,7 +55,7 @@ class _AddFreezerItemBottomSheetState extends State<AddFreezerItemBottomSheet> {
           const SizedBox(height: 16),
           TextField(
             controller: _controller,
-            autofocus: true,
+            autofocus: false,
             decoration: const InputDecoration(
               labelText: 'Nazwa',
               border: OutlineInputBorder(),

@@ -20,10 +20,10 @@ class GroceriesBottomSheet extends StatelessWidget {
         );
 
     final categoryStyle = Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
+          fontSize: 20, // ⬆️ większa czcionka
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).primaryColor,
         );
-
     return Padding(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -124,10 +124,12 @@ class _GroceryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ShoppingListCustomItemCubit, ShoppingListCustomItemState>(
+    return BlocBuilder<ShoppingListCustomItemCubit,
+        ShoppingListCustomItemState>(
       builder: (context, customState) {
         final bool isAdded = customState is ShoppingListCustomItemLoaded &&
-            customState.items.any((x) => x.customItemId == grocery.groceryItemId);
+            customState.items
+                .any((x) => x.customItemId == grocery.groceryItemId);
 
         return ListTile(
           dense: false, // ✅ pozwala na większą wysokość wiersza
@@ -186,12 +188,14 @@ class _GroceryTile extends StatelessWidget {
               // ✅ Deduplikacja na wszelki wypadek (gdyby stan się zmienił)
               final state = customCubit.state;
               final alreadyAdded = state is ShoppingListCustomItemLoaded &&
-                  state.items.any((x) => x.customItemId == grocery.groceryItemId);
+                  state.items
+                      .any((x) => x.customItemId == grocery.groceryItemId);
               if (alreadyAdded) return;
 
               customCubit.addCustomIngredient(
                 ShoppingListCustomItemEntity(
-                  customItemId: grocery.groceryItemId, // 🔑 stałe ID = brak duplikatów
+                  customItemId:
+                      grocery.groceryItemId, // 🔑 stałe ID = brak duplikatów
                   customItemName: trimmed, // ✅ nazwa po edycji
                   customItemCategory: grocery.groceryItemCategory,
                 ),
