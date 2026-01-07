@@ -15,7 +15,8 @@ class FirebaseFreezerItemServiceImpl implements FirebaseFreezerItemService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  FirebaseFreezerItemServiceImpl({FirebaseFirestore? firestore, FirebaseAuth? auth})
+  FirebaseFreezerItemServiceImpl(
+      {FirebaseFirestore? firestore, FirebaseAuth? auth})
       : _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
@@ -23,7 +24,10 @@ class FirebaseFreezerItemServiceImpl implements FirebaseFreezerItemService {
     final user = _auth.currentUser;
     if (user == null) throw UnauthorizedException();
 
-    return _firestore.collection('Users').doc(user.uid).collection('FreezerItems');
+    return _firestore
+        .collection('Users')
+        .doc(user.uid)
+        .collection('FreezerItems');
   }
 
   @override
@@ -33,11 +37,14 @@ class FirebaseFreezerItemServiceImpl implements FirebaseFreezerItemService {
       if (user == null) throw UnauthorizedException();
 
       final base = item.toMap();
-      await _col().doc(item.itemId).set({
-        ...base,
-        'ownerUid': user.uid,
-        'isDeleted': false,
-      }).timeout(const Duration(seconds: 15));
+      await _col().doc(item.itemId).set(
+        {
+          ...base,
+          'ownerUid': user.uid,
+          'isDeleted': false,
+        },
+        SetOptions(merge: true),
+      ).timeout(const Duration(seconds: 15));
     });
   }
 

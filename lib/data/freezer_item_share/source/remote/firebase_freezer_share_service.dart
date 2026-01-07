@@ -27,7 +27,7 @@ class FirebaseFreezerShareService {
         _fs.collection('Users').doc(friendUid).collection('FreezerItems');
 
     for (final item in itemsToShare) {
-      final docId = item.itemId;
+      final docId = '${user.uid}_${item.itemId}';
       final base = item.toMap();
 
       batch.set(
