@@ -32,7 +32,6 @@ class HiveConfig {
     Hive.registerAdapter(FreezerItemModelAdapter());
   }
 
-  // / 🧹 Czyści tylko wybrane boxy (przed otwarciem)
   // static Future<void> _clearSpecificBoxes() async {
   //   await Future.wait([
   //     Hive.deleteBoxFromDisk('users'),
@@ -44,6 +43,7 @@ class HiveConfig {
   //     Hive.deleteBoxFromDisk('shoppingListMealIngredients'),
   //     Hive.deleteBoxFromDisk('shoppingListCustomItems'),
   //     Hive.deleteBoxFromDisk('groceries'),
+  //     Hive.deleteBoxFromDisk('freezerItems'),
   //   ]);
   // }
 

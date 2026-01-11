@@ -11,7 +11,6 @@ class FirebaseFreezerShareRepositoryImpl {
 
   FirebaseFreezerShareRepositoryImpl(this._service, this._hive);
 
-  /// Udostępnia wszystkie aktywne elementy zamrażarki (isDeleted=false)
   Future<Either<Failure, void>> shareFreezerWithFriend({
     required String friendUid,
   }) {
@@ -27,7 +26,6 @@ class FirebaseFreezerShareRepositoryImpl {
     });
   }
 
-  /// Wariant selektywny
   Future<Either<Failure, void>> shareSelectedFreezerItemsWithFriend({
     required String friendUid,
     required List<FreezerItemModel> selected,

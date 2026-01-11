@@ -800,7 +800,6 @@ Future<void> initializeDependencies() async {
 
 // Freezer
   final freezerItemSyncService = FreezerItemSyncService(
-    remoteRepository: sl<FirebaseFreezerItemRepositoryImpl>(),
     remoteService: sl<FirebaseFreezerItemService>(),
     networkInfo: sl<NetworkInfo>(),
   );

@@ -15,9 +15,13 @@ import 'package:mealapp/presentation/planned_meal_share/bloc/meal_share_state.da
 import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_cubit.dart';
 import 'package:mealapp/presentation/shopping_list_share/shopping_list_share_state.dart';
 
-// ✅ NEW: freezer share
+// ✅ freezer share
 import 'package:mealapp/presentation/freezer_share/bloc/freezer_share_cubit.dart';
 import 'package:mealapp/presentation/freezer_share/bloc/freezer_share_state.dart';
+
+// ✅ NEW: po udostępnieniu odpal sync (żeby druga strona po pullu miała aktualne dane)
+import 'package:mealapp/core/sync/sync_strategy.dart';
+import 'package:mealapp/service_locator.dart';
 
 class UserInfoPage extends StatelessWidget {
   const UserInfoPage({super.key});
@@ -97,15 +101,21 @@ class UserInfoPage extends StatelessWidget {
             },
           ),
 
-          // ✅ NEW: SnackBary po udostępnianiu zamrażarki
+          // ✅ SnackBary po udostępnianiu zamrażarki + sync po sukcesie
           BlocListener<FreezerShareCubit, FreezerShareState>(
             listenWhen: (prev, curr) =>
                 curr is FreezerShareSuccess || curr is FreezerShareFailure,
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state is FreezerShareSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
+
+                // ✅ WAŻNE: odpalamy sync, żeby:
+                // - dopchnąć ewentualne lokalne zmiany (jeśli masz kolejkę),
+                // - a przede wszystkim "pociągnąć" świeże dane (pull) w miejscach,
+                //   gdzie sync jest jedynym mechanizmem odświeżenia.
+                await sl<SyncStrategy>().onDataChanged();
               } else if (state is FreezerShareFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
@@ -301,7 +311,6 @@ class _FriendsTab extends StatelessWidget {
     );
   }
 
-  // ✅ Bezpieczna wersja z dialogContext + await + mounted
   Future<void> _showAddFriendDialog(BuildContext context) async {
     String email = '';
 
@@ -356,7 +365,6 @@ class _FriendsTab extends StatelessWidget {
     }
   }
 
-  // ✅ Bezpieczna wersja z dialogContext + await + mounted
   Future<void> _showRemoveFriendDialog(
       BuildContext context, FriendEntity friend) async {
     final bool? confirmed = await showDialog<bool>(
@@ -407,7 +415,6 @@ class _FriendListItem extends StatelessWidget {
         context.watch<ShoppingListShareCubit>().state
             is ShoppingListShareLoading;
 
-    // ✅ NEW: freezer share
     final freezerShare = context.read<FreezerShareCubit>();
     final isFreezerSharing =
         context.watch<FreezerShareCubit>().state is FreezerShareLoading;
@@ -435,7 +442,6 @@ class _FriendListItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Udostępnianie planned meals (z wyborem zakresu dat)
             IconButton(
               tooltip: 'Udostępnij planned meals',
               icon: isSharing
@@ -474,8 +480,6 @@ class _FriendListItem extends StatelessWidget {
                       );
                     },
             ),
-
-            // Udostępnienie listy zakupów
             IconButton(
               tooltip: 'Udostępnij listę zakupów',
               icon: isShoppingSharing
@@ -493,8 +497,6 @@ class _FriendListItem extends StatelessWidget {
                       );
                     },
             ),
-
-            // ✅ NEW: Udostępnienie zamrażarki
             IconButton(
               tooltip: 'Udostępnij zamrażarkę',
               icon: isFreezerSharing
@@ -512,7 +514,6 @@ class _FriendListItem extends StatelessWidget {
                       );
                     },
             ),
-
             IconButton(
               icon: const Icon(Icons.person_remove, color: Colors.red),
               tooltip: 'Usuń znajomego',

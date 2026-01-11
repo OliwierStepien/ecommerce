@@ -39,7 +39,16 @@ class HiveFreezerItemServiceImpl implements HiveFreezerItemService {
 
   @override
   Future<void> add(FreezerItemModel item) async {
-    final enriched = item.copyWith(ownerUid: _uid, isSynced: false, isDeleted: false);
+    // jeśli item nie ma metadanych, ustawiamy go jako “mój oryginał”
+    final enriched = item.copyWith(
+      ownerUid: _uid,
+      isSynced: false,
+      isDeleted: false,
+      sourceOwnerUid: item.sourceOwnerUid.isNotEmpty ? item.sourceOwnerUid : _uid,
+      sourceItemId: item.sourceItemId.isNotEmpty ? item.sourceItemId : item.itemId,
+      editors: item.editors.isNotEmpty ? item.editors : (_uid.isEmpty ? const [] : <String>[_uid]),
+    );
+
     await _box.put(_keyUid(enriched), enriched);
     unawaited(sl<SyncStrategy>().onDataChanged());
   }
@@ -52,12 +61,23 @@ class HiveFreezerItemServiceImpl implements HiveFreezerItemService {
     final kOld = _keyLegacy(enriched);
 
     final existing = _box.get(kNew) ?? _box.get(kOld);
+
+    // ✅ zachowaj metadane jeśli już były
     final toSave = (existing ?? enriched).copyWith(
       name: enriched.name,
       category: enriched.category,
       ownerUid: _uid,
       isDeleted: false,
       isSynced: false,
+      sourceOwnerUid: (existing?.sourceOwnerUid.isNotEmpty == true)
+          ? existing!.sourceOwnerUid
+          : (enriched.sourceOwnerUid.isNotEmpty ? enriched.sourceOwnerUid : _uid),
+      sourceItemId: (existing?.sourceItemId.isNotEmpty == true)
+          ? existing!.sourceItemId
+          : (enriched.sourceItemId.isNotEmpty ? enriched.sourceItemId : enriched.itemId),
+      editors: (existing?.editors.isNotEmpty == true)
+          ? existing!.editors
+          : (enriched.editors.isNotEmpty ? enriched.editors : (_uid.isEmpty ? const [] : <String>[_uid])),
     );
 
     await _box.put(kNew, toSave);
@@ -77,7 +97,10 @@ class HiveFreezerItemServiceImpl implements HiveFreezerItemService {
         await _box.delete(kOld);
       } else {
         final keyToUse = _box.get(kNew) != null ? kNew : kOld;
-        await _box.put(keyToUse, current.copyWith(isDeleted: true, isSynced: false, ownerUid: _uid));
+        await _box.put(
+          keyToUse,
+          current.copyWith(isDeleted: true, isSynced: false, ownerUid: _uid),
+        );
       }
     }
 
