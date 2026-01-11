@@ -6,29 +6,40 @@ class ShoppingListCustomItemEntity extends Equatable {
   final String customItemName;
   final String customItemCategory;
 
+  /// ✅ metadane źródła (jak w freezer)
+  final String sourceOwnerUid;
+  final String sourceCustomItemId;
+
   const ShoppingListCustomItemEntity({
     required this.customItemId,
     required this.customItemName,
     required this.customItemCategory,
+    this.sourceOwnerUid = '',
+    this.sourceCustomItemId = '',
   });
 
   ShoppingListCustomItemEntity copyWith({
     String? customItemId,
     String? customItemName,
     String? customItemCategory,
+    String? sourceOwnerUid,
+    String? sourceCustomItemId,
   }) {
     return ShoppingListCustomItemEntity(
       customItemId: customItemId ?? this.customItemId,
       customItemName: customItemName ?? this.customItemName,
       customItemCategory: customItemCategory ?? this.customItemCategory,
+      sourceOwnerUid: sourceOwnerUid ?? this.sourceOwnerUid,
+      sourceCustomItemId: sourceCustomItemId ?? this.sourceCustomItemId,
     );
   }
 
-  // Equatable pozwala na łatwe porównywanie obiektów po wartości (potrzebne np. w BLoC)
   @override
   List<Object?> get props => [
         customItemId,
         customItemName,
         customItemCategory,
+        sourceOwnerUid,
+        sourceCustomItemId,
       ];
 }

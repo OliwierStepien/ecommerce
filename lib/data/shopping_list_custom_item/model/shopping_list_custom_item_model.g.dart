@@ -24,13 +24,16 @@ class ShoppingListCustomItemModelAdapter
       isSynced: fields[3] as bool,
       isDeleted: fields[4] as bool,
       ownerUid: fields[5] == null ? '' : fields[5] as String,
+      sourceOwnerUid: fields[6] == null ? '' : fields[6] as String,
+      sourceItemId: fields[7] == null ? '' : fields[7] as String,
+      editors: fields[8] == null ? [] : (fields[8] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, ShoppingListCustomItemModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.customItemId)
       ..writeByte(1)
@@ -42,7 +45,13 @@ class ShoppingListCustomItemModelAdapter
       ..writeByte(4)
       ..write(obj.isDeleted)
       ..writeByte(5)
-      ..write(obj.ownerUid);
+      ..write(obj.ownerUid)
+      ..writeByte(6)
+      ..write(obj.sourceOwnerUid)
+      ..writeByte(7)
+      ..write(obj.sourceItemId)
+      ..writeByte(8)
+      ..write(obj.editors);
   }
 
   @override
