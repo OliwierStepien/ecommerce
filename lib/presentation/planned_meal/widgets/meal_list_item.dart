@@ -1,4 +1,5 @@
 // presentation/planned_meal/widgets/meal_list_item.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
@@ -36,11 +37,22 @@ class MealListItem extends StatelessWidget {
             // miniatura posiłku
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                ImageDisplayHelper.generateMealImagePath(mealEntity.image),
+              child: CachedNetworkImage(
+                imageUrl: ImageDisplayHelper.meal(
+                  mealEntity.image,
+                  variant: ImgVariant.thumb,
+                ),
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
+                placeholder: (_, __) => const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child:
+                      Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+                errorWidget: (_, __, ___) =>
+                    const Icon(Icons.image_not_supported),
               ),
             ),
             const SizedBox(width: 10),

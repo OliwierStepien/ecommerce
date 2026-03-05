@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
@@ -39,9 +40,10 @@ class MealCard extends StatelessWidget {
                       color: Colors.white,
                       image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: AssetImage(
-                          ImageDisplayHelper.generateMealImagePath(
+                        image: CachedNetworkImageProvider(
+                          ImageDisplayHelper.meal(
                             mealEntity.image,
+                            variant: ImgVariant.thumb,
                           ),
                         ),
                       ),

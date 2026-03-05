@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mealapp/domain/category/entity/category_entity.dart';
@@ -38,9 +39,10 @@ class CategoryCard extends StatelessWidget {
                   color: Colors.white,
                   image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: AssetImage(
-                      ImageDisplayHelper.generateCategoryImagePath(
+                    image: CachedNetworkImageProvider(
+                      ImageDisplayHelper.category(
                         category.image,
+                        variant: ImgVariant.thumb,
                       ),
                     ),
                   ),

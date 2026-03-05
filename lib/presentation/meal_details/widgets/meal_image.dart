@@ -1,11 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mealapp/common/helper/images/image_display.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 
 class MealImage extends StatelessWidget {
   final MealEntity mealEntity;
-  const MealImage
-({
+  const MealImage({
     required this.mealEntity,
     super.key,
   });
@@ -19,8 +19,11 @@ class MealImage extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             fit: BoxFit.cover,
-            image: AssetImage(
-              ImageDisplayHelper.generateMealImagePath(mealEntity.image),
+            image: CachedNetworkImageProvider(
+              ImageDisplayHelper.meal(
+                mealEntity.image,
+                variant: ImgVariant.full,
+              ),
             ),
           ),
         ),
