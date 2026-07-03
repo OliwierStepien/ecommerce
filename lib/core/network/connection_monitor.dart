@@ -26,6 +26,7 @@ class ConnectionMonitor {
   }
 
   void startMonitoring() {
+    if (_subscription != null) return; // monitoring już aktywny
     _subscription = connectivity.onConnectivityChanged.listen((results) async {
       if (results.any((result) => result != ConnectivityResult.none)) {
         final netCheckStopwatch = Stopwatch()..start();
@@ -42,11 +43,15 @@ class ConnectionMonitor {
           _isSyncing = true;
           debugPrint('[ConnectionMonitor] Internet connection restored - triggering strategy');
 
-          // Zamiast manualnego wywoływania wszystkich usług – użyj strategii centralnej
-          await sl<SyncStrategy>().onNetworkRestored();
-
-          _onConnectionRestored?.call();
-          _isSyncing = false;
+          try {
+            // Zamiast manualnego wywoływania wszystkich usług – użyj strategii centralnej
+            await sl<SyncStrategy>().onNetworkRestored();
+            _onConnectionRestored?.call();
+          } catch (e, st) {
+            debugPrint('[ConnectionMonitor] sync after restore failed: $e\n$st');
+          } finally {
+            _isSyncing = false;
+          }
         }
       }
     });
@@ -54,6 +59,7 @@ class ConnectionMonitor {
 
   void stopMonitoring() {
     _subscription?.cancel();
+    _subscription = null;
   }
 
   void dispose() {

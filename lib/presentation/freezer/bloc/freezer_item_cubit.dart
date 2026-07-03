@@ -122,7 +122,10 @@ class FreezerItemCubit extends Cubit<FreezerItemState> {
       res.fold(
         (_) => emit(s.copyWith(items: prev)),
         (_) {
-          final next = List<FreezerItemEntity>.from(prev)..insert(idx, item);
+          // lista mogła się skrócić od czasu usunięcia — nie wychodź poza zakres
+          final insertIndex = idx > prev.length ? prev.length : idx;
+          final next = List<FreezerItemEntity>.from(prev)
+            ..insert(insertIndex, item);
           emit(s.copyWith(items: next));
           _lastRemoved = null;
         },
@@ -162,11 +165,5 @@ class FreezerItemCubit extends Cubit<FreezerItemState> {
     } finally {
       _suppressNotifications = false;
     }
-  }
-
-  @override
-  Future<void> close() {
-    _syncStrategy.dispose();
-    return super.close();
   }
 }

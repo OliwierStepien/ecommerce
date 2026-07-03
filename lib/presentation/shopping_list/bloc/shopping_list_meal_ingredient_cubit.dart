@@ -239,7 +239,7 @@ class ShoppingListMealIngredientCubit
       final previousItems = currentState.items;
 
       final item = _lastRemovedItem!['item'];
-      final index = _lastRemovedItem!['index'];
+      final index = _lastRemovedItem!['index'] as int;
       final meal = item['mealEntity'] as MealEntity;
       final ingredient = IngredientEntity(
         ingredientId: item['ingredientId'],
@@ -262,8 +262,11 @@ class ShoppingListMealIngredientCubit
           ),
         );
 
+        // lista mogła się skrócić od czasu usunięcia — nie wychodź poza zakres
+        final insertIndex =
+            index > previousItems.length ? previousItems.length : index;
         final updatedList = List<Map<String, dynamic>>.from(previousItems)
-          ..insert(index, item);
+          ..insert(insertIndex, item);
         emit(currentState.copyWith(items: updatedList));
         _lastRemovedItem = null;
 
@@ -308,10 +311,4 @@ class ShoppingListMealIngredientCubit
   }
 
   bool get shouldShowNotification => !_suppressNotifications;
-
-  @override
-  Future<void> close() {
-    _syncStrategy.dispose();
-    return super.close();
-  }
 }

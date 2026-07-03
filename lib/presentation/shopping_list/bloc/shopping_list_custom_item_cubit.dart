@@ -143,9 +143,12 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
       result.fold(
         (_) => emit(currentState.copyWith(items: previousItems)),
         (_) {
+          // lista mogła się skrócić od czasu usunięcia — nie wychodź poza zakres
+          final insertIndex =
+              index > previousItems.length ? previousItems.length : index;
           final updatedList =
               List<ShoppingListCustomItemEntity>.from(previousItems)
-                ..insert(index, item);
+                ..insert(insertIndex, item);
           emit(currentState.copyWith(items: updatedList));
           _lastRemovedItem = null;
         },
@@ -189,11 +192,5 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
     } finally {
       _suppressNotifications = false;
     }
-  }
-
-  @override
-  Future<void> close() {
-    _syncStrategy.dispose();
-    return super.close();
   }
 }

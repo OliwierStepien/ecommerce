@@ -143,8 +143,3 @@ class SyncController {
     }
   }
 }
-
-/// ✅ Interfejs dla serwisów synchronizacji (ZOSTAW TYLKO JEDEN!)
-abstract class SyncService {
-  Future<void> syncData();
-}

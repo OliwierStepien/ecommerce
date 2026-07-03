@@ -36,9 +36,11 @@ class FriendsCubit extends Cubit<FriendsState> {
     debugLog('FriendsCubit: Inicjalizacja wszystkich danych znajomych');
     emit(FriendsLoading());
 
-    // Równoległe ładowanie wszystkich danych
+    // Najpierw lista znajomych (ustawia FriendsLoaded) — zaproszenia i licznik
+    // aktualizują stan tylko wtedy, gdy jest już FriendsLoaded, więc nie mogą
+    // wyprzedzić loadFriends (inaczej ich wynik byłby gubiony).
+    await loadFriends();
     await Future.wait([
-      loadFriends(),
       loadPendingInvitations(),
       loadPendingInvitationsCount(),
     ]);

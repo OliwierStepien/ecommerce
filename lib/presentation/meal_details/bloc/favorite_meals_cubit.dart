@@ -35,20 +35,28 @@ class FavoriteMealsCubit extends Cubit<MealsDisplayState> {
   Future<void> toggleFavorite(MealEntity meal) async {
     final currentState = state;
     if (currentState is MealsLoadingSuccess) {
-      final updatedMeals = List<MealEntity>.from(currentState.meals);
+      final previousMeals = currentState.meals;
+      final updatedMeals = List<MealEntity>.from(previousMeals);
       final isFavorite = updatedMeals.any((m) => m.mealId == meal.mealId);
 
       if (isFavorite) {
         updatedMeals.removeWhere((m) => m.mealId == meal.mealId);
-        await removeFavoriteMealUseCase.call(meal.mealId);
       } else {
         updatedMeals.add(meal);
-        await addFavoriteMealUseCase.call(
-          FavoriteMealEntity(meal: meal),
-        );
       }
 
+      // Optymistyczna aktualizacja UI
       emit(MealsLoadingSuccess(meals: updatedMeals));
+
+      final result = isFavorite
+          ? await removeFavoriteMealUseCase.call(meal.mealId)
+          : await addFavoriteMealUseCase.call(FavoriteMealEntity(meal: meal));
+
+      // Jeśli zapis się nie powiódł — cofnij zmianę w UI
+      result.fold(
+        (failure) => emit(MealsLoadingSuccess(meals: previousMeals)),
+        (_) {},
+      );
     }
   }
 }
