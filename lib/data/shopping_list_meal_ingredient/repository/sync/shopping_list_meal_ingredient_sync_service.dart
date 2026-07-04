@@ -100,14 +100,13 @@ class ShoppingListMealIngredientSyncService implements SyncService {
     List<ShoppingListMealIngredientModel> models,
   ) async {
     for (final m in models) {
-      final addResult = await _remoteRepo.addMealIngredientToShoppingList(
-        MealMapper.toEntity(m.meal),
-        IngredientMapper.toEntity(m.ingredient),
-        m.portionCount,
-      );
-
-      final failure = addResult.fold<Failure?>((f) => f, (_) => null);
-      if (failure != null) return failure;
+      // push modelu bezpośrednio (bezstratnie) — round-trip przez encje
+      // gubiłby pola spoza encji (np. isChecked)
+      try {
+        await _remoteService.addMealIngredientToShoppingList(m);
+      } catch (_) {
+        return NetworkFailure();
+      }
 
       // zapisz pod nowym kluczem i z ownerUid ustawionym na mnie
       final enriched =

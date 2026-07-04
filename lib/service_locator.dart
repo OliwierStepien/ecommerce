@@ -128,6 +128,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/planned_meal/repository/planned_meal_repository.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/update_checked_state_usecase.dart';
 import 'package:mealapp/core/sync/sync_controller.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient_share/usecase/share_shopping_list_with_friend_usecase.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
@@ -542,6 +543,10 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<RestoreToShoppingListUseCase>(() =>
       RestoreToShoppingListUseCase(sl<ShoppingListMealIngredientRepository>()));
 
+  sl.registerLazySingleton<UpdateShoppingListCheckedStateUseCase>(() =>
+      UpdateShoppingListCheckedStateUseCase(
+          sl<ShoppingListMealIngredientRepository>()));
+
   // Shopping List Custom Item usecases
 
   sl.registerLazySingleton<AddCustomItemToShoppingListUseCase>(() =>
@@ -697,6 +702,7 @@ Future<void> initializeDependencies() async {
         removeUseCase: sl<RemoveFromShoppingListUseCase>(),
         restoreUseCase: sl<RestoreToShoppingListUseCase>(),
         getUseCase: sl<GetShoppingListUseCase>(),
+        updateCheckedStateUseCase: sl<UpdateShoppingListCheckedStateUseCase>(),
         syncStrategy: sl<SyncStrategy>(),
       ));
 

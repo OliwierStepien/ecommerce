@@ -173,6 +173,7 @@ class ShoppingListPage extends StatelessWidget {
                                       'unit': '',
                                       'scaledAmount': null,
                                       'isCustom': true,
+                                      'isChecked': item.isChecked,
                                       // opcjonalnie: porządek w mapie (nie używasz teraz)
                                       'portionCount': null,
                                     };
@@ -226,6 +227,8 @@ class ShoppingListPage extends StatelessWidget {
                                     ingredient: ingredient,
                                     meal: mealEntity,
                                     scaledAmount: scaledAmount,
+                                    isChecked:
+                                        item['isChecked'] as bool? ?? false,
                                   );
                                 }).toList(),
                                 const SizedBox(height: 16),
@@ -284,6 +287,14 @@ class ShoppingListPage extends StatelessWidget {
     }
 
     final sortedKeys = groupedItems.keys.toList()..sort();
-    return {for (final key in sortedKeys) key: groupedItems[key]!};
+    return {
+      for (final key in sortedKeys)
+        // odhaczone pozycje opadają na dół swojej kategorii
+        // (partycjonowanie zamiast sort — List.sort nie jest stabilny)
+        key: [
+          ...groupedItems[key]!.where((i) => i['isChecked'] != true),
+          ...groupedItems[key]!.where((i) => i['isChecked'] == true),
+        ]
+    };
   }
 }

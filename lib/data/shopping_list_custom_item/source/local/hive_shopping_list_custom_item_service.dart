@@ -89,6 +89,7 @@ class HiveShoppingListCustomItemServiceImpl
     final toSave = (existing ?? enriched).copyWith(
       customItemName: enriched.customItemName,
       customItemCategory: enriched.customItemCategory,
+      isChecked: enriched.isChecked,
       ownerUid: _uid,
       isDeleted: false,
       isSynced: false,

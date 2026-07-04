@@ -24,6 +24,8 @@
     "sorryWeCouldNotFindAnyMatchingResultsForYourSearch": "Przepraszamy, nie znaleźliśmy żadnych pasujących wyników dla Twojego wyszukiwania",
     "search": "Szukaj",
     "shoppingList": "Lista zakupów",
+    "markAsPurchased": "Oznacz jako kupione",
+    "markAsNotPurchased": "Oznacz jako niekupione",
     "undo": "Cofnij",
     "categories": "Kategorie",
     "seeAll": "Zobacz wszystkie",

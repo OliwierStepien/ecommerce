@@ -24,6 +24,8 @@
     "sorryWeCouldNotFindAnyMatchingResultsForYourSearch": "Sorry, we couldn't find any matching results for your search",
     "search": "Search",
     "shoppingList": "Shopping list",
+    "markAsPurchased": "Mark as purchased",
+    "markAsNotPurchased": "Mark as not purchased",
     "undo": "Undo",
     "categories": "Categories",
     "seeAll": "See all",

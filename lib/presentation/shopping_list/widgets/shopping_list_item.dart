@@ -12,12 +12,14 @@ class ShoppingListItem extends StatelessWidget {
   final IngredientEntity? ingredient;
   final MealEntity? meal;
   final num? scaledAmount;
+  final bool isChecked;
 
   const ShoppingListItem({
     super.key,
     required this.ingredient,
     required this.meal,
     required this.scaledAmount,
+    this.isChecked = false,
   });
 
   @override
@@ -31,47 +33,79 @@ class ShoppingListItem extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _buildIngredientText(context),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () => _toggleChecked(context),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Checkbox(
+                value: isChecked,
+                activeColor: Theme.of(context).primaryColor,
+                onChanged: (_) => _toggleChecked(context),
+                semanticLabel: isChecked
+                    ? context.l10n.markAsNotPurchased
+                    : context.l10n.markAsPurchased,
+              ),
+              Expanded(
+                child: Opacity(
+                  opacity: isChecked ? 0.55 : 1.0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _buildIngredientText(context),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          decoration:
+                              isChecked ? TextDecoration.lineThrough : null,
+                        ),
+                      ),
+                      if (meal?.title.trim().isNotEmpty ?? false)
+                        Text(
+                          context.l10n.fromMealTitle(meal!.title),
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                    ],
                   ),
-                  if (meal?.title.trim().isNotEmpty ?? false)
-                    Text(
-                      context.l10n.fromMealTitle(meal!.title),
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isCustomItem)
+                    IconButton(
+                      onPressed: () => _editIngredient(context),
+                      icon: const Icon(Icons.edit_outlined),
                     ),
+                  IconButton(
+                    onPressed: () => _removeIngredient(context),
+                    icon: const Icon(Icons.delete),
+                  ),
                 ],
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isCustomItem)
-                  IconButton(
-                    onPressed: () => _editIngredient(context),
-                    icon: const Icon(Icons.edit_outlined),
-                  ),
-                IconButton(
-                  onPressed: () => _removeIngredient(context),
-                  icon: const Icon(Icons.delete),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _toggleChecked(BuildContext context) {
+    if (ingredient == null) return;
+
+    if (meal != null) {
+      context
+          .read<ShoppingListMealIngredientCubit>()
+          .toggleIngredientChecked(ingredient!, meal!);
+    } else {
+      context
+          .read<ShoppingListCustomItemCubit>()
+          .toggleCustomItemChecked(ingredient!.ingredientId);
+    }
   }
 
   String _buildIngredientText(context) {
@@ -181,12 +215,9 @@ class ShoppingListItem extends StatelessWidget {
       ),
     );
 
+    // copyWith zachowuje kategorię, metadane źródła i stan odhaczenia
     await cubit.updateCustomIngredient(
-      ShoppingListCustomItemEntity(
-        customItemId: existing.customItemId,
-        customItemName: trimmed,
-        customItemCategory: existing.customItemCategory, // ✅ bez zmian
-      ),
+      existing.copyWith(customItemName: trimmed),
       suppressNotification: true,
     );
   }

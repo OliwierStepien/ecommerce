@@ -11,6 +11,9 @@ abstract class ShoppingListMealIngredientRepository {
       MealEntity meal, IngredientEntity ingredient, int portionCount);
   Future<Either<Failure, void>> removeMealIngredientFromShoppingList(
       MealEntity meal, IngredientEntity ingredient);
+  Future<Either<Failure, void>> updateMealIngredientCheckedState(
+      MealEntity meal, IngredientEntity ingredient,
+      {required bool isChecked});
     Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppingList();
   Future<Either<Failure, List<MealEntity>>>
       getUnsyncedShoppingListMealIngredient();

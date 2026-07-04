@@ -83,6 +83,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get shoppingList => 'Lista zakupów';
 
   @override
+  String get markAsPurchased => 'Oznacz jako kupione';
+
+  @override
+  String get markAsNotPurchased => 'Oznacz jako niekupione';
+
+  @override
   String get undo => 'Cofnij';
 
   @override

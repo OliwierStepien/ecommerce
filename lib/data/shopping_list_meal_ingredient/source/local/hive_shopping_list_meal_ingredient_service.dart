@@ -23,6 +23,8 @@ abstract class HiveShoppingListMealIngredientService {
       String mealId, String ingredientId);
   Future<List<ShoppingListMealIngredientModel>>
       getUnsyncedChangesForShoppingListMealIngredient();
+  Future<void> setMealIngredientCheckedState(
+      String mealId, String ingredientId, bool isChecked);
   Future<void> restoreMealIngredientToShoppingList(
       ShoppingListMealIngredientModel item);
   Future<void> clearSyncedDeletedItems();
@@ -152,6 +154,30 @@ class HiveShoppingListMealIngredientServiceImpl
             name: 'HiveSL');
       }
     }
+  }
+
+  @override
+  Future<void> setMealIngredientCheckedState(
+      String mealId, String ingredientId, bool isChecked) async {
+    final kNew = '${_uid}_${mealId}_$ingredientId';
+    final kOld = '${mealId}_$ingredientId';
+
+    final model = _box.get(kNew) ?? _box.get(kOld);
+    if (model == null) return;
+
+    // isSynced: false → sync service podchwyci zmianę przy najbliższym pushu
+    await _box.put(
+      kNew,
+      model.copyWith(isChecked: isChecked, isSynced: false, ownerUid: _uid),
+    );
+    if (_box.containsKey(kOld)) {
+      await _box.delete(kOld);
+    }
+
+    debugLog('☑️ HIVE checked=$isChecked: $ingredientId (meal: $mealId)',
+        name: 'HiveSL');
+
+    unawaited(sl<SyncStrategy>().onDataChanged());
   }
 
   @override

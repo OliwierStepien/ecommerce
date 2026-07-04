@@ -50,6 +50,20 @@ class HiveShoppingListMealIngredientRepositoryImpl
  }
 
 
+ @override
+ Future<Either<Failure, void>> updateMealIngredientCheckedState(
+     MealEntity meal, IngredientEntity ingredient,
+     {required bool isChecked}) async {
+   return handleHiveFailure(() async {
+     await _hiveShoppingListMealIngredientService.setMealIngredientCheckedState(
+       meal.mealId,
+       ingredient.ingredientId,
+       isChecked,
+     );
+   });
+ }
+
+
 @override
 Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppingList() async {
   return handleHiveFailure(() async {
@@ -60,6 +74,7 @@ Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppin
       meal: MealMapper.toEntity(model.meal),
       ingredient: IngredientMapper.toEntity(model.ingredient),
       portionCount: model.portionCount,
+      isChecked: model.isChecked,
     )).toList();
   });
 }

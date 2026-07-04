@@ -83,6 +83,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingList => 'Shopping list';
 
   @override
+  String get markAsPurchased => 'Mark as purchased';
+
+  @override
+  String get markAsNotPurchased => 'Mark as not purchased';
+
+  @override
   String get undo => 'Undo';
 
   @override

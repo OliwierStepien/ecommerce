@@ -74,6 +74,7 @@ class FirebaseShoppingListShareService {
         'customItemId': targetDocId,
         'customItemName': item.customItemName,
         'customItemCategory': item.customItemCategory,
+        'isChecked': item.isChecked,
         'isDeleted': false,
         'isSynced': true,
 

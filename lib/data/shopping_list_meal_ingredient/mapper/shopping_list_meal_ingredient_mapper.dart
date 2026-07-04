@@ -9,14 +9,16 @@ class ShoppingListMealIngredientMapper {
   static ShoppingListMealIngredientModel toModel(
     MealEntity meal,
     IngredientEntity ingredient,
-    int portionCount,
-  ) {
+    int portionCount, {
+    bool isChecked = false,
+  }) {
     return ShoppingListMealIngredientModel(
       meal: MealMapper.toModel(meal),
       ingredient: IngredientMapper.toModel(ingredient),
       portionCount: portionCount,
       isSynced: false,
       isDeleted: false,
+      isChecked: isChecked,
     );
   }
 

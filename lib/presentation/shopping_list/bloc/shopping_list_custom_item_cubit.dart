@@ -162,6 +162,22 @@ class ShoppingListCustomItemCubit extends Cubit<ShoppingListCustomItemState> {
 
   bool get shouldShowNotification => !_suppressNotifications;
 
+  /// ☑️ Przełącza stan „kupione" dla pozycji własnej
+  Future<void> toggleCustomItemChecked(String customItemId) async {
+    if (state is! ShoppingListCustomItemLoaded) return;
+    final currentState = state as ShoppingListCustomItemLoaded;
+
+    final index = currentState.items
+        .indexWhere((item) => item.customItemId == customItemId);
+    if (index == -1) return;
+
+    final existing = currentState.items[index];
+    await updateCustomIngredient(
+      existing.copyWith(isChecked: !existing.isChecked),
+      suppressNotification: true,
+    );
+  }
+
   Future<void> updateCustomIngredient(
     ShoppingListCustomItemEntity updated, {
     bool suppressNotification = false,

@@ -27,13 +27,14 @@ class ShoppingListCustomItemModelAdapter
       sourceOwnerUid: fields[6] == null ? '' : fields[6] as String,
       sourceItemId: fields[7] == null ? '' : fields[7] as String,
       editors: fields[8] == null ? [] : (fields[8] as List).cast<String>(),
+      isChecked: fields[9] == null ? false : fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, ShoppingListCustomItemModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.customItemId)
       ..writeByte(1)
@@ -51,7 +52,9 @@ class ShoppingListCustomItemModelAdapter
       ..writeByte(7)
       ..write(obj.sourceItemId)
       ..writeByte(8)
-      ..write(obj.editors);
+      ..write(obj.editors)
+      ..writeByte(9)
+      ..write(obj.isChecked);
   }
 
   @override

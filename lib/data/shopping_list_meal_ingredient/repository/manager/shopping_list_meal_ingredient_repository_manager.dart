@@ -78,6 +78,38 @@ class ShoppingListMealIngredientRepositoryManager
     );
   }
 
+  @override
+  Future<Either<Failure, void>> updateMealIngredientCheckedState(
+      MealEntity meal, IngredientEntity ingredient,
+      {required bool isChecked}) async {
+    // 1. Najpierw lokalna operacja
+    final localResult = await _localRepository.updateMealIngredientCheckedState(
+        meal, ingredient,
+        isChecked: isChecked);
+
+    return await localResult.fold(
+      (failure) => Left(failure),
+      (_) async {
+        // 2. Próba synchronizacji jeśli online
+        final isOnline = await _networkInfo.checkInternetConnection();
+        if (!isOnline) return const Right(null);
+
+        final remoteResult = await _remoteRepository
+            .updateMealIngredientCheckedState(meal, ingredient,
+                isChecked: isChecked);
+
+        return remoteResult.fold(
+          (_) => const Right(null),
+          (_) async {
+            await _localRepository
+                .markShoppingListMealIngredientAsSynced(meal.mealId);
+            return const Right(null);
+          },
+        );
+      },
+    );
+  }
+
 @override
 Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppingList() async {
   return await _localRepository.getMealIngredientToShoppingList();

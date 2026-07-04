@@ -242,6 +242,18 @@ abstract class AppLocalizations {
   /// **'Shopping list'**
   String get shoppingList;
 
+  /// No description provided for @markAsPurchased.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as purchased'**
+  String get markAsPurchased;
+
+  /// No description provided for @markAsNotPurchased.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as not purchased'**
+  String get markAsNotPurchased;
+
   /// No description provided for @undo.
   ///
   /// In en, this message translates to:

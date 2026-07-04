@@ -13,6 +13,8 @@ abstract class FirebaseShoppingListMealIngredientService {
       getMealIngredientsFromShoppingList();
   Future<void> restoreMealIngredientToShoppingList(
       ShoppingListMealIngredientModel item);
+  Future<void> updateMealIngredientCheckedState(
+      ShoppingListMealIngredientModel item);
 }
 
 class FirebaseShoppingListMealIngredientServiceImpl
@@ -95,5 +97,29 @@ class FirebaseShoppingListMealIngredientServiceImpl
       ShoppingListMealIngredientModel item) async {
     // przywracamy tak samo jak dodawanie
     return addMealIngredientToShoppingList(item);
+  }
+
+  @override
+  Future<void> updateMealIngredientCheckedState(
+      ShoppingListMealIngredientModel item) async {
+    return handleFirestoreException(() async {
+      final user = _auth.currentUser;
+      if (user == null) throw UnauthorizedException();
+
+      final docId = _generateDocId(item);
+
+      // merge-set: gdy dokument nie istnieje (dodany offline), Firestore
+      // potraktuje to jako create — reguły wymagają wtedy ownerUid == userId
+      await _userShoppingMealItemsCollection()
+          .doc(docId)
+          .set(
+            {
+              'isChecked': item.isChecked,
+              'ownerUid': user.uid,
+            },
+            SetOptions(merge: true),
+          )
+          .timeout(const Duration(seconds: 15));
+    });
   }
 }

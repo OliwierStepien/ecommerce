@@ -27,6 +27,10 @@ class ShoppingListMealIngredientModel {
   @HiveField(5, defaultValue: '')
   final String ownerUid;
 
+  /// ✅ Czy pozycja została odhaczona jako kupiona
+  @HiveField(6, defaultValue: false)
+  final bool isChecked;
+
   const ShoppingListMealIngredientModel({
     required this.meal,
     required this.ingredient,
@@ -34,6 +38,7 @@ class ShoppingListMealIngredientModel {
     required this.isSynced,
     required this.isDeleted,
     this.ownerUid = '',
+    this.isChecked = false,
   });
 
   ShoppingListMealIngredientModel copyWith({
@@ -43,6 +48,7 @@ class ShoppingListMealIngredientModel {
     bool? isSynced,
     bool? isDeleted,
     String? ownerUid,
+    bool? isChecked,
   }) {
     return ShoppingListMealIngredientModel(
       meal: meal ?? this.meal,
@@ -51,6 +57,7 @@ class ShoppingListMealIngredientModel {
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
       ownerUid: ownerUid ?? this.ownerUid,
+      isChecked: isChecked ?? this.isChecked,
     );
   }
 
@@ -67,6 +74,7 @@ class ShoppingListMealIngredientModel {
       'isDeleted': isDeleted,
       'scaledAmount': scaledAmount,
       'ownerUid': ownerUid, // 👈
+      'isChecked': isChecked,
     };
   }
 
@@ -93,6 +101,7 @@ class ShoppingListMealIngredientModel {
       'scaledAmount': scaledAmount,
       'isDeleted': isDeleted,
       'isSynced': isSynced,
+      'isChecked': isChecked,
     };
   }
 
@@ -126,6 +135,7 @@ class ShoppingListMealIngredientModel {
         isSynced: map['isSynced'] ?? false,
         isDeleted: map['isDeleted'] ?? false,
         ownerUid: map['ownerUid'] ?? '', // może nie istnieć w FS – zostanie ''
+        isChecked: map['isChecked'] ?? false,
       );
     } else {
       // 🔹 Format pełny (Hive)
@@ -136,6 +146,7 @@ class ShoppingListMealIngredientModel {
         isSynced: map['isSynced'] ?? false,
         isDeleted: map['isDeleted'] ?? false,
         ownerUid: map['ownerUid'] ?? '',
+        isChecked: map['isChecked'] ?? false,
       );
     }
   }

@@ -7,13 +7,15 @@ class ShoppingListItemEntity extends Equatable {
   final MealEntity meal;
   final IngredientEntity ingredient;
   final int portionCount;
+  final bool isChecked;
 
   const ShoppingListItemEntity({
     required this.meal,
     required this.ingredient,
     required this.portionCount,
+    this.isChecked = false,
   });
 
   @override
-  List<Object?> get props => [meal, ingredient, portionCount];
+  List<Object?> get props => [meal, ingredient, portionCount, isChecked];
 }

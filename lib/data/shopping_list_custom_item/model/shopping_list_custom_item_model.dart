@@ -36,6 +36,10 @@ class ShoppingListCustomItemModel {
   @HiveField(8, defaultValue: <String>[])
   final List<String> editors;
 
+  /// ✅ Czy pozycja została odhaczona jako kupiona
+  @HiveField(9, defaultValue: false)
+  final bool isChecked;
+
   const ShoppingListCustomItemModel({
     required this.customItemId,
     required this.customItemName,
@@ -46,6 +50,7 @@ class ShoppingListCustomItemModel {
     this.sourceOwnerUid = '',
     this.sourceItemId = '',
     this.editors = const <String>[],
+    this.isChecked = false,
   });
 
   ShoppingListCustomItemModel copyWith({
@@ -58,6 +63,7 @@ class ShoppingListCustomItemModel {
     String? sourceOwnerUid,
     String? sourceItemId,
     List<String>? editors,
+    bool? isChecked,
   }) {
     return ShoppingListCustomItemModel(
       customItemId: customItemId ?? this.customItemId,
@@ -69,6 +75,7 @@ class ShoppingListCustomItemModel {
       sourceOwnerUid: sourceOwnerUid ?? this.sourceOwnerUid,
       sourceItemId: sourceItemId ?? this.sourceItemId,
       editors: editors ?? this.editors,
+      isChecked: isChecked ?? this.isChecked,
     );
   }
 
@@ -82,6 +89,7 @@ class ShoppingListCustomItemModel {
       'sourceOwnerUid': sourceOwnerUid,
       'sourceItemId': sourceItemId,
       'editors': editors,
+      'isChecked': isChecked,
     };
   }
 
@@ -101,6 +109,7 @@ class ShoppingListCustomItemModel {
       sourceOwnerUid: (map['sourceOwnerUid'] ?? '') as String,
       sourceItemId: (map['sourceItemId'] ?? '') as String,
       editors: editors,
+      isChecked: (map['isChecked'] ?? false) as bool,
     );
   }
 }

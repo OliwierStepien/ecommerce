@@ -8,6 +8,7 @@ class ShoppingListCustomItemMapper {
       customItemId: model.customItemId,
       customItemName: model.customItemName,
       customItemCategory: model.customItemCategory,
+      isChecked: model.isChecked,
     );
   }
 
@@ -32,6 +33,7 @@ class ShoppingListCustomItemMapper {
       sourceOwnerUid: uid,
       sourceItemId: entity.customItemId,
       editors: uid.isEmpty ? const <String>[] : <String>[uid],
+      isChecked: entity.isChecked,
     );
   }
 }

@@ -24,13 +24,14 @@ class ShoppingListMealIngredientModelAdapter
       isSynced: fields[3] as bool,
       isDeleted: fields[4] as bool,
       ownerUid: fields[5] == null ? '' : fields[5] as String,
+      isChecked: fields[6] == null ? false : fields[6] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, ShoppingListMealIngredientModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.meal)
       ..writeByte(1)
@@ -42,7 +43,9 @@ class ShoppingListMealIngredientModelAdapter
       ..writeByte(4)
       ..write(obj.isDeleted)
       ..writeByte(5)
-      ..write(obj.ownerUid);
+      ..write(obj.ownerUid)
+      ..writeByte(6)
+      ..write(obj.isChecked);
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/add_to_shop
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/get_shopping_list.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/remove_from_shopping_list_usecase.dart';
 import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/restore_to_shopping_list_usecase.dart';
+import 'package:mealapp/domain/shopping_list_meal_ingredient/usecase/update_checked_state_usecase.dart';
 import 'package:mealapp/presentation/shopping_list/bloc/shopping_list_meal_ingredient_state.dart';
 
 class ShoppingListMealIngredientCubit
@@ -16,6 +17,7 @@ class ShoppingListMealIngredientCubit
   final RemoveFromShoppingListUseCase _removeUseCase;
   final RestoreToShoppingListUseCase _restoreUseCase;
   final GetShoppingListUseCase _getUseCase;
+  final UpdateShoppingListCheckedStateUseCase _updateCheckedStateUseCase;
   final SyncStrategy _syncStrategy;
 
   Map<String, dynamic>? _lastRemovedItem;
@@ -26,11 +28,13 @@ class ShoppingListMealIngredientCubit
     required RemoveFromShoppingListUseCase removeUseCase,
     required RestoreToShoppingListUseCase restoreUseCase,
     required GetShoppingListUseCase getUseCase,
+    required UpdateShoppingListCheckedStateUseCase updateCheckedStateUseCase,
     required SyncStrategy syncStrategy,
   })  : _addUseCase = addUseCase,
         _removeUseCase = removeUseCase,
         _restoreUseCase = restoreUseCase,
         _getUseCase = getUseCase,
+        _updateCheckedStateUseCase = updateCheckedStateUseCase,
         _syncStrategy = syncStrategy,
         super(const ShoppingListMealIngredientInitial()) {
     _loadShoppingList();
@@ -49,7 +53,12 @@ class ShoppingListMealIngredientCubit
 
         for (final item in shoppingListItems) {
           mappedItems.add(
-            _createItemMap(item.ingredient, item.meal, item.portionCount),
+            _createItemMap(
+              item.ingredient,
+              item.meal,
+              item.portionCount,
+              isChecked: item.isChecked,
+            ),
           );
         }
 
@@ -214,10 +223,14 @@ class ShoppingListMealIngredientCubit
           return;
         }
 
-        // Zaktualizuj stan lokalny
+        // Zaktualizuj stan lokalny (zachowaj stan odhaczenia)
+        final wasChecked =
+            previousItems[existingIngredientIndex]['isChecked'] as bool? ??
+                false;
         final updatedList = List<Map<String, dynamic>>.from(previousItems);
-        updatedList[existingIngredientIndex] =
-            _createItemMap(ingredient, meal, newPortionCount);
+        updatedList[existingIngredientIndex] = _createItemMap(
+            ingredient, meal, newPortionCount,
+            isChecked: wasChecked);
 
         emit(currentState.copyWith(items: updatedList));
         await _syncStrategy.onDataChanged();
@@ -228,6 +241,53 @@ class ShoppingListMealIngredientCubit
       rethrow;
     } finally {
       _suppressNotifications = false;
+    }
+  }
+
+  /// ☑️ Przełącza stan „kupione" dla składnika (optymistycznie, z revertem)
+  Future<void> toggleIngredientChecked(
+    IngredientEntity ingredient,
+    MealEntity meal,
+  ) async {
+    if (state is! ShoppingListMealIngredientLoaded) return;
+    final currentState = state as ShoppingListMealIngredientLoaded;
+    final previousItems = currentState.items;
+
+    final index = previousItems.indexWhere(
+      (item) =>
+          item['ingredientId'] == ingredient.ingredientId &&
+          item['mealId'] == meal.mealId,
+    );
+    if (index == -1) return;
+
+    final newChecked = !(previousItems[index]['isChecked'] as bool? ?? false);
+
+    // nowa instancja mapy — inaczej Equatable nie wykryje zmiany
+    final updatedList = List<Map<String, dynamic>>.from(previousItems);
+    updatedList[index] = {
+      ...previousItems[index],
+      'isChecked': newChecked,
+    };
+    emit(currentState.copyWith(items: updatedList));
+
+    try {
+      final result = await _updateCheckedStateUseCase.call(
+        UpdateShoppingListCheckedStateParams(
+          meal: meal,
+          ingredient: ingredient,
+          isChecked: newChecked,
+        ),
+      );
+
+      result.fold(
+        (_) => emit(currentState.copyWith(items: previousItems)),
+        (_) {},
+      );
+
+      await _syncStrategy.onDataChanged();
+    } catch (e) {
+      emit(currentState.copyWith(items: previousItems));
+      debugPrint('❌ Failed to toggle ingredient checked state: $e');
     }
   }
 
@@ -284,8 +344,9 @@ class ShoppingListMealIngredientCubit
   Map<String, dynamic> _createItemMap(
     IngredientEntity ingredient,
     MealEntity meal,
-    int portionCount,
-  ) {
+    int portionCount, {
+    bool isChecked = false,
+  }) {
     return {
       'ingredientId': ingredient.ingredientId,
       'ingredientName': ingredient.ingredientName,
@@ -298,6 +359,7 @@ class ShoppingListMealIngredientCubit
       'mealEntity': meal,
       'portionCount': portionCount,
       'isCustom': false,
+      'isChecked': isChecked,
     };
   }
 

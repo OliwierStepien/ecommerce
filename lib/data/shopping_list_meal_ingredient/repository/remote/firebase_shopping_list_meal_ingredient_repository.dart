@@ -43,6 +43,19 @@ class FirebaseShoppingListMealIngredientRepositoryImpl
     });
   }
 
+  @override
+  Future<Either<Failure, void>> updateMealIngredientCheckedState(
+      MealEntity meal, IngredientEntity ingredient,
+      {required bool isChecked}) async {
+    return handleFirestoreFailure(() async {
+      final model = ShoppingListMealIngredientMapper.toModel(
+          meal, ingredient, 1,
+          isChecked: isChecked);
+      await _firebaseShoppingListMealIngredientService
+          .updateMealIngredientCheckedState(model);
+    });
+  }
+
 @override
 Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppingList() async {
   return handleFirestoreFailure(() async {
@@ -53,6 +66,7 @@ Future<Either<Failure, List<ShoppingListItemEntity>>> getMealIngredientToShoppin
       meal: MealMapper.toEntity(model.meal),
       ingredient: IngredientMapper.toEntity(model.ingredient),
       portionCount: model.portionCount,
+      isChecked: model.isChecked,
     )).toList();
   });
 }
