@@ -2,6 +2,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/routes/routes.dart';
 import 'package:mealapp/common/helper/images/image_display.dart';
@@ -9,7 +11,7 @@ import 'package:mealapp/common/helper/images/image_display.dart';
 class MealListItem extends StatelessWidget {
   final MealEntity mealEntity;
   final VoidCallback? onRemove;
-  final Widget? dragHandle; // 👈 Dodajemy uchwyt
+  final Widget? dragHandle; // 👈 Uchwyt do przeciągania
 
   const MealListItem({
     super.key,
@@ -25,34 +27,37 @@ class MealListItem extends StatelessWidget {
         context.push(Routes.nestedMealDetailPage, extra: mealEntity);
       },
       child: Container(
-        height: 70,
+        height: 64,
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: Theme.of(context).inputDecorationTheme.fillColor,
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.hairline),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             // miniatura posiłku
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
               child: CachedNetworkImage(
                 imageUrl: ImageDisplayHelper.meal(
                   mealEntity.image,
                   variant: ImgVariant.thumb,
                 ),
-                width: 60,
-                height: 60,
+                width: 46,
+                height: 46,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => const SizedBox(
-                  width: 60,
-                  height: 60,
+                  width: 46,
+                  height: 46,
                   child:
                       Center(child: CircularProgressIndicator(strokeWidth: 2)),
                 ),
-                errorWidget: (_, __, ___) =>
-                    const Icon(Icons.image_not_supported),
+                errorWidget: (_, __, ___) => const Icon(
+                  Icons.image_not_supported,
+                  color: AppColors.muted,
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -61,9 +66,10 @@ class MealListItem extends StatelessWidget {
             Expanded(
               child: Text(
                 mealEntity.title,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.ink,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -72,7 +78,11 @@ class MealListItem extends StatelessWidget {
 
             if (onRemove != null)
               IconButton(
-                icon: const Icon(Icons.close, size: 18),
+                icon: const Icon(
+                  Icons.close,
+                  size: 18,
+                  color: Color(0xFFB3A58F),
+                ),
                 onPressed: onRemove,
               ),
 

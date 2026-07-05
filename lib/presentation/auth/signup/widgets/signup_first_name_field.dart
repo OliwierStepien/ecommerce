@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 
 class SignupFirstNameField extends StatelessWidget {
@@ -7,18 +8,24 @@ class SignupFirstNameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: const InputDecoration(
-        hintText: 'Imię',
-        border: OutlineInputBorder(),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return context.l10n.enterValidEmailAddress;
-        }
-        return null;
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Kicker('IMIĘ'),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Imię',
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return context.l10n.enterValidEmailAddress;
+            }
+            return null;
+          },
+        ),
+      ],
     );
   }
 }

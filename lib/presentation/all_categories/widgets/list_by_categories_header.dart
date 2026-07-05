@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 
 class ListByCategoriesHeader extends StatelessWidget {
@@ -6,9 +7,10 @@ class ListByCategoriesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      context.l10n.allCategories,
-      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+    return PageHeader(
+      kicker: 'PRZEGLĄDAJ',
+      title: context.l10n.allCategories,
+      titleSize: 22,
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/domain/grocery/entity/grocery_entity.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
@@ -53,7 +54,7 @@ class GroceriesBottomSheet extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     state.message,
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(color: AppColors.danger),
                   ),
                 );
               }
@@ -149,7 +150,7 @@ class _GroceryTile extends StatelessWidget {
           trailing: IconButton(
             icon: Icon(
               isAdded ? Icons.check_circle : Icons.add_circle_outline,
-              color: isAdded ? Colors.green : null,
+              color: isAdded ? AppColors.herb : const Color(0xFFCDBFA8),
               size: 26, // ✅ opcjonalnie większa ikonka
             ),
             onPressed: () async {

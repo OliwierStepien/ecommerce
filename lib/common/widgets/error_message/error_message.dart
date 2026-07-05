@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mealapp/common/widgets/button/basic_app_button.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 
 class ErrorMessage extends StatelessWidget {
   final String message;
@@ -8,7 +9,6 @@ class ErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeData = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -16,17 +16,18 @@ class ErrorMessage extends StatelessWidget {
           const Icon(
             Icons.error,
             size: 40,
-            color: Colors.redAccent,
+            color: AppColors.danger,
           ),
           const SizedBox(height: 20),
           Text(
             message,
-            style: themeData.textTheme.displaySmall?.copyWith(
-              color: Colors.white,
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.ink,
             ),
             textAlign: TextAlign.center,
           ),
-          if (onRetry != null) 
+          if (onRetry != null)
             Column(
               children: [
                 const SizedBox(height: 20),

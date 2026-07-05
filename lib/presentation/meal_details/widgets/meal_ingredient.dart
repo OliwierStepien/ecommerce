@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/extensions/context_extension.dart';
@@ -20,36 +22,15 @@ class MealIngredient extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  context.l10n.ingredients,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      context.l10n.addToShoppingList,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(Icons.shopping_cart, color: Colors.green.shade700),
-                  ],
-                ),
-              ],
+            child: SectionHeader(
+              title: context.l10n.ingredients,
+              trailing: const Kicker('DO LISTY', color: AppColors.herb),
             ),
           ),
           Column(
@@ -58,7 +39,7 @@ class MealIngredient extends StatelessWidget {
               return Column(
                 children: [
                   _buildIngredientItem(context, ingredient, baseAmount),
-                  const Divider(height: 10, thickness: 0.5),
+                  const Divider(height: 1, color: AppColors.dividerLight),
                 ],
               );
             }).toList(),
@@ -171,9 +152,31 @@ class MealIngredient extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Container(
+                  height: 5,
+                  width: 5,
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    '• ${ingredient.ingredientName} ${currentAmount.toStringAsFixed(0)} ${ingredient.unit}',
+                  child: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.ink,
+                      ),
+                      children: [
+                        TextSpan(text: ingredient.ingredientName),
+                        TextSpan(
+                          text:
+                              '  ${currentAmount.toStringAsFixed(0)} ${ingredient.unit}',
+                          style: const TextStyle(color: AppColors.muted),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 IconButton(
@@ -192,7 +195,7 @@ class MealIngredient extends StatelessWidget {
                   },
                   icon: Icon(
                     isAdded ? Icons.check_circle : Icons.add_circle_outline,
-                    color: isAdded ? Colors.green : Colors.grey,
+                    color: isAdded ? AppColors.herb : const Color(0xFFCDBFA8),
                   ),
                 ),
               ],

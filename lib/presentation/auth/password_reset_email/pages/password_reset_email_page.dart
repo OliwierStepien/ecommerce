@@ -9,19 +9,22 @@ class PasswordResetEmailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          EmailSending(),
-          SizedBox(
-            height: 30,
-          ),
-          SentEmail(),
-          SizedBox(
-            height: 30,
-          ),
-          ReturnToLoginButton()
-        ],
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            EmailSending(),
+            SizedBox(
+              height: 30,
+            ),
+            SentEmail(),
+            SizedBox(
+              height: 30,
+            ),
+            ReturnToLoginButton()
+          ],
+        ),
       ),
     );
   }

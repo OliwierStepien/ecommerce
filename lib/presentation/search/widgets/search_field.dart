@@ -1,10 +1,9 @@
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/meal/usecase/get_meal_by_title.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
-import 'package:mealapp/core/configs/assets/app_vectors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 
 class SearchField extends StatelessWidget {
@@ -19,6 +18,7 @@ class SearchField extends StatelessWidget {
       child: TextField(
         controller: cubit.controller,
         focusNode: cubit.focusNode,
+        cursorColor: AppColors.accent,
         onChanged: (value) {
           final isVegetarian = context.read<VegetarianFilterCubit>().state;
           if (value.isEmpty) {
@@ -34,18 +34,16 @@ class SearchField extends StatelessWidget {
         },
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(12),
-          focusedBorder:
-              OutlineInputBorder(borderRadius: BorderRadius.circular(50)),
-          enabledBorder:
-              OutlineInputBorder(borderRadius: BorderRadius.circular(50)),
-          prefixIcon: SvgPicture.asset(
-            AppVectors.search,
-            fit: BoxFit.none,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: const BorderSide(color: AppColors.accent),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: const BorderSide(color: AppColors.accent),
+          ),
+          prefixIcon: const Icon(Icons.search, color: AppColors.accent),
           hintText: context.l10n.search,
-          hintStyle: const TextStyle(
-            color: Colors.white,
-          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 
 class BasicAppButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -26,7 +27,7 @@ class BasicAppButton extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w400),
+                  color: AppColors.background, fontWeight: FontWeight.w600),
             ));
   }
 }

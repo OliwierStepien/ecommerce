@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/category/entity/category_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 
@@ -13,9 +16,27 @@ class CategoryInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '${categoryEntity.title} (${meals.length})',
-      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(bottom: 10),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.accent)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Kicker('KATEGORIA · ${meals.length} DAŃ'),
+          const SizedBox(height: 4),
+          Text(
+            categoryEntity.title,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 26,
+              fontWeight: FontWeight.w600,
+              color: AppColors.ink,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

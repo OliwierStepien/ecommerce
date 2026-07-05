@@ -1,3 +1,4 @@
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +21,9 @@ class FavoriteButton extends StatelessWidget {
           onPressed: () async {
             final cubit = context.read<FavoriteMealsCubit>();
             final wasFavorite = isFavorite;
-            
+
             await cubit.toggleFavorite(mealEntity);
-            
+
             // Pokazuj SnackBar tylko jeśli akcja się powiodła
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -38,9 +39,7 @@ class FavoriteButton extends StatelessWidget {
           icon: Icon(
             isFavorite ? Icons.favorite : Icons.favorite_outline,
             size: 24,
-            color: isFavorite
-                ? const Color(0xff8E6CEF)
-                : Colors.white.withAlpha((0.8 * 255).round()),
+            color: isFavorite ? AppColors.accent : const Color(0xFFC3B49C),
           ),
           splashRadius: 20,
           padding: EdgeInsets.zero,

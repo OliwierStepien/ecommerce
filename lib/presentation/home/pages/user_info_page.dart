@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mealapp/common/helper/debug_log/debug_log.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/auth/entity/user_entity.dart';
 import 'package:mealapp/domain/friends/entity/friend_entity.dart';
 import 'package:mealapp/domain/friends/entity/friend_invitation_entity.dart';
@@ -30,9 +32,18 @@ class UserInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Informacje użytkownika'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Twój profil',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.ink),
           onPressed: () {
             context.pop();
           },
@@ -176,14 +187,16 @@ class _UserInfoContent extends StatelessWidget {
       child: Column(
         children: [
           _UserInfoSection(user: user),
-          Material(
-            color: Theme.of(context).cardColor,
-            child: const TabBar(
-              tabs: [
-                Tab(icon: Icon(Icons.people), text: 'Znajomi'),
-                Tab(icon: Icon(Icons.person_add), text: 'Zaproszenia'),
-              ],
-            ),
+          const TabBar(
+            indicatorColor: AppColors.primary,
+            labelColor: AppColors.ink,
+            labelStyle: TextStyle(fontWeight: FontWeight.w700),
+            unselectedLabelColor: AppColors.muted,
+            dividerColor: AppColors.hairline,
+            tabs: [
+              Tab(icon: Icon(Icons.people), text: 'Znajomi'),
+              Tab(icon: Icon(Icons.person_add), text: 'Zaproszenia'),
+            ],
           ),
           Expanded(
             child: TabBarView(
@@ -205,23 +218,56 @@ class _UserInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(
-            'Dane osobowe',
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.hairline),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 52,
+            width: 52,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '?',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: AppColors.background,
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          _InfoRow(label: 'Imię', value: user.firstName),
-          const SizedBox(height: 8),
-          _InfoRow(label: 'Email', value: user.email),
-        ]),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.firstName,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  user.email,
+                  style: const TextStyle(color: AppColors.muted),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -246,12 +292,12 @@ class _FriendsTab extends StatelessWidget {
                 child: Column(
                   children: [
                     const Icon(Icons.error_outline,
-                        color: Colors.red, size: 48),
+                        color: AppColors.danger, size: 48),
                     const SizedBox(height: 16),
                     Text(
                       state.message,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
+                      style: const TextStyle(color: AppColors.danger),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -267,12 +313,29 @@ class _FriendsTab extends StatelessWidget {
         }
 
         if (state is FriendsLoaded) {
-          final addFriendCard = Card(
-            child: ListTile(
-              leading: const Icon(Icons.person_add, color: Colors.blue),
-              title: const Text('Dodaj znajomego'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () => _showAddFriendDialog(context),
+          final addFriendCard = Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: CustomPaint(
+              painter: const _DashedBorderPainter(
+                color: AppColors.accent,
+                radius: 8,
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.person_add, color: AppColors.accent),
+                title: const Text(
+                  'Dodaj znajomego',
+                  style: TextStyle(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppColors.accent,
+                ),
+                onTap: () => _showAddFriendDialog(context),
+              ),
             ),
           );
 
@@ -292,6 +355,7 @@ class _FriendsTab extends StatelessWidget {
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: state.friends.length,
                   itemBuilder: (context, index) {
                     final friend = state.friends[index];
@@ -378,7 +442,7 @@ class _FriendsTab extends StatelessWidget {
             child: const Text('Anuluj'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Usuń', style: TextStyle(color: Colors.white)),
           ),
@@ -419,26 +483,38 @@ class _FriendListItem extends StatelessWidget {
     final isFreezerSharing =
         context.watch<FreezerShareCubit>().state is FreezerShareLoading;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.hairline),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue[100],
+          backgroundColor: AppColors.softFill,
           child: Text(
             friend.friendName.isNotEmpty
                 ? friend.friendName[0].toUpperCase()
                 : '?',
             style: const TextStyle(
-              color: Colors.blue,
+              color: AppColors.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
         title: Text(
           friend.friendName,
-          style: const TextStyle(fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
         ),
-        subtitle: Text(friend.friendEmail),
+        subtitle: Text(
+          friend.friendEmail,
+          style: const TextStyle(color: AppColors.muted),
+          overflow: TextOverflow.ellipsis,
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -450,7 +526,7 @@ class _FriendListItem extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.calendar_month),
+                  : const Icon(Icons.calendar_month, color: AppColors.muted),
               onPressed: isSharing
                   ? null
                   : () async {
@@ -488,7 +564,7 @@ class _FriendListItem extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.shopping_cart),
+                  : const Icon(Icons.shopping_cart, color: AppColors.muted),
               onPressed: isShoppingSharing
                   ? null
                   : () {
@@ -505,7 +581,7 @@ class _FriendListItem extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.ac_unit),
+                  : const Icon(Icons.ac_unit, color: AppColors.muted),
               onPressed: isFreezerSharing
                   ? null
                   : () {
@@ -515,7 +591,7 @@ class _FriendListItem extends StatelessWidget {
                     },
             ),
             IconButton(
-              icon: const Icon(Icons.person_remove, color: Colors.red),
+              icon: const Icon(Icons.person_remove, color: AppColors.danger),
               tooltip: 'Usuń znajomego',
               onPressed: onRemove,
             ),
@@ -557,14 +633,15 @@ class _InvitationsTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_add_disabled, size: 64, color: Colors.grey),
+            Icon(Icons.person_add_disabled,
+                size: 64, color: Color(0xFFC6B8A2)),
             SizedBox(height: 16),
             Text('Brak oczekujących zaproszeń',
-                style: TextStyle(fontSize: 18, color: Colors.grey)),
+                style: TextStyle(fontSize: 18, color: AppColors.muted)),
             SizedBox(height: 8),
             Text('Zaproszenia od innych użytkowników\npojawiają się tutaj',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey)),
+                style: TextStyle(color: AppColors.muted)),
           ],
         ),
       );
@@ -597,7 +674,7 @@ class _InvitationsTab extends StatelessWidget {
             child: const Text('Anuluj'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.herb),
             onPressed: () {
               dialogContext
                   .read<FriendsCubit>()
@@ -626,7 +703,7 @@ class _InvitationsTab extends StatelessWidget {
             child: const Text('Anuluj'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () {
               dialogContext
                   .read<FriendsCubit>()
@@ -654,21 +731,25 @@ class _InvitationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 2,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.hairline),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             CircleAvatar(
-              backgroundColor: Colors.orange[100],
+              backgroundColor: AppColors.softFill,
               child: Text(
                 invitation.fromUserName.isNotEmpty
                     ? invitation.fromUserName[0].toUpperCase()
                     : '?',
-                style: TextStyle(
-                  color: Colors.orange[800],
+                style: const TextStyle(
+                  color: AppColors.accent,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -683,12 +764,13 @@ class _InvitationListItem extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      color: AppColors.ink,
                     ),
                   ),
                   Text(
                     invitation.fromUserEmail,
                     style: const TextStyle(
-                      color: Colors.grey,
+                      color: AppColors.muted,
                       fontSize: 14,
                     ),
                   ),
@@ -699,7 +781,7 @@ class _InvitationListItem extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Wysłano: ${_formatDate(invitation.sentAt)}',
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: const TextStyle(color: AppColors.muted, fontSize: 12),
           ),
           const SizedBox(height: 12),
           Row(children: [
@@ -708,8 +790,8 @@ class _InvitationListItem extends StatelessWidget {
                 icon: const Icon(Icons.check, size: 18),
                 label: const Text('Zaakceptuj'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.green,
-                  side: const BorderSide(color: Colors.green),
+                  foregroundColor: AppColors.herb,
+                  side: const BorderSide(color: AppColors.herb),
                 ),
                 onPressed: onAccept,
               ),
@@ -720,8 +802,8 @@ class _InvitationListItem extends StatelessWidget {
                 icon: const Icon(Icons.close, size: 18),
                 label: const Text('Odrzuć'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger),
                 ),
                 onPressed: onReject,
               ),
@@ -737,25 +819,6 @@ class _InvitationListItem extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _InfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Text('$label: ', style: const TextStyle(color: Colors.grey)),
-        Expanded(
-          child: Text(value, overflow: TextOverflow.ellipsis),
-        ),
-      ],
-    );
-  }
-}
-
 class _EmptyFriendsView extends StatelessWidget {
   const _EmptyFriendsView();
 
@@ -767,19 +830,58 @@ class _EmptyFriendsView extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Icon(Icons.people_outline, size: 64, color: Colors.grey),
+              Icon(Icons.people_outline, size: 64, color: Color(0xFFC6B8A2)),
               SizedBox(height: 16),
               Text(
                 'Brak znajomych',
-                style: TextStyle(color: Colors.grey, fontSize: 18),
+                style: TextStyle(color: AppColors.muted, fontSize: 18),
               ),
               SizedBox(height: 8),
               Text('Dodaj pierwszego znajomego!',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: AppColors.muted)),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+/// Przerywane obramowanie wiersza „Dodaj znajomego".
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+
+  const _DashedBorderPainter({required this.color, required this.radius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    final path = Path()..addRRect(rrect);
+
+    const dashWidth = 5.0;
+    const dashGap = 4.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        canvas.drawPath(
+          metric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
+        distance += dashWidth + dashGap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.radius != radius;
 }

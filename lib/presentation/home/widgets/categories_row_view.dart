@@ -2,7 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_cubit.dart';
 import 'package:mealapp/presentation/category_meals/bloc/categories_display_state.dart';
@@ -32,29 +35,15 @@ class _SeeAllCategories extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            context.l10n.categories,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              context.push(Routes.nestedAllCategoriesPage);
-            },
-            child: Text(
-              context.l10n.seeAll,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ],
+      child: SectionHeader(
+        title: context.l10n.categories,
+        titleSize: 16,
+        trailing: GestureDetector(
+          onTap: () {
+            context.push(Routes.nestedAllCategoriesPage);
+          },
+          child: Kicker(context.l10n.seeAll),
+        ),
       ),
     );
   }
@@ -95,35 +84,23 @@ class _CategoriesList extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            height: 60,
-                            width: 60,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.green
-                                    : Colors.transparent,
-                                width: 3,
-                              ),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: CachedNetworkImageProvider(
-                                  ImageDisplayHelper.category(
-                                    category.image,
-                                    variant: ImgVariant.thumb,
-                                  ),
-                                ),
-                              ),
+                          _CategoryCircle(
+                            imageUrl: ImageDisplayHelper.category(
+                              category.image,
+                              variant: ImgVariant.thumb,
                             ),
+                            isSelected: isSelected,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           Text(
                             category.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14,
-                              color: isSelected ? Colors.green : Colors.white,
+                            style: GoogleFonts.dmSans(
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                              fontSize: 10.5,
+                              color:
+                                  isSelected ? AppColors.ink : AppColors.muted,
                             ),
                           ),
                         ],
@@ -147,6 +124,48 @@ class _CategoriesList extends StatelessWidget {
 
         return const SizedBox.shrink();
       },
+    );
+  }
+}
+
+class _CategoryCircle extends StatelessWidget {
+  final String imageUrl;
+  final bool isSelected;
+
+  const _CategoryCircle({required this.imageUrl, required this.isSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final image = Container(
+      height: 54,
+      width: 54,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.softFill,
+        image: DecorationImage(
+          fit: BoxFit.cover,
+          image: CachedNetworkImageProvider(imageUrl),
+        ),
+      ),
+    );
+
+    if (!isSelected) return image;
+
+    // Pierścień accent z zewnętrzną obwódką hairline i przerwą tła
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.accent, width: 2),
+        ),
+        child: image,
+      ),
     );
   }
 }

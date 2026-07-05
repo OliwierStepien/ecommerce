@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/auth/entity/user_entity.dart';
-import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/friends/bloc/friend_cubit.dart';
 import 'package:mealapp/presentation/friends/bloc/friend_state.dart';
 import 'package:mealapp/presentation/home/bloc/user_info_display_cubit.dart';
@@ -10,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealapp/routes/routes.dart';
 
-// ✅ NOWE
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:mealapp/core/usecase/usecase.dart';
 import 'package:mealapp/domain/auth/usecase/signout.dart';
@@ -58,7 +59,7 @@ class _MenuIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.menu),
+      icon: const Icon(Icons.menu, color: AppColors.ink),
       onPressed: () {
         Scaffold.of(context).openDrawer();
       },
@@ -89,28 +90,34 @@ class _UserNameWithInvitations extends StatelessWidget {
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.transparent,
-            ),
-            child: Row(
+            color: Colors.transparent,
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  context.l10n.helloUser(user.firstName),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: true,
-                  textAlign: TextAlign.start,
+                const Kicker('DZIEŃ DOBRY,'),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        user.firstName,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    if (invitationsCount > 0) ...[
+                      const SizedBox(width: 8),
+                      _InvitationsBadge(count: invitationsCount),
+                    ],
+                  ],
                 ),
-                if (invitationsCount > 0) ...[
-                  const SizedBox(width: 8),
-                  _InvitationsBadge(count: invitationsCount),
-                ],
               ],
             ),
           ),
@@ -130,13 +137,13 @@ class _InvitationsBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.red,
+        color: AppColors.accent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         count.toString(),
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.background,
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
@@ -145,14 +152,14 @@ class _InvitationsBadge extends StatelessWidget {
   }
 }
 
-// ✅ NOWE: wylogowanie w miejscu kalendarza
+// Wylogowanie w miejscu kalendarza
 class _SignOutIcon extends StatelessWidget {
   const _SignOutIcon();
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.exit_to_app),
+      icon: const Icon(Icons.exit_to_app, color: AppColors.muted),
       onPressed: () {
         context.read<ButtonStateCubit>().execute(
           params: NoParams(),

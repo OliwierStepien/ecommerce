@@ -1,5 +1,5 @@
-import 'package:mealapp/common/widgets/appbar/app_bar.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/presentation/meal_details/bloc/favorite_meals_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
@@ -13,39 +13,53 @@ class FavoriteMealsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BasicAppbar(
-        hideBack: true,
-        title: Text(context.l10n.favoriteMeals),
-      ),
-      body: BlocConsumer<FavoriteMealsCubit, MealsDisplayState>(
-        listener: (context, state) {
-          // Globalna obsługa błędów
-          if (state is MealsLoadingFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                duration: const Duration(seconds: 1),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+              child: PageHeader(
+                kicker: 'TWOJA KOLEKCJA',
+                title: context.l10n.favoriteMeals,
               ),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is MealsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is MealsLoadingSuccess) {
-            return MealGrid(meals: state.meals);
-          }
-          if (state is MealsLoadingFailure) {
-            return ErrorMessage(
-              message: state.message,
-              onRetry: () {
-                context.read<FavoriteMealsCubit>().displayFavoriteMeals();
-              },
-            );
-          }
-          return const SizedBox.shrink();
-        },
+            ),
+            Expanded(
+              child: BlocConsumer<FavoriteMealsCubit, MealsDisplayState>(
+                listener: (context, state) {
+                  // Globalna obsługa błędów
+                  if (state is MealsLoadingFailure) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is MealsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is MealsLoadingSuccess) {
+                    return MealGrid(meals: state.meals);
+                  }
+                  if (state is MealsLoadingFailure) {
+                    return ErrorMessage(
+                      message: state.message,
+                      onRetry: () {
+                        context
+                            .read<FavoriteMealsCubit>()
+                            .displayFavoriteMeals();
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

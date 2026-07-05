@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mealapp/common/widgets/error_message/error_message.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 import 'package:mealapp/common/widgets/meal/meal_card.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
@@ -8,6 +10,7 @@ import 'package:mealapp/presentation/home/bloc/category_selection_cubit.dart';
 import 'package:mealapp/presentation/home/bloc/meals_filter_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_cubit.dart';
 import 'package:mealapp/presentation/meal_details/bloc/meals_display_state.dart';
+import 'package:mealapp/presentation/meal_details/bloc/vegetarian_filter_cubit.dart';
 import 'package:mealapp/service_locator.dart';
 
 class MealsGridView extends StatelessWidget {
@@ -76,20 +79,60 @@ class _MealSectionTitle extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 context.l10n.meals,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.playfairDisplay(
+                  fontWeight: FontWeight.w600,
                   fontSize: 16,
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
-                '($count)',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                '— $count',
+                style: GoogleFonts.playfairDisplay(
+                  fontStyle: FontStyle.italic,
+                  fontSize: 15,
+                  color: AppColors.accent,
+                ),
+              ),
+              const Spacer(),
+              const _VegeToggle(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _VegeToggle extends StatelessWidget {
+  const _VegeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<VegetarianFilterCubit, bool>(
+      builder: (context, isVegetarian) {
+        return GestureDetector(
+          onTap: () => context.read<VegetarianFilterCubit>().toggle(),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.eco,
+                size: 15,
+                color: isVegetarian ? AppColors.herb : AppColors.muted,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'WEGE',
+                style: GoogleFonts.dmSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.8,
+                  color: isVegetarian ? AppColors.herb : AppColors.muted,
                 ),
               ),
             ],

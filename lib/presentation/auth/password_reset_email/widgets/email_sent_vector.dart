@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:mealapp/core/configs/assets/app_vectors.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 
 class EmailSending extends StatelessWidget {
   const EmailSending({super.key});
@@ -8,7 +7,20 @@ class EmailSending extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SvgPicture.asset(AppVectors.emailSending),
+      child: Container(
+        height: 96,
+        width: 96,
+        decoration: BoxDecoration(
+          color: AppColors.softFill,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.hairline),
+        ),
+        child: const Icon(
+          Icons.mark_email_read,
+          size: 46,
+          color: AppColors.accent,
+        ),
+      ),
     );
   }
 }

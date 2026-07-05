@@ -1,6 +1,9 @@
 // presentation/planned_meal/widgets/meals_list_section.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
 import 'package:mealapp/presentation/planned_meal/widgets/meal_list_item.dart';
@@ -27,16 +30,26 @@ class MealsListSection extends StatelessWidget {
     final sortedMeals = List<PlannedMealEntity>.from(plannedMealsForSelectedDay)
       ..sort((a, b) => a.position.compareTo(b.position));
 
+    final formattedDate =
+        DateFormat('EEEE d MMMM', 'pl_PL').format(selectedDate);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.only(bottom: 6),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: AppColors.hairline)),
+          ),
           child: Text(
-            'Planned meals',
-            style: TextStyle(
+            'Zaplanowane · $formattedDate',
+            style: GoogleFonts.playfairDisplay(
               fontSize: 16,
-              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
             ),
           ),
         ),
@@ -65,7 +78,11 @@ class MealsListSection extends StatelessWidget {
                 index: index,
                 child: const Padding(
                   padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(Icons.drag_handle, size: 20),
+                  child: Icon(
+                    Icons.drag_handle,
+                    size: 20,
+                    color: Color(0xFFB3A58F),
+                  ),
                 ),
               ),
             );

@@ -1,6 +1,7 @@
 import 'package:mealapp/common/bloc/button/button_state_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 
 import '../../bloc/button/button_state.dart';
 
@@ -38,7 +39,7 @@ class BasicReactiveButton extends StatelessWidget {
       child: Container(
         height: height ?? 50,
         alignment: Alignment.center,
-        child: const CircularProgressIndicator()
+        child: const CircularProgressIndicator(color: AppColors.background)
       )
     );
   }
@@ -52,8 +53,8 @@ class BasicReactiveButton extends StatelessWidget {
       child: content ?? Text(
         title,
         style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w400
+          color: AppColors.background,
+          fontWeight: FontWeight.w600
         ),
       )
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/routes/destination.dart';
 
 class LayoutScaffold extends StatelessWidget {
@@ -15,18 +16,41 @@ class LayoutScaffold extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: navigationShell.goBranch,
-        indicatorColor: Theme.of(context).primaryColor,
         destinations: destinations
             .map((destination) => NavigationDestination(
-                  icon: Icon(destination.icon),
+                  icon: _NavIcon(icon: destination.icon, selected: false),
+                  selectedIcon:
+                      _NavIcon(icon: destination.icon, selected: true),
                   label: destination.label,
-                  selectedIcon: Icon(
-                    destination.icon,
-                    color: Colors.white,
-                  ),
                 ))
             .toList(),
       ),
+    );
+  }
+}
+
+class _NavIcon extends StatelessWidget {
+  final IconData icon;
+  final bool selected;
+
+  const _NavIcon({required this.icon, required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: selected ? AppColors.primary : AppColors.navInactive,
+        ),
+        const SizedBox(height: 3),
+        Container(
+          width: 14,
+          height: 2,
+          color: selected ? AppColors.accent : Colors.transparent,
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealapp/common/widgets/appbar/app_bar.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/grocery/usecase/get_groceries.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
@@ -72,7 +74,7 @@ class ShoppingListPage extends StatelessWidget {
             child: const Text('Anuluj'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Usuń wszystko',
                 style: TextStyle(color: Colors.white)),
@@ -118,15 +120,19 @@ class ShoppingListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BasicAppbar(
-        title: Text(context.l10n.shoppingList),
-        hideBack: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              PageHeader(
+                kicker: 'SPIŻARNIA',
+                title: context.l10n.shoppingList,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
               child: BlocBuilder<ShoppingListMealIngredientCubit,
                   ShoppingListMealIngredientState>(
                 builder: (context, mealState) {
@@ -153,7 +159,7 @@ class ShoppingListPage extends StatelessWidget {
                           return Center(
                             child: Text(
                               customState.message,
-                              style: const TextStyle(color: Colors.red),
+                              style: const TextStyle(color: AppColors.danger),
                             ),
                           );
                         }
@@ -193,15 +199,24 @@ class ShoppingListPage extends StatelessWidget {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding:
+                                Container(
+                                  margin:
                                       const EdgeInsets.symmetric(vertical: 8.0),
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  width: double.infinity,
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      bottom:
+                                          BorderSide(color: AppColors.hairline),
+                                    ),
+                                  ),
                                   child: Text(
                                     category,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).primaryColor,
+                                    style: GoogleFonts.playfairDisplay(
+                                      fontSize: 16,
+                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.accent,
                                     ),
                                   ),
                                 ),
@@ -244,34 +259,49 @@ class ShoppingListPage extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FloatingActionButton(
-                  heroTag: 'openGroceriesBtn',
-                  mini: true,
-                  onPressed: () => _showGroceriesSheet(context),
-                  child: const Icon(Icons.menu),
-                ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'openGroceriesBtn',
+                    mini: true,
+                    elevation: 0,
+                    backgroundColor: AppColors.background,
+                    shape: const CircleBorder(
+                      side: BorderSide(color: AppColors.hairline),
+                    ),
+                    onPressed: () => _showGroceriesSheet(context),
+                    child: const Icon(Icons.menu, color: Color(0xFF7A6D5B)),
+                  ),
 
-                // 🗑️ CLEAR ALL – bez tekstu
-                FloatingActionButton(
-                  heroTag: 'clearAllBtn',
-                  mini: true,
-                  onPressed: () => _confirmClearAll(context),
-                  child: const Icon(Icons.delete_forever),
-                ),
+                  // 🗑️ CLEAR ALL – bez tekstu
+                  FloatingActionButton(
+                    heroTag: 'clearAllBtn',
+                    mini: true,
+                    elevation: 0,
+                    backgroundColor: AppColors.background,
+                    shape: const CircleBorder(
+                      side: BorderSide(color: AppColors.hairline),
+                    ),
+                    onPressed: () => _confirmClearAll(context),
+                    child:
+                        const Icon(Icons.delete_forever, color: AppColors.danger),
+                  ),
 
-                FloatingActionButton(
-                  heroTag: 'addBtn',
-                  mini: true,
-                  onPressed: () => _showAddIngredientSheet(context),
-                  child: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ],
+                  FloatingActionButton(
+                    heroTag: 'addBtn',
+                    mini: true,
+                    elevation: 0,
+                    backgroundColor: AppColors.primary,
+                    shape: const CircleBorder(),
+                    onPressed: () => _showAddIngredientSheet(context),
+                    child: const Icon(Icons.add, color: AppColors.background),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:mealapp/presentation/meal_details/widgets/favorite_button.dart';
@@ -15,6 +17,11 @@ class MealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final meta = [
+      '${mealEntity.portion} PORCJE',
+      if (mealEntity.isVegetarian) 'WEGE',
+    ].join(' · ');
+
     return GestureDetector(
       onTap: () {
         context.push(
@@ -24,62 +31,68 @@ class MealCard extends StatelessWidget {
       },
       child: Container(
         width: 180,
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: Theme.of(context).inputDecorationTheme.fillColor,
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.hairline),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              flex: 4,
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: CachedNetworkImageProvider(
-                          ImageDisplayHelper.meal(
-                            mealEntity.image,
-                            variant: ImgVariant.thumb,
-                          ),
-                        ),
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        topRight: Radius.circular(8),
-                      ),
+                  CachedNetworkImage(
+                    imageUrl: ImageDisplayHelper.meal(
+                      mealEntity.image,
+                      variant: ImgVariant.thumb,
                     ),
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) =>
+                        Container(color: AppColors.softFill),
+                    errorWidget: (_, __, ___) =>
+                        Container(color: AppColors.softFill),
                   ),
-                  // 🧡 Dodanie przycisku ulubionych w rogu
                   Positioned(
                     top: 4,
-                    left: 4,
+                    right: 4,
                     child: FavoriteButton(mealEntity: mealEntity),
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              alignment: Alignment.center,
-              child: SizedBox(
-                height: 50,
-                child: Center(
-                  child: Text(
-                    mealEntity.title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 38,
+                    child: Text(
+                      mealEntity.title,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink,
+                      ),
+                      softWrap: true,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    softWrap: true,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    meta,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 10,
+                      letterSpacing: 0.4,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.muted,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

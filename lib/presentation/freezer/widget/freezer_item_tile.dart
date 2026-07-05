@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/freezer/entity/freezer_item_entity.dart';
 import 'package:mealapp/presentation/freezer/bloc/freezer_item_cubit.dart';
 
@@ -10,11 +12,13 @@ class FreezerItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).inputDecorationTheme.fillColor,
-      elevation: 2,
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.hairline),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -22,16 +26,20 @@ class FreezerItemTile extends StatelessWidget {
             Expanded(
               child: Text(
                 item.name,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: GoogleFonts.dmSans(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.ink,
+                ),
               ),
             ),
             IconButton(
               onPressed: () => _edit(context),
-              icon: const Icon(Icons.edit_outlined),
+              icon: const Icon(Icons.edit, color: AppColors.muted),
             ),
             IconButton(
               onPressed: () => _remove(context),
-              icon: const Icon(Icons.delete),
+              icon: const Icon(Icons.delete, color: AppColors.danger),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
 import 'package:mealapp/extensions/context_extension.dart';
 
 class SignupHeader extends StatelessWidget {
@@ -6,12 +7,10 @@ class SignupHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      context.l10n.createAccount,
-      style: const TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-      ),
+    return PageHeader(
+      kicker: 'DOŁĄCZ DO NAS',
+      title: context.l10n.createAccount,
+      titleSize: 31,
     );
   }
 }

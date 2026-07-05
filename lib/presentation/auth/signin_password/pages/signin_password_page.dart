@@ -73,7 +73,7 @@ class SignInPasswordPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SigninPasswordHeader(),
+                    SigninPasswordHeader(email: userSigninReq.email),
                     const SizedBox(height: 20),
                     SigninPasswordField(controller: _passwordCon),
                     const SizedBox(height: 20),

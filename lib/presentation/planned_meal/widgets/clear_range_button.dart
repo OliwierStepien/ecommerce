@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 
 class ClearRangeButton extends StatelessWidget {
   const ClearRangeButton({
@@ -14,7 +15,7 @@ class ClearRangeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.delete_sweep),
+      icon: const Icon(Icons.event_busy, color: AppColors.muted),
       tooltip: 'Usuń posiłki w wybranym zakresie dat',
       onPressed: () async {
         final now = DateTime.now();

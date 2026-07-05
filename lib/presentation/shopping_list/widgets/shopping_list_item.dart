@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/ingredient/entity/ingredient_entity.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/shopping_list_custom_item/entity/shopping_list_custom_item_entity.dart';
@@ -26,72 +27,107 @@ class ShoppingListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCustomItem = ingredient != null && meal == null;
 
-    return Card(
-      color: Theme.of(context).inputDecorationTheme.fillColor,
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () => _toggleChecked(context),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Checkbox(
-                value: isChecked,
-                activeColor: Theme.of(context).primaryColor,
-                onChanged: (_) => _toggleChecked(context),
-                semanticLabel: isChecked
-                    ? context.l10n.markAsNotPurchased
-                    : context.l10n.markAsPurchased,
+    return InkWell(
+      onTap: () => _toggleChecked(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: AppColors.dividerLight),
+          ),
+        ),
+        child: Row(
+          children: [
+            Semantics(
+              label: isChecked
+                  ? context.l10n.markAsNotPurchased
+                  : context.l10n.markAsPurchased,
+              button: true,
+              child: IconButton(
+                onPressed: () => _toggleChecked(context),
+                icon: Icon(
+                  isChecked
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color:
+                      isChecked ? AppColors.herb : const Color(0xFFCDBFA8),
+                ),
               ),
-              Expanded(
-                child: Opacity(
-                  opacity: isChecked ? 0.55 : 1.0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _buildIngredientText(context),
+            ),
+            Expanded(
+              child: Opacity(
+                opacity: isChecked ? 0.45 : 1.0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: TextSpan(
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
                           decoration:
                               isChecked ? TextDecoration.lineThrough : null,
                         ),
+                        children: [
+                          TextSpan(text: _ingredientName(context)),
+                          if (_amountText.isNotEmpty)
+                            TextSpan(
+                              text: ' · $_amountText',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.muted,
+                              ),
+                            ),
+                        ],
                       ),
-                      if (meal?.title.trim().isNotEmpty ?? false)
-                        Text(
-                          context.l10n.fromMealTitle(meal!.title),
-                          style:
-                              const TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                    ],
-                  ),
+                    ),
+                    if (meal?.title.trim().isNotEmpty ?? false)
+                      Text(
+                        context.l10n.fromMealTitle(meal!.title),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.muted),
+                      ),
+                  ],
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isCustomItem)
-                    IconButton(
-                      onPressed: () => _editIngredient(context),
-                      icon: const Icon(Icons.edit_outlined),
-                    ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isCustomItem)
                   IconButton(
-                    onPressed: () => _removeIngredient(context),
-                    icon: const Icon(Icons.delete),
+                    onPressed: () => _editIngredient(context),
+                    icon: const Icon(Icons.edit_outlined,
+                        color: AppColors.muted),
                   ),
-                ],
-              ),
-            ],
-          ),
+                IconButton(
+                  onPressed: () => _removeIngredient(context),
+                  icon: const Icon(Icons.delete, color: AppColors.danger),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  String _ingredientName(BuildContext context) {
+    if (ingredient == null) return 'Własny składnik';
+    return ingredient!.ingredientName;
+  }
+
+  String get _amountText {
+    if (ingredient == null) return '';
+    final parts = <String>[
+      if (scaledAmount != null)
+        scaledAmount!.truncateToDouble() == scaledAmount
+            ? scaledAmount!.toInt().toString()
+            : scaledAmount!.toStringAsFixed(2),
+      if (ingredient!.unit.isNotEmpty) ingredient!.unit,
+    ];
+    return parts.join(' ');
   }
 
   void _toggleChecked(BuildContext context) {
@@ -106,21 +142,6 @@ class ShoppingListItem extends StatelessWidget {
           .read<ShoppingListCustomItemCubit>()
           .toggleCustomItemChecked(ingredient!.ingredientId);
     }
-  }
-
-  String _buildIngredientText(context) {
-    if (ingredient == null) return context.l10n.customIngredient;
-
-    final parts = <String>[
-      ingredient!.ingredientName,
-      if (scaledAmount != null)
-        scaledAmount!.truncateToDouble() == scaledAmount
-            ? scaledAmount!.toInt().toString()
-            : scaledAmount!.toStringAsFixed(2),
-      if (ingredient!.unit.isNotEmpty) ingredient!.unit,
-    ];
-
-    return parts.join(' ');
   }
 
   void _removeIngredient(BuildContext context) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mealapp/common/widgets/page_header/page_header.dart';
+import 'package:mealapp/core/configs/theme/app_colors.dart';
 import 'package:mealapp/domain/meal/entity/meal_entity.dart';
 import 'package:mealapp/domain/planned_meal/entity/planned_meal_entity.dart';
 import 'package:mealapp/presentation/planned_meal/bloc/planned_meals_cubit.dart';
@@ -23,6 +25,14 @@ class PlannedMealPage extends StatelessWidget {
           (curr.toastMessage != null && curr.toastMessage!.isNotEmpty),
       listener: (context, state) {
         if (state is PlannedMealsLoaded && state.toastMessage != null) {
+          // Strona kalendarza żyje w kilku instancjach naraz (gałąź dolnej
+          // nawigacji w IndexedStack + wariant push-nięty z detali dania),
+          // a wszystkie słuchają tego samego cubita — snackbar pokazuje
+          // tylko instancja aktualnie widoczna na ekranie.
+          final isVisible = TickerMode.of(context) &&
+              (ModalRoute.of(context)?.isCurrent ?? true);
+          if (!isVisible) return;
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.toastMessage!),
@@ -58,7 +68,17 @@ class PlannedMealPage extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(context.l10n.calendar),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              toolbarHeight: 76,
+              centerTitle: false,
+              titleSpacing: 16,
+              automaticallyImplyLeading: Navigator.of(context).canPop(),
+              iconTheme: const IconThemeData(color: AppColors.ink),
+              title: PageHeader(
+                kicker: 'PLAN POSIŁKÓW',
+                title: context.l10n.calendar,
+              ),
               actions: [
                 ClearRangeButton(
                   onConfirm: (start, end) async {
